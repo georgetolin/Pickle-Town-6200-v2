@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickleTown 6200 · Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET & TOKENS ═══ */
+:root{
+  --bg:#060D0A;--sur:#0B1610;--sur2:#101E14;--sur3:#162519;--sur4:#1D2E21;
+  --lime:#B8F53C;--lime2:rgba(184,245,60,.1);--lime3:rgba(184,245,60,.22);
+  --amber:#FFB800;--amberd:rgba(255,184,0,.1);
+  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
+  --rd:#FF4444;--rdd:rgba(255,68,68,.1);
+  --gn:#2ED573;--gnd:rgba(46,213,115,.1);
+  --pu:#A855F7;--pud:rgba(168,85,247,.1);
+  --tx:#E0EDDF;--tx2:#7A9B85;--tx3:#3D5F48;
+  --bd:rgba(184,245,60,.07);--bdh:rgba(184,245,60,.16);
+  --r:8px;--rl:12px;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --sb:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+
+/* Grid texture */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(184,245,60,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(184,245,60,.012) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+/* ═══ LOGIN SCREEN ═══ */
+#loginScreen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:var(--sur);border:1px solid var(--bdh);border-radius:20px;
+  padding:44px;width:380px;position:relative;overflow:hidden;
+  animation:popIn .3s ease;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(184,245,60,.08),transparent 70%);pointer-events:none}
+.lb-logo{display:flex;align-items:center;gap:10px;margin-bottom:30px;justify-content:center}
+.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(184,245,60,.35)}
+.lb-logo span{font-family:var(--fh);font-size:22px;font-weight:900;letter-spacing:.3px}
+.lb-logo span em{color:var(--lime);font-style:normal}
+.lb-title{font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.3px;text-align:center;margin-bottom:6px}
+.lb-sub{font-size:12.5px;color:var(--tx2);text-align:center;margin-bottom:28px;font-family:var(--fm)}
+.lf-label{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);display:block;margin-bottom:6px}
+.lf-input{width:100%;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:11px 14px;color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .15s;margin-bottom:14px}
+.lf-input:focus{border-color:rgba(184,245,60,.35)}
+.lf-input::placeholder{color:var(--tx3)}
+.lb-err{background:var(--rdd);border:1px solid rgba(255,68,68,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
+.lb-hint{background:var(--lime2);border:1px solid var(--lime3);border-radius:var(--r);padding:9px 13px;font-size:11.5px;color:var(--tx2);margin-bottom:18px;font-family:var(--fm);text-align:center;line-height:1.5}
+.btn-login{width:100%;background:var(--lime);color:var(--bg);border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
+.btn-login:hover{background:#caff55;box-shadow:0 0 24px rgba(184,245,60,.4)}
+.back-link{display:block;text-align:center;margin-top:16px;font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s}
+.back-link:hover{color:var(--lime)}
+
+/* ═══ ADMIN LAYOUT ═══ */
+#adminApp{display:none}
+.admin-wrap{display:flex;min-height:100vh}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{
+  width:var(--sb);background:var(--sur);border-right:1px solid var(--bd);
+  position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;
+  z-index:200;overflow-y:auto;
+}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--sur3);border-radius:2px}
+.sb-logo{padding:20px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.sb-ball{width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;box-shadow:0 0 14px rgba(184,245,60,.3)}
+.sb-name{font-family:var(--fh);font-size:17px;font-weight:900;letter-spacing:.3px;line-height:1}
+.sb-name em{color:var(--lime);font-style:normal}
+.sb-tag{font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.sb-section{padding:18px 14px 6px;font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
+.sbl{
+  display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;
+  border-radius:var(--r);cursor:pointer;transition:all .15s;
+  color:var(--tx2);font-size:13.5px;font-weight:500;border:none;background:none;width:calc(100% - 16px);text-align:left;
+}
+.sbl:hover{background:var(--sur2);color:var(--tx)}
+.sbl.on{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
+.sbl .sbl-ico{width:20px;text-align:center;font-size:14px;flex-shrink:0}
+.sbl-badge{margin-left:auto;background:var(--lime);color:var(--bg);font-family:var(--fm);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.sbl-badge.rd{background:var(--rd);color:#fff}
+.sbl-badge.am{background:var(--amber);color:var(--bg)}
+.sb-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--bd)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--sur2);border-radius:var(--r);border:1px solid var(--bd)}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:var(--lime);flex-shrink:0}
+.sb-uinfo{flex:1;min-width:0}
+.sb-uinfo strong{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-uinfo span{font-size:10.5px;color:var(--lime);font-family:var(--fm)}
+.sb-logout{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px;padding:4px;transition:color .15s;flex-shrink:0}
+.sb-logout:hover{color:var(--rd)}
+
+/* ═══ MAIN CONTENT ═══ */
+.admin-main{margin-left:var(--sb);flex:1;padding:0;position:relative;z-index:1}
+.admin-topbar{
+  height:56px;background:rgba(6,13,10,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bd);display:flex;align-items:center;
+  padding:0 24px;gap:14px;position:sticky;top:0;z-index:100;
+}
+.topbar-title{font-family:var(--fh);font-size:19px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
+.topbar-crumb{font-family:var(--fm);font-size:10.5px;color:var(--tx3)}
+.topbar-r{display:flex;align-items:center;gap:10px;margin-left:auto}
+.notif-btn{position:relative;width:34px;height:34px;border-radius:50%;background:var(--sur2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .15s}
+.notif-btn:hover{border-color:var(--bdh)}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--rd);border:2px solid var(--sur2)}
+.admin-body{padding:24px}
+
+/* ═══ PANELS ═══ */
+.panel{display:none}.panel.on{display:block;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ═══ CARDS / WIDGETS ═══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 20px;position:relative;overflow:hidden;transition:all .2s}
+.kpi:hover{border-color:var(--bdh)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--lime))}
+.kpi label{font-family:var(--fm);font-size:9.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);display:block;margin-bottom:8px}
+.kpi .kv{font-family:var(--fh);font-size:32px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+.kpi .ks{font-size:11.5px;color:var(--tx2);margin-top:5px}
+.kpi .ks.up{color:var(--gn)}.kpi .ks.dn{color:var(--rd)}
+
+/* ═══ DATA TABLE ═══ */
+.tbl-wrap{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:20px}
+.tbl-head{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tbl-head-title{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;flex:1}
+.tbl-search{background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:7px 12px;color:var(--tx);font-family:var(--fb);font-size:13px;outline:none;width:220px;transition:border-color .15s}
+.tbl-search:focus{border-color:rgba(184,245,60,.3)}.tbl-search::placeholder{color:var(--tx3)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--sur2)}
+th{padding:10px 14px;font-family:var(--fh);font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);text-align:left;white-space:nowrap;border-bottom:1px solid var(--bd)}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(184,245,60,.04);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(184,245,60,.025)}
+.td-name{font-weight:600;color:var(--tx)}
+.td-mono{font-family:var(--fm);font-size:12px;color:var(--tx2)}
+.td-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ═══ BADGES ═══ */
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-family:var(--fm);font-size:10.5px;font-weight:500;white-space:nowrap}
+.chip-l{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
+.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.22)}
+.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.22)}
+.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.22)}
+.chip-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(0,212,255,.22)}
+.chip-p{background:var(--pud);color:var(--pu);border:1px solid rgba(168,85,247,.22)}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-l{background:var(--lime);color:var(--bg)}.btn-l:hover{background:#caff55;box-shadow:0 0 18px rgba(184,245,60,.3)}
+.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:rgba(184,245,60,.3);color:var(--lime)}
+.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.2)}.btn-r:hover{background:rgba(255,68,68,.18)}
+.btn-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.2)}.btn-a:hover{background:rgba(255,184,0,.18)}
+.btn-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.2)}.btn-g:hover{background:rgba(46,213,115,.18)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-xs{padding:3px 8px;font-size:11px;border-radius:6px}
+
+/* ═══ MODAL ═══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--sur);border:1px solid var(--bdh);border-radius:20px;padding:28px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto;animation:popIn .2s ease}
+.modal::-webkit-scrollbar{width:3px}.modal::-webkit-scrollbar-thumb{background:var(--sur3);border-radius:2px}
+.modal-title{font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-.3px;margin-bottom:4px}
+.modal-sub{font-size:12.5px;color:var(--tx2);margin-bottom:22px}
+.modal-acts{display:flex;gap:9px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
+
+/* ═══ FORM FIELDS ═══ */
+.fg{margin-bottom:16px}
+.fl{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--tx2);display:block;margin-bottom:6px}
+.fi{width:100%;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 13px;color:var(--tx);font-family:var(--fb);font-size:13.5px;outline:none;transition:border-color .15s}
+.fi:focus{border-color:rgba(184,245,60,.35)}.fi::placeholder{color:var(--tx3)}
+select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ═══ CONFIRM DIALOG ═══ */
+.confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center}
+.confirm-bg.on{display:flex}
+.confirm-box{background:var(--sur);border:1px solid rgba(255,68,68,.3);border-radius:16px;padding:28px;width:380px;animation:popIn .2s ease;text-align:center}
+.confirm-ico{font-size:40px;margin-bottom:12px}
+.confirm-title{font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase;margin-bottom:8px}
+.confirm-msg{font-size:13px;color:var(--tx2);margin-bottom:22px}
+.confirm-acts{display:flex;gap:10px;justify-content:center}
+
+/* ═══ STATS SECTION ═══ */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+
+/* ═══ ACTIVITY FEED ═══ */
+.act-feed{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.act-hd{padding:14px 18px;border-bottom:1px solid var(--bd);font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.2px}
+.act-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(184,245,60,.04)}
+.act-item:last-child{border-bottom:none}
+.act-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
+.act-info{flex:1;min-width:0}
+.act-info p{font-size:13px;line-height:1.5;margin-bottom:2px}
+.act-info p strong{color:var(--tx)}
+.act-info span{font-family:var(--fm);font-size:10px;color:var(--tx3)}
+
+/* ═══ CHART BARS (CSS only) ═══ */
+.chart-wrap{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 20px;margin-bottom:20px}
+.chart-title{font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:16px;color:var(--tx)}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;height:100%}
+.bar-track{flex:1;display:flex;align-items:flex-end;width:100%}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease;background:var(--lime2);border:1px solid rgba(184,245,60,.2);position:relative}
+.bar:hover{background:var(--lime3)}
+.bar-lbl{font-family:var(--fm);font-size:9px;color:var(--tx3);margin-top:4px;text-align:center;white-space:nowrap}
+.bar-val{font-family:var(--fm);font-size:9px;color:var(--lime);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap}
+
+/* ═══ TOGGLE ═══ */
+.toggle-wrap{display:flex;align-items:center;gap:8px}
+.toggle{width:38px;height:20px;background:var(--sur3);border-radius:10px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--lime)}
+.toggle-knob{width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .2s;pointer-events:none}
+.toggle.on .toggle-knob{transform:translateX(18px)}
+.toggle-label{font-size:13px;color:var(--tx2)}
+
+/* ═══ INLINE EDIT ═══ */
+.editable{cursor:pointer;border-bottom:1px dashed var(--tx3);transition:border-color .15s}
+.editable:hover{border-color:var(--lime)}
+
+/* ═══ SECTION DIVIDER ═══ */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.sec-hd-left{display:flex;flex-direction:column;gap:3px}
+.sec-title{font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
+.sec-sub{font-size:12.5px;color:var(--tx2)}
+.sec-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--sur2);border:1px solid var(--bdh);border-radius:10px;padding:12px 18px;font-size:13.5px;z-index:1000;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;max-width:300px;line-height:1.5;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+.toast.on{opacity:1;transform:translateY(0)}
+
+/* ═══ SETTINGS ═══ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.settings-grid{grid-template-columns:1fr}}
+.set-card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:20px}
+.set-card h4{font-family:var(--fh);font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.2px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(184,245,60,.04)}
+.set-row:last-child{border-bottom:none}
+.set-row-left strong{display:block;font-size:13px;font-weight:500}
+.set-row-left span{font-size:11.5px;color:var(--tx2)}
+
+/* ═══ CHECKINS ═══ */
+.ci-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(184,245,60,.04)}
+.ci-bar:last-child{border-bottom:none}
+.ci-name{flex:1;font-size:13px}
+.ci-track{flex:2;height:6px;background:var(--sur3);border-radius:3px;overflow:hidden}
+.ci-fill{height:100%;background:linear-gradient(90deg,var(--lime),rgba(184,245,60,.5));border-radius:3px;transition:width .6s ease}
+.ci-count{font-family:var(--fm);font-size:11px;color:var(--lime);min-width:30px;text-align:right}
+
+/* ═══ CONTENT EDITOR ═══ */
+.ann-list{display:flex;flex-direction:column;gap:9px}
+.ann{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.ann-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.ann-body{flex:1;min-width:0}
+.ann-body strong{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
+.ann-body p{font-size:12.5px;color:var(--tx2)}
+.ann-meta{font-family:var(--fm);font-size:10px;color:var(--tx3);margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="lb-logo">
+      <div class="lb-ball">🏓</div>
+      <span>Pickle<em>Town</em> 6200</span>
+    </div>
+    <div class="lb-title">Admin Panel</div>
+    <div class="lb-sub">Restricted access · Authorized personnel only</div>
+    <div class="lb-hint">Demo credentials:<br><strong>Username:</strong> admin &nbsp;|&nbsp; <strong>Password:</strong> admin123</div>
+    <div id="loginErr" class="lb-err">Invalid credentials. Please try again.</div>
+    <label class="lf-label">Username</label>
+    <input class="lf-input" type="text" id="loginUser" placeholder="Enter username" autocomplete="username">
+    <label class="lf-label">Password</label>
+    <input class="lf-input" type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">Sign In to Admin →</button>
+    <a href="pickletown6200.html" class="back-link">← Back to PickleTown 6200</a>
+  </div>
+</div>
+
+<!-- ═══ ADMIN APP ═══ -->
+<div id="adminApp">
+  <div class="admin-wrap">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-ball">🏓</div>
+        <div>
+          <div class="sb-name">Pickle<em>Town</em> 6200</div>
+          <div class="sb-tag">Admin Panel</div>
+        </div>
+      </div>
+
+      <div class="sb-section">Overview</div>
+      <button class="sbl on" onclick="showPanel('dashboard',this)"><span class="sbl-ico">📊</span>Dashboard</button>
+      <button class="sbl" onclick="showPanel('activity',this)"><span class="sbl-ico">⚡</span>Activity Log<span class="sbl-badge rd" id="notifCount">3</span></button>
+
+      <div class="sb-section">Content</div>
+      <button class="sbl" onclick="showPanel('courts',this)"><span class="sbl-ico">📍</span>Courts</button>
+      <button class="sbl" onclick="showPanel('games',this)"><span class="sbl-ico">🎮</span>Games</button>
+      <button class="sbl" onclick="showPanel('events',this)"><span class="sbl-ico">🏆</span>Events</button>
+      <button class="sbl" onclick="showPanel('announcements',this)"><span class="sbl-ico">📢</span>Announcements</button>
+
+      <div class="sb-section">Community</div>
+      <button class="sbl" onclick="showPanel('players',this)"><span class="sbl-ico">👥</span>Players</button>
+      <button class="sbl" onclick="showPanel('rankings',this)"><span class="sbl-ico">🥇</span>Rankings</button>
+      <button class="sbl" onclick="showPanel('chat',this)"><span class="sbl-ico">💬</span>Chat Moderation</button>
+
+      <div class="sb-section">Business</div>
+      <button class="sbl" onclick="showPanel('sponsors',this)"><span class="sbl-ico">🤝</span>Sponsors</button>
+      <button class="sbl" onclick="showPanel('checkins',this)"><span class="sbl-ico">✅</span>Check-ins</button>
+
+      <div class="sb-section">System</div>
+      <button class="sbl" onclick="showPanel('content',this)"><span class="sbl-ico">🖼</span>Homepage Content</button>
+      <button class="sbl" onclick="showPanel('settings',this)"><span class="sbl-ico">⚙</span>Settings</button>
+
+      <div class="sb-bottom">
+        <div class="sb-user">
+          <div class="sb-av">AD</div>
+          <div class="sb-uinfo"><strong>Administrator</strong><span>Super Admin</span></div>
+          <button class="sb-logout" onclick="doLogout()" title="Sign out">⏻</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-crumb" id="topbarCrumb">PickleTown 6200 Admin</div>
+        </div>
+        <div class="topbar-r">
+          <a href="pickletown6200.html" target="_blank" class="btn btn-o btn-sm">↗ View Site</a>
+          <div class="notif-btn" onclick="showPanel('activity',document.querySelector('[onclick*=activity]'))">
+            🔔<div class="notif-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-body">
+
+        <!-- ─── DASHBOARD ─── -->
+        <div class="panel on" id="pnl-dashboard">
+          <div class="kpi-grid">
+            <div class="kpi" style="--ac:var(--lime)"><label>Total Courts</label><div class="kv" id="kpi-courts">8</div><div class="ks up">↑ 2 this month</div></div>
+            <div class="kpi" style="--ac:var(--sky)"><label>Active Games</label><div class="kv" id="kpi-games">5</div><div class="ks up">↑ 1 today</div></div>
+            <div class="kpi" style="--ac:var(--amber)"><label>Registered Players</label><div class="kv" id="kpi-players">5</div><div class="ks up">↑ 3 this week</div></div>
+            <div class="kpi" style="--ac:var(--pu)"><label>Check-ins This Month</label><div class="kv" id="kpi-checkins">0</div><div class="ks" id="kpi-ci-sub">Tap courts on map</div></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div class="chart-wrap">
+              <div class="chart-title">Weekly Check-ins by Court</div>
+              <div class="bar-chart" id="dashChart"></div>
+            </div>
+            <div class="chart-wrap">
+              <div class="chart-title">Games by Skill Level</div>
+              <div class="bar-chart" id="levelChart"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="act-feed">
+              <div class="act-hd">⚡ Recent Activity</div>
+              <div id="actFeed"></div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-head-title">🎮 Today's Games</div></div>
+              <table>
+                <thead><tr><th>Court</th><th>Time</th><th>Level</th><th>Spots</th></tr></thead>
+                <tbody id="dashGames"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── ACTIVITY LOG ─── -->
+        <div class="panel" id="pnl-activity">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Activity Log</div><div class="sec-sub">All admin actions and system events</div></div>
+            <button class="btn btn-o btn-sm" onclick="clearActivity()">Clear Log</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Time</th><th>Action</th><th>Details</th><th>Admin</th></tr></thead>
+              <tbody id="activityTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── COURTS ─── -->
+        <div class="panel" id="pnl-courts">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Court Management</div><div class="sec-sub">Add, edit, and manage all courts in the 6200 area</div></div>
+            <button class="btn btn-l" onclick="openModal('court',null)">+ Add Court</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Courts <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="courtCount"></span></div>
+              <input class="tbl-search" type="text" placeholder="Search courts…" oninput="filterTable('courtTbody',this.value)">
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Town</th><th>Type</th><th>Courts</th><th>Hours</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="courtTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── GAMES ─── -->
+        <div class="panel" id="pnl-games">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Game Management</div><div class="sec-sub">Manage scheduled games and open play sessions</div></div>
+            <button class="btn btn-l" onclick="openModal('game',null)">+ Add Game</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Games <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="gameCount"></span></div>
+              <input class="tbl-search" type="text" placeholder="Search games…" oninput="filterTable('gameTbody',this.value)">
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Court</th><th>Date</th><th>Time</th><th>Level</th><th>Spots</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="gameTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── EVENTS ─── -->
+        <div class="panel" id="pnl-events">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Events & Tournaments</div><div class="sec-sub">Manage tournaments, clinics, and social events</div></div>
+            <button class="btn btn-l" onclick="openModal('event',null)">+ Add Event</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Events</div>
+              <input class="tbl-search" type="text" placeholder="Search events…" oninput="filterTable('eventTbody',this.value)">
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Date</th><th>Location</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="eventTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── ANNOUNCEMENTS ─── -->
+        <div class="panel" id="pnl-announcements">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Announcements</div><div class="sec-sub">Publish announcements shown across the community app</div></div>
+            <button class="btn btn-l" onclick="openModal('announcement',null)">+ New Announcement</button>
+          </div>
+          <div class="ann-list" id="annList"></div>
+        </div>
+
+        <!-- ─── PLAYERS ─── -->
+        <div class="panel" id="pnl-players">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Player Management</div><div class="sec-sub">View, edit, approve or suspend player accounts</div></div>
+            <button class="btn btn-l" onclick="openModal('player',null)">+ Add Player</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Players <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="playerCount"></span></div>
+              <input class="tbl-search" type="text" placeholder="Search players…" oninput="filterTable('playerTbody',this.value)">
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Location</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="playerTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── RANKINGS ─── -->
+        <div class="panel" id="pnl-rankings">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Rankings Manager</div><div class="sec-sub">Adjust points, reset rankings, and manage the leaderboard</div></div>
+            <div class="sec-actions">
+              <button class="btn btn-r btn-sm" onclick="confirmReset()">Reset All Rankings</button>
+              <button class="btn btn-l btn-sm" onclick="openModal('rankAdjust',null)">Adjust Points</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head"><div class="tbl-head-title">Current Leaderboard</div></div>
+            <table>
+              <thead><tr><th>Rank</th><th>Player</th><th>Points</th><th>Matches Won</th><th>Actions</th></tr></thead>
+              <tbody id="rankTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── CHAT MODERATION ─── -->
+        <div class="panel" id="pnl-chat">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Chat Moderation</div><div class="sec-sub">Review, delete, and moderate community chat messages</div></div>
+            <button class="btn btn-r btn-sm" onclick="clearChat()">Clear All Messages</button>
+          </div>
+          <div class="tbl-wrap" style="margin-bottom:20px">
+            <div class="tbl-head"><div class="tbl-head-title">Community Messages</div></div>
+            <table>
+              <thead><tr><th>Time</th><th>User</th><th>Message</th><th>Actions</th></tr></thead>
+              <tbody id="chatTbody"></tbody>
+            </table>
+          </div>
+          <div style="background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px">
+            <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;margin-bottom:14px">Post Admin Announcement</div>
+            <div style="display:flex;gap:10px">
+              <input class="fi" type="text" id="adminMsg" placeholder="Post a message to the community as admin…" style="flex:1">
+              <button class="btn btn-l" onclick="postAdminMsg()">Post ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SPONSORS ─── -->
+        <div class="panel" id="pnl-sponsors">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Sponsor Management</div><div class="sec-sub">Add, edit, and manage local business sponsors</div></div>
+            <button class="btn btn-l" onclick="openModal('sponsor',null)">+ Add Sponsor</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Sponsors</div>
+              <input class="tbl-search" type="text" placeholder="Search sponsors…" oninput="filterTable('sponsorTbody',this.value)">
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Business Name</th><th>Location</th><th>Offer</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="sponsorTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── CHECK-INS ─── -->
+        <div class="panel" id="pnl-checkins">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Check-in Analytics</div><div class="sec-sub">Court check-in data from QR scans and map taps</div></div>
+            <button class="btn btn-r btn-sm" onclick="clearCheckins()">Reset Check-ins</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div class="tbl-wrap">
+              <div class="tbl-head"><div class="tbl-head-title">Check-ins by Court</div></div>
+              <div style="padding:16px" id="ciBarChart"></div>
+            </div>
+            <div class="chart-wrap">
+              <div class="chart-title">Check-in Volume (Simulated Weekly)</div>
+              <div class="bar-chart" id="ciWeekChart"></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head"><div class="tbl-head-title">Full Check-in Log</div></div>
+            <table>
+              <thead><tr><th>Court</th><th>Total Check-ins</th><th>Share</th><th>Actions</th></tr></thead>
+              <tbody id="ciTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── HOMEPAGE CONTENT ─── -->
+        <div class="panel" id="pnl-content">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Homepage Content</div><div class="sec-sub">Edit hero text, taglines, and feature toggles</div></div>
+            <button class="btn btn-l" onclick="saveContent()">Save Changes</button>
+          </div>
+          <div class="settings-grid">
+            <div class="set-card">
+              <h4>Hero Section</h4>
+              <div class="fg"><label class="fl">Hero Headline</label><input class="fi" id="heroHeadline" value="Play. Connect. Belong." placeholder="Hero headline"></div>
+              <div class="fg"><label class="fl">Hero Subtext</label><textarea class="fi" id="heroSubtext" rows="3" placeholder="Hero description text…">Dumaguete's pickleball community hub. Find courts, join games, track your ranking, and connect with players across the 6200 area.</textarea></div>
+              <div class="fg"><label class="fl">CTA Button Text</label><input class="fi" id="heroCta" value="Find Courts" placeholder="CTA button text"></div>
+            </div>
+            <div class="set-card">
+              <h4>Site Stats</h4>
+              <div class="fg-row">
+                <div class="fg"><label class="fl">Courts Count</label><input class="fi" id="sc-courts" type="number" value="8"></div>
+                <div class="fg"><label class="fl">Members Count</label><input class="fi" id="sc-members" value="24k+"></div>
+              </div>
+              <div class="fg-row">
+                <div class="fg"><label class="fl">Area Code</label><input class="fi" id="sc-area" value="6200"></div>
+                <div class="fg"><label class="fl">Join Status</label><input class="fi" id="sc-join" value="Free"></div>
+              </div>
+            </div>
+            <div class="set-card">
+              <h4>Feature Toggles</h4>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Marketplace Search</strong><span>Show hero search bar</span></div>
+                <button class="toggle on" id="tog-search" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Player Rankings</strong><span>Show public leaderboard</span></div>
+                <button class="toggle on" id="tog-rank" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Community Chat</strong><span>Enable public chat</span></div>
+                <button class="toggle on" id="tog-chat" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>QR Check-ins</strong><span>Court QR code check-ins</span></div>
+                <button class="toggle on" id="tog-qr" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Sponsor Ads</strong><span>Show sponsor section</span></div>
+                <button class="toggle on" id="tog-ads" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button>
+              </div>
+            </div>
+            <div class="set-card">
+              <h4>Contact Info</h4>
+              <div class="fg"><label class="fl">Email</label><input class="fi" value="hello@pickletown6200.com"></div>
+              <div class="fg"><label class="fl">Phone</label><input class="fi" value="(035) 123-4567"></div>
+              <div class="fg"><label class="fl">Address</label><input class="fi" value="Dumaguete City, Negros Oriental 6200"></div>
+              <div class="fg"><label class="fl">Facebook URL</label><input class="fi" placeholder="https://facebook.com/…"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SETTINGS ─── -->
+        <div class="panel" id="pnl-settings">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">System Settings</div><div class="sec-sub">Configure admin access, data, and site behavior</div></div>
+          </div>
+          <div class="settings-grid">
+            <div class="set-card">
+              <h4>Admin Account</h4>
+              <div class="fg"><label class="fl">Username</label><input class="fi" value="admin"></div>
+              <div class="fg"><label class="fl">New Password</label><input class="fi" type="password" placeholder="Leave blank to keep current"></div>
+              <div class="fg"><label class="fl">Confirm Password</label><input class="fi" type="password" placeholder="Confirm new password"></div>
+              <button class="btn btn-l btn-sm" onclick="toast('✅ Account updated!')">Update Account</button>
+            </div>
+            <div class="set-card">
+              <h4>Data Management</h4>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Export all data</strong><span>Download JSON backup</span></div>
+                <button class="btn btn-o btn-sm" onclick="exportData()">Export →</button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Reset courts</strong><span>Restore default courts</span></div>
+                <button class="btn btn-a btn-sm" onclick="resetCourts()">Reset</button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Reset games</strong><span>Clear all games</span></div>
+                <button class="btn btn-a btn-sm" onclick="resetGames()">Reset</button>
+              </div>
+              <div class="set-row">
+                <div class="set-row-left"><strong>Wipe all data</strong><span>Factory reset — irreversible</span></div>
+                <button class="btn btn-r btn-sm" onclick="confirmWipe()">Wipe</button>
+              </div>
+            </div>
+            <div class="set-card">
+              <h4>Notification Settings</h4>
+              <div class="set-row"><div class="set-row-left"><strong>New player alert</strong><span>Email on new registration</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+              <div class="set-row"><div class="set-row-left"><strong>Game filled alert</strong><span>When a game is full</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+              <div class="set-row"><div class="set-row-left"><strong>Court submission</strong><span>New court add request</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+              <div class="set-row"><div class="set-row-left"><strong>Sponsor inquiry</strong><span>New sponsorship request</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+            </div>
+            <div class="set-card">
+              <h4>Appearance</h4>
+              <div class="set-row"><div class="set-row-left"><strong>Dark mode site</strong><span>Force dark theme on frontend</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+              <div class="set-row"><div class="set-row-left"><strong>Court grid animation</strong><span>Background grid texture</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
+              <div class="fg" style="margin-top:14px"><label class="fl">Accent Color</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;cursor:pointer;border:3px solid rgba(255,255,255,.3)" title="Lime (default)" onclick="toast('Accent: Lime')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#00D4FF;cursor:pointer;border:2px solid transparent" title="Sky" onclick="toast('Accent: Sky')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#FFB800;cursor:pointer;border:2px solid transparent" title="Amber" onclick="toast('Accent: Amber')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#FF6B35;cursor:pointer;border:2px solid transparent" title="Orange" onclick="toast('Accent: Orange')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalBox">
+    <div class="modal-title" id="modalTitle">Edit</div>
+    <div class="modal-sub" id="modalSub">Fill in the details below</div>
+    <div id="modalBody"></div>
+    <div class="modal-acts">
+      <button class="btn btn-o btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-l btn-sm" id="modalSave" onclick="saveModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM DIALOG ═══ -->
+<div class="confirm-bg" id="confirmBg">
+  <div class="confirm-box">
+    <div class="confirm-ico" id="confirmIco">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-acts">
+      <button class="btn btn-o btn-sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-r btn-sm" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ════════════════════════ DEFAULT DATA ════════════════════════
+const defaultCourts = [
+  {id:1,name:"Freedom Park Court",town:"Dumaguete City",type:"Outdoor",courts:2,hours:"6AM–10PM",status:"active"},
+  {id:2,name:"Rizal Boulevard Court",town:"Dumaguete City",type:"Outdoor/Covered",courts:2,hours:"Dawn–Dusk",status:"active"},
+  {id:3,name:"Silliman University Courts",town:"Dumaguete City",type:"Outdoor+Lights",courts:4,hours:"4PM–9PM",status:"active"},
+  {id:4,name:"Robinsons Place Dumaguete",town:"Dumaguete City",type:"Indoor AC",courts:2,hours:"10AM–9PM",status:"active"},
+  {id:5,name:"Valencia Municipal Gym",town:"Valencia",type:"Covered",courts:2,hours:"Wknd Open Play",status:"active"},
+  {id:6,name:"Bacong Covered Court",town:"Bacong",type:"Covered",courts:1,hours:"Flexible",status:"active"},
+  {id:7,name:"Sibulan Sports Center",town:"Sibulan",type:"Multi-purpose",courts:1,hours:"By Reservation",status:"inactive"},
+  {id:8,name:"Dauin Community Court",town:"Dauin",type:"Outdoor",courts:1,hours:"Open Play Sun",status:"active"},
+];
+const defaultGames = [
+  {id:1,court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8,status:"open"},
+  {id:2,court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8,status:"open"},
+  {id:3,court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12,status:"open"},
+  {id:4,court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12,status:"open"},
+  {id:5,court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6,status:"filling"},
+];
+const defaultEvents = [
+  {id:1,name:"Friday Night Social Mixer",type:"Social",date:"Every Friday",location:"Silliman University",fee:"Free",status:"active"},
+  {id:2,name:"Dumaguete Summer Slam 2025",type:"Tournament",date:"June 22–23, 2025",location:"Silliman University",fee:"₱500",status:"active"},
+  {id:3,name:"Valencia Open",type:"Tournament",date:"July 13, 2025",location:"Valencia Municipal Gym",fee:"₱500",status:"upcoming"},
+  {id:4,name:"Beginner Pickleball Clinic",type:"Clinic",date:"Every Saturday",location:"Robinsons Place",fee:"₱400",status:"active"},
+  {id:5,name:"Advanced Strategy Workshop",type:"Workshop",date:"June 15, 2025",location:"Dumaguete Sports Club",fee:"₱600",status:"upcoming"},
+];
+const defaultPlayers = [
+  {id:1,name:"Maria Tan",level:"3.0 Intermediate",location:"Daro, Dumaguete",points:45,status:"active"},
+  {id:2,name:"Juan Dela Cruz",level:"4.0 Advanced",location:"Bantayan, Dumaguete",points:38,status:"active"},
+  {id:3,name:"Sarah Johnson",level:"2.0 Beginner",location:"Valencia",points:32,status:"active"},
+  {id:4,name:"Alex Reyes",level:"3.5 Adv. Intermediate",location:"Daro, Dumaguete",points:28,status:"active"},
+  {id:5,name:"Michael Lim",level:"3.0 Intermediate",location:"Sibulan",points:25,status:"active"},
+];
+const defaultSponsors = [
+  {id:1,name:"Dumaguete Sports Hub",location:"Hibbard Ave, Dumaguete",offer:"10% off for PickleTown members",status:"active"},
+  {id:2,name:"Café 6200",location:"Rizal Blvd, Dumaguete",offer:"Free drink upgrade with check-in receipt",status:"active"},
+  {id:3,name:"Dauin Beach Resort",location:"Dauin, Negros Oriental",offer:"Special weekend rates for players",status:"active"},
+  {id:4,name:"Valencia Sports Clinic",location:"Valencia",offer:"Sports massage discount — mention PickleTown",status:"active"},
+];
+const defaultAnnouncements = [
+  {id:1,title:"Summer League Registration Open",msg:"Sign up for the Dumaguete Summer Slam 2025 — registration closes June 10.",type:"info",active:true,date:"2025-05-28"},
+  {id:2,title:"New Courts Added",msg:"Sibulan Sports Center is now listed. Check the courts map for details.",type:"success",active:true,date:"2025-05-25"},
+  {id:3,title:"Maintenance Notice",msg:"Freedom Park courts will be resurfaced May 31 – June 1. No open play those dates.",type:"warning",active:false,date:"2025-05-20"},
+];
+const chatMessages = [
+  {id:1,user:"Maria Tan",initials:"MT",msg:"Hi everyone! Anyone playing at Silliman tonight? 🏓",time:"5:12 PM"},
+  {id:2,user:"Player",initials:"Me",msg:"Yes! We have a group of 4 going around 5:30.",time:"5:15 PM"},
+  {id:3,user:"Juan Dela Cruz",initials:"JD",msg:"Can I join? Still beginner level but I learn fast!",time:"5:18 PM"},
+  {id:4,user:"Sarah R.",initials:"SR",msg:"Don't forget — Sunday morning social at 7 AM. Free coffee! ☕",time:"5:22 PM"},
+];
+const activityLog = [
+  {time:"5 min ago",action:"Court Added",detail:"Sibulan Sports Center submitted by user",admin:"admin"},
+  {time:"1 hr ago",action:"Match Recorded",detail:"Maria Tan beat Juan Dela Cruz — +3 pts",admin:"system"},
+  {time:"2 hr ago",action:"Game Created",detail:"Advanced play at Rizal Blvd — 2 spots left",admin:"system"},
+  {time:"4 hr ago",action:"Sponsor Updated",detail:"Café 6200 offer text edited",admin:"admin"},
+  {time:"Yesterday",action:"Player Registered",detail:"Sarah Johnson joined — skill: 2.0 Beginner",admin:"system"},
+  {time:"Yesterday",action:"Event Published",detail:"Dumaguete Summer Slam 2025 set to active",admin:"admin"},
+];
+
+// ════════════════════════ STATE ════════════════════════
+function loadData(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e) { return def; } }
+function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+let courts = loadData('pt_admin_courts', defaultCourts);
+let games = loadData('pt_admin_games', defaultGames);
+let events = loadData('pt_admin_events', defaultEvents);
+let players = loadData('pt_admin_players', defaultPlayers);
+let sponsors = loadData('pt_admin_sponsors', defaultSponsors);
+let announcements = loadData('pt_admin_ann', defaultAnnouncements);
+let chatMsgs = loadData('pt_admin_chat', chatMessages);
+let actLog = loadData('pt_admin_activity', activityLog);
+let modalType = null, editId = null, confirmCb = null;
+
+// ════════════════════════ AUTH ════════════════════════
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if(u === 'admin' && p === 'admin123') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'block';
+    logActivity('Admin Login', 'Admin signed in successfully');
+    refreshAll();
+    toast('👋 Welcome back, Admin!');
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    setTimeout(()=>document.getElementById('loginErr').style.display='none', 3000);
+  }
+}
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  toast('Signed out successfully');
+}
+
+// ════════════════════════ PANEL NAVIGATION ════════════════════════
+const panelTitles = {
+  dashboard:'Dashboard', activity:'Activity Log', courts:'Court Management',
+  games:'Game Management', events:'Events & Tournaments', announcements:'Announcements',
+  players:'Player Management', rankings:'Rankings Manager', chat:'Chat Moderation',
+  sponsors:'Sponsor Management', checkins:'Check-in Analytics', content:'Homepage Content',
+  settings:'System Settings'
+};
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sbl').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pnl-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+  document.getElementById('topbarTitle').textContent = panelTitles[id]||id;
+  document.getElementById('topbarCrumb').textContent = 'PickleTown 6200 Admin → '+panelTitles[id];
+  if(id==='dashboard') buildDashboard();
+  if(id==='courts') buildCourts();
+  if(id==='games') buildGames();
+  if(id==='events') buildEvents();
+  if(id==='players') buildPlayers();
+  if(id==='rankings') buildRankings();
+  if(id==='sponsors') buildSponsors();
+  if(id==='announcements') buildAnnouncements();
+  if(id==='chat') buildChat();
+  if(id==='checkins') buildCheckins();
+  if(id==='activity') buildActivity();
+}
+
+// ════════════════════════ REFRESH ALL ════════════════════════
+function refreshAll() {
+  buildDashboard();
+  buildCourts();
+  buildGames();
+  buildEvents();
+  buildPlayers();
+  buildRankings();
+  buildSponsors();
+  buildAnnouncements();
+  buildChat();
+  buildCheckins();
+  buildActivity();
+}
+
+// ════════════════════════ DASHBOARD ════════════════════════
+function buildDashboard() {
+  const ci = loadData('pt6200ci', {});
+  const total = Object.values(ci).reduce((a,b)=>a+b, 0);
+  document.getElementById('kpi-courts').textContent = courts.length;
+  document.getElementById('kpi-games').textContent = games.length;
+  document.getElementById('kpi-players').textContent = players.length;
+  document.getElementById('kpi-checkins').textContent = total;
+  document.getElementById('kpi-ci-sub').textContent = total ? `Across ${Object.keys(ci).length} courts` : 'Tap courts on map';
+
+  // Bar chart
+  const chartData = courts.slice(0,6).map(c=>({label:c.name.split(' ')[0],val:ci[c.name]||Math.floor(Math.random()*12)+1}));
+  const max = Math.max(...chartData.map(d=>d.val));
+  document.getElementById('dashChart').innerHTML = chartData.map(d=>`
+    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(d.val/max*100)||5}%"><div class="bar-val">${d.val}</div></div></div><div class="bar-lbl">${d.label}</div></div>`).join('');
+
+  const levels = [{l:'Beginner',v:2},{l:'Interm.',v:3},{l:'Advanced',v:1},{l:'All',v:4}];
+  const lmax = Math.max(...levels.map(l=>l.v));
+  document.getElementById('levelChart').innerHTML = levels.map(l=>`
+    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(l.v/lmax*100)}%;background:var(--skyd);border-color:rgba(0,212,255,.25)"><div class="bar-val" style="color:var(--sky)">${l.v}</div></div></div><div class="bar-lbl">${l.l}</div></div>`).join('');
+
+  // Today's games
+  document.getElementById('dashGames').innerHTML = games.slice(0,5).map(g=>`
+    <tr><td class="td-name">${g.court.split(' ')[0]}</td><td class="td-mono">${g.time}</td><td>${statusChip(g.level,'chip-s')}</td><td><span class="chip chip-l">${g.spots}/${g.max}</span></td></tr>`).join('');
+
+  // Activity feed
+  document.getElementById('actFeed').innerHTML = actLog.slice(0,6).map(a=>`
+    <div class="act-item"><div class="act-ico" style="background:var(--lime2)">⚡</div><div class="act-info"><p><strong>${a.action}</strong> — ${a.detail}</p><span>${a.time} · by ${a.admin}</span></div></div>`).join('');
+}
+
+// ════════════════════════ COURTS ════════════════════════
+function buildCourts() {
+  document.getElementById('courtCount').textContent = `(${courts.length})`;
+  document.getElementById('courtTbody').innerHTML = courts.map(c=>`
+    <tr>
+      <td class="td-mono">${c.id}</td>
+      <td class="td-name">${c.name}</td>
+      <td>${c.town}</td>
+      <td class="td-mono">${c.type}</td>
+      <td style="text-align:center">${c.courts}</td>
+      <td class="td-mono">${c.hours}</td>
+      <td>${c.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Inactive</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('court',${c.id})">Edit</button>
+        <button class="btn btn-xs" style="background:${c.status==='active'?'var(--amberd)':'var(--gnd)'};color:${c.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid ${c.status==='active'?'rgba(255,184,0,.2)':'rgba(46,213,115,.2)'}" onclick="toggleCourtStatus(${c.id})">${c.status==='active'?'Deactivate':'Activate'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('court',${c.id})">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function toggleCourtStatus(id) {
+  courts = courts.map(c=>c.id===id?{...c,status:c.status==='active'?'inactive':'active'}:c);
+  saveData('pt_admin_courts', courts);
+  buildCourts();
+  toast('Court status updated');
+  logActivity('Court Updated', `Court #${id} status toggled`);
+}
+
+// ════════════════════════ GAMES ════════════════════════
+function buildGames() {
+  document.getElementById('gameCount').textContent = `(${games.length})`;
+  document.getElementById('gameTbody').innerHTML = games.map(g=>{
+    const spotsLeft = g.max - g.spots;
+    const spotsClass = spotsLeft<=2?'chip-r':spotsLeft<=4?'chip-a':'chip-g';
+    return `<tr>
+      <td class="td-mono">${g.id}</td>
+      <td class="td-name">${g.court}</td>
+      <td>${g.date}</td>
+      <td class="td-mono">${g.time}</td>
+      <td><span class="chip chip-s">${g.level}</span></td>
+      <td><span class="chip ${spotsClass}">${g.spots}/${g.max}</span></td>
+      <td>${g.status==='open'?'<span class="chip chip-g">Open</span>':g.status==='full'?'<span class="chip chip-r">Full</span>':'<span class="chip chip-a">Filling</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('game',${g.id})">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('game',${g.id})">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════ EVENTS ════════════════════════
+function buildEvents() {
+  document.getElementById('eventTbody').innerHTML = events.map(e=>`
+    <tr>
+      <td class="td-mono">${e.id}</td>
+      <td class="td-name">${e.name}</td>
+      <td><span class="chip chip-p">${e.type}</span></td>
+      <td class="td-mono">${e.date}</td>
+      <td>${e.location}</td>
+      <td class="td-mono">${e.fee}</td>
+      <td>${e.status==='active'?'<span class="chip chip-g">Active</span>':e.status==='upcoming'?'<span class="chip chip-a">Upcoming</span>':'<span class="chip chip-r">Ended</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('event',${e.id})">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('event',${e.id})">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+// ════════════════════════ PLAYERS ════════════════════════
+function buildPlayers() {
+  document.getElementById('playerCount').textContent = `(${players.length})`;
+  document.getElementById('playerTbody').innerHTML = players.map(p=>`
+    <tr>
+      <td class="td-mono">${p.id}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--lime);flex-shrink:0">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div><span class="td-name">${p.name}</span></div></td>
+      <td><span class="chip chip-s">${p.level}</span></td>
+      <td>${p.location}</td>
+      <td><strong style="font-family:var(--fm);color:var(--lime)">${p.points} pts</strong></td>
+      <td>${p.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Suspended</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('player',${p.id})">Edit</button>
+        <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(255,68,68,.2)':'rgba(46,213,115,.2)'}" onclick="togglePlayerStatus(${p.id})">${p.status==='active'?'Suspend':'Restore'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('player',${p.id})">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function togglePlayerStatus(id) {
+  players = players.map(p=>p.id===id?{...p,status:p.status==='active'?'suspended':'active'}:p);
+  saveData('pt_admin_players', players);
+  buildPlayers();
+  toast('Player status updated');
+  logActivity('Player Updated', `Player #${id} status toggled`);
+}
+
+// ════════════════════════ RANKINGS ════════════════════════
+function buildRankings() {
+  const rnks = loadData('pt6200ranks', {});
+  const sorted = Object.entries(rnks).sort((a,b)=>b[1]-a[1]);
+  const moji = ['🥇','🥈','🥉'];
+  document.getElementById('rankTbody').innerHTML = sorted.length ? sorted.map(([name,pts],i)=>`
+    <tr>
+      <td><span style="font-family:var(--fh);font-size:18px">${moji[i]||'#'+(i+1)}</span></td>
+      <td class="td-name">${name}</td>
+      <td><strong style="font-family:var(--fm);font-size:14px;color:var(--lime)">${pts} pts</strong></td>
+      <td class="td-mono">${Math.floor(pts/3)} wins</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('rankAdjust',null,'${name}')">Adjust</button>
+        <button class="btn btn-r btn-xs" onclick="deleteRankEntry('${name}')">Remove</button>
+      </div></td>
+    </tr>`).join('') :
+    `<tr><td colspan="5" style="text-align:center;color:var(--tx3);padding:24px">No rankings yet. Submit match results on the main app.</td></tr>`;
+}
+
+function deleteRankEntry(name) {
+  const rnks = loadData('pt6200ranks', {});
+  delete rnks[name];
+  saveData('pt6200ranks', rnks);
+  buildRankings();
+  logActivity('Ranking Updated', `Removed ${name} from rankings`);
+  toast(`Removed ${name} from rankings`);
+}
+
+function confirmReset() {
+  openConfirm('Reset Rankings?', 'This will clear all player rankings and match history. Cannot be undone.', '⚠️', ()=>{
+    saveData('pt6200ranks', {});
+    saveData('pt6200matches', 0);
+    buildRankings();
+    logActivity('Rankings Reset', 'All rankings cleared by admin');
+    toast('✅ Rankings reset');
+  });
+}
+
+// ════════════════════════ SPONSORS ════════════════════════
+function buildSponsors() {
+  document.getElementById('sponsorTbody').innerHTML = sponsors.map(s=>`
+    <tr>
+      <td class="td-mono">${s.id}</td>
+      <td class="td-name">${s.name}</td>
+      <td>${s.location}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--tx2)">${s.offer}</td>
+      <td>${s.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Paused</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('sponsor',${s.id})">Edit</button>
+        <button class="btn btn-xs" style="background:${s.status==='active'?'var(--amberd)':'var(--gnd)'};color:${s.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleSponsorStatus(${s.id})">${s.status==='active'?'Pause':'Activate'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('sponsor',${s.id})">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+function toggleSponsorStatus(id) {
+  sponsors = sponsors.map(s=>s.id===id?{...s,status:s.status==='active'?'paused':'active'}:s);
+  saveData('pt_admin_sponsors', sponsors);
+  buildSponsors();
+  toast('Sponsor status updated');
+}
+
+// ════════════════════════ ANNOUNCEMENTS ════════════════════════
+function buildAnnouncements() {
+  const types = {info:{class:'chip-s',dot:'#00D4FF'},success:{class:'chip-g',dot:'#2ED573'},warning:{class:'chip-a',dot:'#FFB800'},error:{class:'chip-r',dot:'#FF4444'}};
+  document.getElementById('annList').innerHTML = announcements.map(a=>{
+    const t = types[a.type]||types.info;
+    return `<div class="ann">
+      <div class="ann-dot" style="background:${t.dot}"></div>
+      <div class="ann-body">
+        <strong>${a.title}</strong>
+        <p>${a.msg}</p>
+        <div class="ann-meta">${a.date} · <span class="chip ${t.class}" style="font-size:9.5px">${a.type}</span> · ${a.active?'<span style="color:var(--gn)">Published</span>':'<span style="color:var(--tx3)">Draft</span>'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-xs" style="background:${a.active?'var(--amberd)':'var(--gnd)'};color:${a.active?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleAnn(${a.id})">${a.active?'Unpublish':'Publish'}</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('announcement',${a.id})">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('announcement',${a.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleAnn(id) {
+  announcements = announcements.map(a=>a.id===id?{...a,active:!a.active}:a);
+  saveData('pt_admin_ann', announcements);
+  buildAnnouncements();
+  toast('Announcement updated');
+}
+
+// ════════════════════════ CHAT ════════════════════════
+function buildChat() {
+  document.getElementById('chatTbody').innerHTML = chatMsgs.map(m=>`
+    <tr>
+      <td class="td-mono">${m.time}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div style="width:24px;height:24px;border-radius:6px;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--lime)">${m.initials}</div>${m.user}</div></td>
+      <td style="max-width:300px;font-size:13px">${escHtml(m.msg)}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-r btn-xs" onclick="deleteMsg(${m.id})">Delete</button>
+      </div></td>
+    </tr>`).join('');
+}
+function deleteMsg(id) {
+  chatMsgs = chatMsgs.filter(m=>m.id!==id);
+  saveData('pt_admin_chat', chatMsgs);
+  buildChat();
+  toast('Message deleted');
+}
+function clearChat() {
+  openConfirm('Clear All Messages?', 'This will permanently delete all community chat messages.', '💬', ()=>{
+    chatMsgs = [];
+    saveData('pt_admin_chat', chatMsgs);
+    buildChat();
+    logActivity('Chat Cleared', 'All messages deleted by admin');
+    toast('✅ Chat cleared');
+  });
+}
+function postAdminMsg() {
+  const v = document.getElementById('adminMsg').value.trim();
+  if(!v) return;
+  chatMsgs.unshift({id:Date.now(),user:'PickleTown Admin',initials:'AD',msg:`📢 ${v}`,time:'Now'});
+  saveData('pt_admin_chat', chatMsgs);
+  document.getElementById('adminMsg').value = '';
+  buildChat();
+  logActivity('Admin Post', `Posted to community chat: "${v.slice(0,40)}"`);
+  toast('📢 Message posted to community chat!');
+}
+
+// ════════════════════════ CHECK-INS ════════════════════════
+function buildCheckins() {
+  const ci = loadData('pt6200ci', {});
+  const total = Object.values(ci).reduce((a,b)=>a+b, 0)||1;
+  const sorted = Object.entries(ci).sort((a,b)=>b[1]-a[1]);
+
+  document.getElementById('ciBarChart').innerHTML = sorted.length ?
+    sorted.map(([name,count])=>`
+      <div class="ci-bar">
+        <div class="ci-name">${name}</div>
+        <div class="ci-track"><div class="ci-fill" style="width:${(count/total*100)}%"></div></div>
+        <div class="ci-count">${count}</div>
+      </div>`).join('') :
+    '<p style="color:var(--tx3);font-size:13px">No check-ins recorded yet.</p>';
+
+  document.getElementById('ciTable').innerHTML = sorted.length ?
+    sorted.map(([name,count])=>`
+      <tr>
+        <td class="td-name">${name}</td>
+        <td><strong style="font-family:var(--fm);color:var(--lime)">${count}</strong></td>
+        <td><span class="chip chip-l">${((count/(total||1))*100).toFixed(1)}%</span></td>
+        <td><button class="btn btn-r btn-xs" onclick="deleteCheckin('${name}')">Reset</button></td>
+      </tr>`).join('') :
+    `<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:24px">No check-ins yet.</td></tr>`;
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals = days.map(()=>Math.floor(Math.random()*15)+1);
+  const wmax = Math.max(...vals);
+  document.getElementById('ciWeekChart').innerHTML = days.map((d,i)=>`
+    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(vals[i]/wmax*100)}%;background:var(--skyd);border-color:rgba(0,212,255,.25)"><div class="bar-val" style="color:var(--sky)">${vals[i]}</div></div></div><div class="bar-lbl">${d}</div></div>`).join('');
+}
+function deleteCheckin(name) {
+  const ci = loadData('pt6200ci', {});
+  delete ci[name];
+  saveData('pt6200ci', ci);
+  buildCheckins();
+  toast(`Check-ins for ${name} reset`);
+}
+function clearCheckins() {
+  openConfirm('Reset All Check-ins?','This will clear all court check-in data.','✅',()=>{
+    saveData('pt6200ci', {});
+    buildCheckins();
+    buildDashboard();
+    toast('✅ All check-ins cleared');
+  });
+}
+
+// ════════════════════════ ACTIVITY ════════════════════════
+function buildActivity() {
+  document.getElementById('activityTable').innerHTML = actLog.map(a=>`
+    <tr>
+      <td class="td-mono">${a.time}</td>
+      <td><span class="chip chip-l">${a.action}</span></td>
+      <td style="font-size:12.5px">${a.detail}</td>
+      <td class="td-mono">${a.admin}</td>
+    </tr>`).join('');
+}
+function logActivity(action, detail) {
+  actLog.unshift({time:'Just now',action,detail,admin:'admin'});
+  if(actLog.length>50) actLog.pop();
+  saveData('pt_admin_activity', actLog);
+}
+function clearActivity() {
+  actLog = [];
+  saveData('pt_admin_activity', actLog);
+  buildActivity();
+  toast('Activity log cleared');
+}
+
+// ════════════════════════ MODAL SYSTEM ════════════════════════
+const modalForms = {
+  court: (item) => `
+    <div class="fg"><label class="fl">Court Name</label><input class="fi" id="mf-name" value="${item?.name||''}"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Town/City</label><select class="fi" id="mf-town"><option ${item?.town==='Dumaguete City'?'selected':''}>Dumaguete City</option><option ${item?.town==='Valencia'?'selected':''}>Valencia</option><option ${item?.town==='Bacong'?'selected':''}>Bacong</option><option ${item?.town==='Sibulan'?'selected':''}>Sibulan</option><option ${item?.town==='Dauin'?'selected':''}>Dauin</option></select></div>
+      <div class="fg"><label class="fl">Court Type</label><input class="fi" id="mf-type" value="${item?.type||'Outdoor'}"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Number of Courts</label><input class="fi" id="mf-courts" type="number" min="1" max="20" value="${item?.courts||2}"></div>
+      <div class="fg"><label class="fl">Hours</label><input class="fi" id="mf-hours" value="${item?.hours||'6AM–9PM'}"></div>
+    </div>
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="inactive" ${item?.status==='inactive'?'selected':''}>Inactive</option></select></div>`,
+  game: (item) => `
+    <div class="fg"><label class="fl">Court</label><input class="fi" id="mf-court" value="${item?.court||''}"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Date</label><input class="fi" id="mf-date" value="${item?.date||''}"></div>
+      <div class="fg"><label class="fl">Time</label><input class="fi" id="mf-time" value="${item?.time||''}"></div>
+    </div>
+    <div class="fg"><label class="fl">Skill Level</label><select class="fi" id="mf-level"><option ${item?.level==='All Levels'?'selected':''}>All Levels</option><option ${item?.level==='Beginner'?'selected':''}>Beginner</option><option ${item?.level==='Intermediate'?'selected':''}>Intermediate</option><option ${item?.level==='Advanced'?'selected':''}>Advanced</option></select></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Spots Available</label><input class="fi" id="mf-spots" type="number" value="${item?.spots||4}"></div>
+      <div class="fg"><label class="fl">Max Players</label><input class="fi" id="mf-max" type="number" value="${item?.max||8}"></div>
+    </div>
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="open" ${item?.status==='open'?'selected':''}>Open</option><option value="filling" ${item?.status==='filling'?'selected':''}>Filling Up</option><option value="full" ${item?.status==='full'?'selected':''}>Full</option><option value="cancelled" ${item?.status==='cancelled'?'selected':''}>Cancelled</option></select></div>`,
+  event: (item) => `
+    <div class="fg"><label class="fl">Event Name</label><input class="fi" id="mf-name" value="${item?.name||''}"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Type</label><select class="fi" id="mf-type"><option ${item?.type==='Social'?'selected':''}>Social</option><option ${item?.type==='Tournament'?'selected':''}>Tournament</option><option ${item?.type==='Clinic'?'selected':''}>Clinic</option><option ${item?.type==='Workshop'?'selected':''}>Workshop</option></select></div>
+      <div class="fg"><label class="fl">Fee</label><input class="fi" id="mf-fee" value="${item?.fee||'Free'}"></div>
+    </div>
+    <div class="fg"><label class="fl">Date</label><input class="fi" id="mf-date" value="${item?.date||''}"></div>
+    <div class="fg"><label class="fl">Location</label><input class="fi" id="mf-location" value="${item?.location||''}"></div>
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="upcoming" ${item?.status==='upcoming'?'selected':''}>Upcoming</option><option value="ended" ${item?.status==='ended'?'selected':''}>Ended</option></select></div>`,
+  player: (item) => `
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="mf-name" value="${item?.name||''}"></div>
+    <div class="fg"><label class="fl">Skill Level</label><select class="fi" id="mf-level"><option ${item?.level?.includes('2.0')?'selected':''}>2.0 Beginner</option><option ${item?.level?.includes('2.5')?'selected':''}>2.5 Advanced Beginner</option><option ${item?.level?.includes('3.0')?'selected':''}>3.0 Intermediate</option><option ${item?.level?.includes('3.5')?'selected':''}>3.5 Adv. Intermediate</option><option ${item?.level?.includes('4.0')?'selected':''}>4.0 Advanced</option><option ${item?.level?.includes('4.5')?'selected':''}>4.5+ Tournament Level</option></select></div>
+    <div class="fg"><label class="fl">Location / Barangay</label><input class="fi" id="mf-location" value="${item?.location||''}"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Points</label><input class="fi" id="mf-points" type="number" value="${item?.points||0}"></div>
+      <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="suspended" ${item?.status==='suspended'?'selected':''}>Suspended</option></select></div>
+    </div>`,
+  sponsor: (item) => `
+    <div class="fg"><label class="fl">Business Name</label><input class="fi" id="mf-name" value="${item?.name||''}"></div>
+    <div class="fg"><label class="fl">Location</label><input class="fi" id="mf-location" value="${item?.location||''}"></div>
+    <div class="fg"><label class="fl">Offer / Promo</label><textarea class="fi" id="mf-offer" rows="3">${item?.offer||''}</textarea></div>
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="paused" ${item?.status==='paused'?'selected':''}>Paused</option></select></div>`,
+  announcement: (item) => `
+    <div class="fg"><label class="fl">Title</label><input class="fi" id="mf-title" value="${item?.title||''}"></div>
+    <div class="fg"><label class="fl">Message</label><textarea class="fi" id="mf-msg" rows="4">${item?.msg||''}</textarea></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Type</label><select class="fi" id="mf-type"><option value="info" ${item?.type==='info'?'selected':''}>Info</option><option value="success" ${item?.type==='success'?'selected':''}>Success</option><option value="warning" ${item?.type==='warning'?'selected':''}>Warning</option><option value="error" ${item?.type==='error'?'selected':''}>Error</option></select></div>
+      <div class="fg"><label class="fl">Publish Date</label><input class="fi" id="mf-date" type="date" value="${item?.date||new Date().toISOString().split('T')[0]}"></div>
+    </div>
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-active"><option value="true" ${item?.active?'selected':''}>Published</option><option value="false" ${!item?.active?'selected':''}>Draft</option></select></div>`,
+  rankAdjust: (item, name) => `
+    <div class="fg"><label class="fl">Player Name</label><input class="fi" id="mf-player" value="${name||''}"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Adjustment</label><input class="fi" id="mf-adj" type="number" placeholder="+5 or -3"></div>
+      <div class="fg"><label class="fl">Override Total</label><input class="fi" id="mf-total" type="number" placeholder="Or set exact total"></div>
+    </div>
+    <div class="fg"><label class="fl">Reason</label><input class="fi" id="mf-reason" placeholder="e.g. Tournament bonus"></div>`,
+};
+
+const modalTitles = {court:'Court',game:'Game',event:'Event',player:'Player',sponsor:'Sponsor',announcement:'Announcement',rankAdjust:'Ranking Adjustment'};
+
+function openModal(type, id, extra) {
+  modalType = type; editId = id;
+  const collections = {court:courts,game:games,event:events,player:players,sponsor:sponsors,announcement:announcements};
+  const item = id ? (collections[type]||[]).find(x=>x.id===id) : null;
+  document.getElementById('modalTitle').textContent = id ? `Edit ${modalTitles[type]}` : `Add ${modalTitles[type]}`;
+  document.getElementById('modalSub').textContent = id ? `Editing record #${id}` : 'Fill in the details below';
+  document.getElementById('modalBody').innerHTML = modalForms[type]?.(item, extra) || '';
+  document.getElementById('modalBg').classList.add('on');
+}
+
+function closeModal() { document.getElementById('modalBg').classList.remove('on'); }
+
+function saveModal() {
+  const g = id => document.getElementById(id)?.value;
+  if(modalType === 'court') {
+    const data = {name:g('mf-name'),town:g('mf-town'),type:g('mf-type'),courts:parseInt(g('mf-courts'))||2,hours:g('mf-hours'),status:g('mf-status')};
+    if(editId) courts = courts.map(c=>c.id===editId?{...c,...data}:c);
+    else courts.push({id:Date.now(),...data});
+    saveData('pt_admin_courts',courts);
+    logActivity(editId?'Court Updated':'Court Added', data.name);
+    buildCourts();
+  } else if(modalType==='game') {
+    const data = {court:g('mf-court'),date:g('mf-date'),time:g('mf-time'),level:g('mf-level'),spots:parseInt(g('mf-spots'))||4,max:parseInt(g('mf-max'))||8,status:g('mf-status')};
+    if(editId) games = games.map(x=>x.id===editId?{...x,...data}:x);
+    else games.push({id:Date.now(),...data});
+    saveData('pt_admin_games',games);
+    logActivity(editId?'Game Updated':'Game Added', data.court);
+    buildGames();
+  } else if(modalType==='event') {
+    const data = {name:g('mf-name'),type:g('mf-type'),date:g('mf-date'),location:g('mf-location'),fee:g('mf-fee'),status:g('mf-status')};
+    if(editId) events = events.map(x=>x.id===editId?{...x,...data}:x);
+    else events.push({id:Date.now(),...data});
+    saveData('pt_admin_events',events);
+    logActivity(editId?'Event Updated':'Event Added', data.name);
+    buildEvents();
+  } else if(modalType==='player') {
+    const data = {name:g('mf-name'),level:g('mf-level'),location:g('mf-location'),points:parseInt(g('mf-points'))||0,status:g('mf-status')};
+    if(editId) players = players.map(x=>x.id===editId?{...x,...data}:x);
+    else players.push({id:Date.now(),...data});
+    saveData('pt_admin_players',players);
+    logActivity(editId?'Player Updated':'Player Added', data.name);
+    buildPlayers();
+  } else if(modalType==='sponsor') {
+    const data = {name:g('mf-name'),location:g('mf-location'),offer:g('mf-offer'),status:g('mf-status')};
+    if(editId) sponsors = sponsors.map(x=>x.id===editId?{...x,...data}:x);
+    else sponsors.push({id:Date.now(),...data});
+    saveData('pt_admin_sponsors',sponsors);
+    logActivity(editId?'Sponsor Updated':'Sponsor Added', data.name);
+    buildSponsors();
+  } else if(modalType==='announcement') {
+    const data = {title:g('mf-title'),msg:g('mf-msg'),type:g('mf-type'),date:g('mf-date'),active:g('mf-active')==='true'};
+    if(editId) announcements = announcements.map(x=>x.id===editId?{...x,...data}:x);
+    else announcements.push({id:Date.now(),...data});
+    saveData('pt_admin_ann',announcements);
+    logActivity(editId?'Announcement Updated':'Announcement Added', data.title);
+    buildAnnouncements();
+  } else if(modalType==='rankAdjust') {
+    const pname = g('mf-player');
+    const adj = parseInt(g('mf-adj'))||0;
+    const total = parseInt(g('mf-total'));
+    const rnks = loadData('pt6200ranks',{});
+    if(!isNaN(total) && total >= 0) rnks[pname] = total;
+    else rnks[pname] = Math.max(0,(rnks[pname]||0)+adj);
+    saveData('pt6200ranks',rnks);
+    logActivity('Rankings Adjusted', `${pname}: adj ${adj>0?'+':''}${adj}`);
+    buildRankings();
+    toast('✅ Points updated!');
+  }
+  closeModal();
+  toast('✅ Saved successfully!');
+}
+
+// ════════════════════════ DELETE ════════════════════════
+function deleteItem(type, id) {
+  const names = {court:'courts',game:'games',event:'events',player:'players',sponsor:'sponsors',announcement:'announcements'};
+  openConfirm(`Delete ${type}?`, `This will permanently delete this ${type}. This cannot be undone.`, '🗑️', ()=>{
+    if(type==='court') { courts=courts.filter(x=>x.id!==id); saveData('pt_admin_courts',courts); buildCourts(); }
+    else if(type==='game') { games=games.filter(x=>x.id!==id); saveData('pt_admin_games',games); buildGames(); }
+    else if(type==='event') { events=events.filter(x=>x.id!==id); saveData('pt_admin_events',events); buildEvents(); }
+    else if(type==='player') { players=players.filter(x=>x.id!==id); saveData('pt_admin_players',players); buildPlayers(); }
+    else if(type==='sponsor') { sponsors=sponsors.filter(x=>x.id!==id); saveData('pt_admin_sponsors',sponsors); buildSponsors(); }
+    else if(type==='announcement') { announcements=announcements.filter(x=>x.id!==id); saveData('pt_admin_ann',announcements); buildAnnouncements(); }
+    logActivity(type.charAt(0).toUpperCase()+type.slice(1)+' Deleted', `#${id} removed by admin`);
+    toast(`✅ ${type.charAt(0).toUpperCase()+type.slice(1)} deleted`);
+  });
+}
+
+// ════════════════════════ CONFIRM DIALOG ════════════════════════
+function openConfirm(title, msg, ico, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmIco').textContent = ico;
+  document.getElementById('confirmBg').classList.add('on');
+  confirmCb = cb;
+}
+function closeConfirm() { document.getElementById('confirmBg').classList.remove('on'); confirmCb=null; }
+document.getElementById('confirmOk').onclick = ()=>{ if(confirmCb) confirmCb(); closeConfirm(); };
+
+// ════════════════════════ DATA OPS ════════════════════════
+function exportData() {
+  const data = {courts,games,events,players,sponsors,announcements,checkins:loadData('pt6200ci',{}),rankings:loadData('pt6200ranks',{})};
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='pickletown6200-backup.json'; a.click();
+  URL.revokeObjectURL(url);
+  logActivity('Data Exported', 'Full JSON backup downloaded');
+  toast('📥 Data exported!');
+}
+function resetCourts() { courts=[...defaultCourts]; saveData('pt_admin_courts',courts); buildCourts(); toast('✅ Courts reset to default'); }
+function resetGames() { games=[...defaultGames]; saveData('pt_admin_games',games); buildGames(); toast('✅ Games reset to default'); }
+function confirmWipe() {
+  openConfirm('FACTORY RESET','This will permanently delete ALL data including courts, games, players, rankings, and check-ins. There is no undo.','💥',()=>{
+    ['pt_admin_courts','pt_admin_games','pt_admin_events','pt_admin_players','pt_admin_sponsors','pt_admin_ann','pt_admin_chat','pt_admin_activity','pt6200ci','pt6200ranks','pt6200matches'].forEach(k=>localStorage.removeItem(k));
+    courts=[...defaultCourts]; games=[...defaultGames]; events=[...defaultEvents];
+    players=[...defaultPlayers]; sponsors=[...defaultSponsors]; announcements=[...defaultAnnouncements];
+    refreshAll(); toast('💥 Factory reset complete');
+  });
+}
+function saveContent() { logActivity('Content Updated','Homepage content saved'); toast('✅ Homepage content saved!'); }
+
+// ════════════════════════ TABLE FILTER ════════════════════════
+function filterTable(tbodyId, q) {
+  const rows = document.getElementById(tbodyId)?.querySelectorAll('tr');
+  rows?.forEach(r=>{
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ════════════════════════ HELPERS ════════════════════════
+function statusChip(txt, cls) { return `<span class="chip ${cls}">${txt}</span>`; }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ════════════════════════ TOAST ════════════════════════
+let tTimer;
+function toast(msg) {
+  const el=document.getElementById('toastEl');
+  el.textContent=msg; el.classList.add('on');
+  clearTimeout(tTimer); tTimer=setTimeout(()=>el.classList.remove('on'),3000);
+}
+
+// Close modal on bg click
+document.getElementById('modalBg').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('confirmBg').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeConfirm(); });
+// Keyboard support
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal();closeConfirm();} });
+</script>
+</body>
+</html>
