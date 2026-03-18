@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickleTown 6200 · Dumaguete Pickleball Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ═══════════════ TOKENS ═══════════════ */
+:root{
+  --court:#0A3D2B;--court2:#0D4F38;--court3:#155C42;
+  --lime:#B8F53C;--lime2:rgba(184,245,60,.12);--lime3:rgba(184,245,60,.25);
+  --amber:#FFB800;--amberd:rgba(255,184,0,.12);
+  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
+  --rd:#FF4444;
+  --ink:#08150F;--ink2:#0E1F16;--ink3:#152B1E;--ink4:#1C3828;
+  --tx:#E8F5EE;--tx2:#8FAF9A;--tx3:#4A6B57;
+  --bd:rgba(184,245,60,.08);--bdh:rgba(184,245,60,.18);
+  --r:8px;--rl:14px;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--tx);font-family:var(--fb);font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* Court-line texture */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(184,245,60,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(184,245,60,.015) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;z-index:0
+}
+
+/* ═══════════════ NAV ═══════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:600;height:60px;
+  background:rgba(8,21,15,.95);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--bd);
+}
+.nav-inner{
+  max-width:1200px;margin:0 auto;padding:0 20px;
+  height:100%;display:flex;align-items:center;gap:6px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:var(--fh);font-weight:900;font-size:20px;letter-spacing:.5px;
+  color:var(--tx);margin-right:10px;flex-shrink:0;
+}
+.logo-ball{
+  width:34px;height:34px;border-radius:50%;background:var(--lime);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;position:relative;flex-shrink:0;
+  box-shadow:0 0 18px rgba(184,245,60,.3);
+}
+.logo-ball::after{
+  content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  width:26px;height:2px;background:rgba(8,21,15,.4);border-radius:1px;
+  box-shadow:0 5px 0 rgba(8,21,15,.4),0 10px 0 rgba(8,21,15,.4)
+}
+.logo span{color:var(--lime)}
+.nav-links{display:flex;gap:1px;flex:1}
+.nl{
+  background:none;border:none;color:var(--tx2);
+  font-family:var(--fh);font-size:15px;font-weight:600;letter-spacing:.3px;
+  padding:7px 13px;border-radius:7px;cursor:pointer;transition:all .15s;
+  text-transform:uppercase;
+}
+.nl:hover{color:var(--tx);background:rgba(255,255,255,.05)}
+.nl.on{color:var(--lime);background:var(--lime2)}
+.nav-r{margin-left:auto;display:flex;gap:9px;align-items:center}
+.nav-av{
+  width:32px;height:32px;border-radius:50%;background:var(--ink4);
+  border:2px solid var(--bdh);display:flex;align-items:center;justify-content:center;
+  font-family:var(--fm);font-size:11px;color:var(--tx2);cursor:pointer;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 18px;
+  border-radius:var(--r);font-family:var(--fb);font-size:13.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .17s;white-space:nowrap;
+}
+.btn-l{background:var(--lime);color:var(--ink);letter-spacing:-.1px}
+.btn-l:hover{background:#caff55;box-shadow:0 0 20px rgba(184,245,60,.35);transform:translateY(-1px)}
+.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}
+.btn-o:hover{border-color:rgba(184,245,60,.35);color:var(--lime)}
+.btn-sm{padding:6px 13px;font-size:12.5px;border-radius:7px}
+.btn-xs{padding:4px 9px;font-size:11.5px;border-radius:6px}
+
+/* ═══════════════ LAYOUT ═══════════════ */
+main{padding-top:60px;position:relative;z-index:1}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+.page{display:none;padding:36px 0 80px;animation:fi .2s ease}
+.page.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ═══════════════ HERO ═══════════════ */
+.hero{
+  position:relative;border-radius:18px;overflow:hidden;
+  background:var(--ink2);border:1px solid var(--bd);
+  margin-bottom:36px;padding:72px 52px;
+}
+.hero-court{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(rgba(8,21,15,.55),rgba(8,21,15,.7)),
+    url('https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=1400&q=80') center/cover;
+}
+.hero-lines{
+  position:absolute;inset:0;opacity:.12;
+  background-image:
+    linear-gradient(90deg,transparent 49.5%,var(--lime) 49.5%,var(--lime) 50.5%,transparent 50.5%),
+    linear-gradient(transparent 49.5%,var(--lime) 49.5%,var(--lime) 50.5%,transparent 50.5%);
+}
+.hero-content{position:relative;z-index:1;max-width:640px}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(184,245,60,.1);border:1px solid rgba(184,245,60,.25);
+  padding:5px 13px;border-radius:30px;margin-bottom:22px;
+  font-family:var(--fm);font-size:11px;color:var(--lime);letter-spacing:.5px;
+}
+.htd{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hero h1{
+  font-family:var(--fh);font-size:clamp(40px,6vw,76px);
+  font-weight:900;line-height:1;letter-spacing:-1px;
+  color:var(--tx);margin-bottom:14px;text-transform:uppercase;
+}
+.hero h1 span{color:var(--lime)}
+.hero p{font-size:16px;color:var(--tx2);max-width:500px;margin-bottom:28px;font-weight:300;line-height:1.7}
+.hero-acts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+.hs{display:flex;flex-direction:column}
+.hs strong{font-family:var(--fh);font-size:28px;font-weight:900;color:var(--lime);letter-spacing:-1px}
+.hs span{font-size:11px;color:var(--tx3);font-family:var(--fm);text-transform:uppercase;letter-spacing:.6px}
+
+/* ═══════════════ SECTION HEADER ═══════════════ */
+.s-eyebrow{font-family:var(--fm);font-size:10.5px;color:var(--lime);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:10px;display:block}
+.s-title{font-family:var(--fh);font-size:clamp(26px,3.5vw,40px);font-weight:900;letter-spacing:-.5px;text-transform:uppercase;color:var(--tx);margin-bottom:12px;line-height:1}
+.s-sub{font-size:15px;color:var(--tx2);font-weight:300;max-width:540px}
+
+/* ═══════════════ TABS ═══════════════ */
+.tabs{display:flex;gap:2px;margin-bottom:24px;background:var(--ink2);border:1px solid var(--bd);border-radius:11px;padding:4px;width:fit-content;flex-wrap:wrap}
+.tab{
+  padding:8px 18px;border-radius:8px;cursor:pointer;
+  font-family:var(--fh);font-size:14px;font-weight:700;letter-spacing:.4px;
+  color:var(--tx2);text-transform:uppercase;transition:all .15s;border:none;background:none;
+}
+.tab:hover{color:var(--tx)}
+.tab.on{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.25)}
+.tc{display:none}.tc.on{display:block;animation:fi .2s ease}
+
+/* ═══════════════ CARDS ═══════════════ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.card{
+  background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);
+  overflow:hidden;cursor:pointer;transition:all .2s;
+}
+.card:hover{border-color:var(--bdh);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.card-img{height:160px;background-size:cover;background-position:center;position:relative}
+.card-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(transparent,var(--ink2))}
+.card-body{padding:16px 18px}
+.card h3{font-family:var(--fh);font-size:17px;font-weight:800;letter-spacing:-.1px;margin-bottom:6px;text-transform:uppercase}
+.card p{font-size:12.5px;color:var(--tx2);line-height:1.6;margin-bottom:12px}
+.card-ft{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--bd)}
+.bdg{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 9px;border-radius:20px;
+  font-family:var(--fm);font-size:10.5px;font-weight:500;
+}
+.bdg-l{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.2)}
+.bdg-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
+.bdg-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(0,212,255,.2)}
+.bdg-r{background:rgba(255,68,68,.1);color:var(--rd);border:1px solid rgba(255,68,68,.2)}
+.bdg-g{background:rgba(46,213,115,.1);color:#2ed573;border:1px solid rgba(46,213,115,.2)}
+
+/* ═══════════════ FORMS ═══════════════ */
+.form-wrap{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:28px;max-width:560px}
+.fg{margin-bottom:18px}
+.fg label{display:block;font-family:var(--fh);font-size:13px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);margin-bottom:7px}
+.fc{
+  width:100%;padding:10px 14px;background:var(--ink3);border:1px solid var(--bd);
+  border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;
+  transition:border-color .15s;
+}
+.fc:focus{border-color:rgba(184,245,60,.35)}
+.fc::placeholder{color:var(--tx3)}
+select.fc{cursor:pointer}
+textarea.fc{resize:vertical;line-height:1.6}
+
+/* ═══════════════ MAP ═══════════════ */
+#map{height:420px;border-radius:var(--rl);overflow:hidden;border:1px solid var(--bd);margin-bottom:20px}
+.map-ctrls{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--r);padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.map-ctrls label{font-family:var(--fh);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--tx2)}
+
+/* ═══════════════ CHAT ═══════════════ */
+.chat-box{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);display:flex;flex-direction:column;height:500px;overflow:hidden}
+.chat-hd{background:var(--ink3);padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:11px}
+.chat-av{width:36px;height:36px;border-radius:10px;background:var(--lime2);border:1px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.chat-hd-info strong{display:block;font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+.chat-hd-info span{font-size:11.5px;color:var(--tx2)}
+.online{width:7px;height:7px;border-radius:50%;background:#2ed573;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px rgba(46,213,115,.6)}
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:2px}
+.msg{display:flex;gap:9px;max-width:90%}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.m-av{width:26px;height:26px;border-radius:7px;background:var(--ink4);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx2);flex-shrink:0;margin-top:2px;font-family:var(--fm)}
+.msg.me .m-av{background:var(--lime2);color:var(--lime)}
+.m-bbl{padding:10px 13px;border-radius:11px;font-size:13px;line-height:1.6}
+.msg:not(.me) .m-bbl{background:var(--ink3);border:1px solid var(--bd);border-radius:11px 11px 11px 3px}
+.msg.me .m-bbl{background:var(--lime2);border:1px solid rgba(184,245,60,.2);border-radius:11px 11px 3px 11px;color:var(--tx)}
+.chat-inp-row{padding:12px;border-top:1px solid var(--bd);display:flex;gap:8px}
+.chat-inp-row input{flex:1;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:9px 13px;color:var(--tx);font-family:var(--fb);font-size:13px;outline:none;transition:border-color .15s}
+.chat-inp-row input:focus{border-color:rgba(184,245,60,.3)}
+.chat-inp-row input::placeholder{color:var(--tx3)}
+
+/* ═══════════════ RANKINGS ═══════════════ */
+.rank-card{
+  background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:16px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;
+}
+.rank-card:hover{border-color:var(--bdh)}
+.rank-num{
+  font-family:var(--fh);font-size:28px;font-weight:900;color:var(--tx3);
+  min-width:36px;letter-spacing:-1px;
+}
+.rank-num.g1{color:var(--lime);text-shadow:0 0 20px rgba(184,245,60,.4)}
+.rank-num.g2{color:var(--amber)}
+.rank-num.g3{color:var(--sky)}
+.rank-avatar{width:44px;height:44px;border-radius:50%;background:var(--ink4);border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--tx2);flex-shrink:0}
+.rank-info{flex:1}
+.rank-info strong{display:block;font-family:var(--fh);font-size:16px;font-weight:800;letter-spacing:.2px;text-transform:uppercase}
+.rank-info span{font-size:12px;color:var(--tx2)}
+.rank-pts{font-family:var(--fh);font-size:22px;font-weight:900;color:var(--lime);letter-spacing:-1px}
+
+/* ═══════════════ SPONSORS ═══════════════ */
+.sponsor-card{
+  background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:20px;transition:all .2s;
+}
+.sponsor-card:hover{border-color:var(--bdh);transform:translateY(-2px)}
+.sp-ico{
+  width:52px;height:52px;border-radius:12px;background:var(--lime2);
+  border:1px solid rgba(184,245,60,.2);display:flex;align-items:center;
+  justify-content:center;font-size:22px;margin-bottom:12px;
+}
+.sponsor-card h3{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:5px}
+.sponsor-card .loc{font-family:var(--fm);font-size:10.5px;color:var(--lime);margin-bottom:9px;letter-spacing:.3px}
+.sponsor-card p{font-size:12.5px;color:var(--tx2);line-height:1.6;margin-bottom:13px}
+
+/* ═══════════════ STAT BAR ═══════════════ */
+.stat-bar{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 22px;display:flex;gap:32px;flex-wrap:wrap;margin-bottom:28px;align-items:center}
+.sb{display:flex;flex-direction:column}
+.sb strong{font-family:var(--fh);font-size:24px;font-weight:900;letter-spacing:-1px}
+.sb span{font-family:var(--fm);font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.7px}
+
+/* ═══════════════ INFO ROWS ═══════════════ */
+.info-row{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tx2);margin-bottom:5px}
+.info-row .ico{font-size:13px;flex-shrink:0}
+
+/* ═══════════════ DIVIDER ═══════════════ */
+.hr{height:1px;background:linear-gradient(90deg,transparent,var(--bd),transparent);margin:32px 0}
+
+/* ═══════════════ TOAST ═══════════════ */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:var(--ink3);border:1px solid rgba(184,245,60,.25);
+  border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:900;
+  opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);
+  pointer-events:none;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════════════ QR POPUP ═══════════════ */
+.leaflet-popup-content-wrapper{background:var(--ink3)!important;border:1px solid var(--bdh)!important;border-radius:12px!important;color:var(--tx)!important;box-shadow:0 12px 36px rgba(0,0,0,.6)!important}
+.leaflet-popup-tip{background:var(--ink3)!important}
+.qr-wrap{text-align:center;margin-top:10px;padding:10px;background:var(--ink4);border-radius:8px}
+.qr-wrap p{font-size:10.5px;color:var(--tx2);margin-top:6px;font-family:var(--fm)}
+.popup-btn{background:var(--lime);color:var(--ink);border:none;padding:7px 14px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;width:100%;margin-top:8px;font-family:var(--fh);letter-spacing:.3px;text-transform:uppercase;transition:background .15s}
+.popup-btn:hover{background:#caff55}
+
+/* ═══════════════ MATCH SUBMIT ═══════════════ */
+.match-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:600px){.match-inputs{grid-template-columns:1fr}}
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+@media(max-width:860px){.hero{padding:40px 24px}.nav-links{display:none}}
+@media(max-width:640px){.hero h1{font-size:40px}.hero-stats{gap:18px}.match-inputs{grid-template-columns:1fr}.stat-bar{gap:16px}}
+
+/* ═══════════════ CHECKIN LIST ═══════════════ */
+.ci-item{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);font-size:13px;margin-bottom:6px}
+.ci-item span{font-family:var(--fm);font-size:12px;color:var(--lime)}
+
+/* ═══════════════ MOBILE NAV ═══════════════ */
+.mob-nav-btn{display:none;background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px}
+@media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(8,21,15,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#" onclick="return false">
+      <div class="logo-ball">🏓</div>
+      Pickle<span>Town</span> 6200
+    </a>
+    <button class="mob-nav-btn" onclick="document.querySelector('.nav-links').classList.toggle('mob-open')">☰</button>
+    <div class="nav-links" id="navLinks">
+      <button class="nl on" onclick="goTo('home',this)">Home</button>
+      <button class="nl" onclick="goTo('courts',this)">Courts</button>
+      <button class="nl" onclick="goTo('games',this)">Games</button>
+      <button class="nl" onclick="goTo('players',this)">Players</button>
+      <button class="nl" onclick="goTo('events',this)">Events</button>
+      <button class="nl" onclick="goTo('sponsors',this)">Sponsors</button>
+    </div>
+    <div class="nav-r">
+      <button class="btn btn-o btn-sm" onclick="toast('Sign in coming soon!')">Sign In</button>
+      <button class="btn btn-l btn-sm" onclick="toast('🎉 Welcome to PickleTown 6200!')">Join Now</button>
+      <div class="nav-av">PB</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HOME ═══ -->
+<main>
+<div class="page on" id="pg-home">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-court"></div>
+      <div class="hero-lines"></div>
+      <div class="hero-content">
+        <div class="hero-tag"><span class="htd"></span>Dumaguete City, Negros Oriental 6200</div>
+        <h1>Play.<br>Connect.<br><span>Belong.</span></h1>
+        <p>Dumaguete's pickleball community hub. Find courts, join games, track your ranking, and connect with players across the 6200 area and Negros Oriental.</p>
+        <div class="hero-acts">
+          <button class="btn btn-l" style="padding:12px 24px;font-size:15px" onclick="goTo('courts',null)">🗺 Find Courts</button>
+          <button class="btn btn-o" style="padding:12px 22px;font-size:15px" onclick="goTo('games',null)">Join a Game</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hs"><strong>8</strong><span>Courts mapped</span></div>
+          <div class="hs"><strong>24k+</strong><span>Community members</span></div>
+          <div class="hs"><strong>6200</strong><span>Area code</span></div>
+          <div class="hs"><strong>Free</strong><span>To join</span></div>
+        </div>
+      </div>
+    </div>
+
+    <span class="s-eyebrow">What's on today</span>
+    <h2 class="s-title" style="margin-bottom:24px">Happening Now</h2>
+    <div class="grid" id="homeGrid"></div>
+
+    <div class="hr"></div>
+
+    <span class="s-eyebrow">Quick search</span>
+    <h2 class="s-title" style="margin-bottom:20px">Find Games Near You</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">
+      <input class="fc" style="max-width:380px" type="text" placeholder="Search courts, players, games in Dumaguete…" id="heroSearch">
+      <button class="btn btn-l" onclick="handleSearch()">Search</button>
+    </div>
+    <div class="grid" id="searchResults" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ═══ COURTS ═══ -->
+<div class="page" id="pg-courts">
+  <div class="wrap">
+    <span class="s-eyebrow">Feature · Courts</span>
+    <h2 class="s-title">Courts in 6200 Area</h2>
+    <p class="s-sub" style="margin-bottom:28px">All known pickleball courts in Dumaguete City and surrounding towns. Click any card to see it on the map.</p>
+
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('court-list',this)">Court Listings</button>
+      <button class="tab" onclick="switchTab('court-map',this);initMap()">Interactive Map</button>
+      <button class="tab" onclick="switchTab('add-court',this)">+ Add a Court</button>
+    </div>
+
+    <div class="tc on" id="court-list">
+      <div class="grid" id="courtCards"></div>
+    </div>
+
+    <div class="tc" id="court-map">
+      <div class="map-ctrls">
+        <label>Filter games within:</label>
+        <select class="fc" style="width:auto" id="distFilt" onchange="filterMapGames()">
+          <option value="999">All distances</option>
+          <option value="3">3 km</option>
+          <option value="5">5 km</option>
+          <option value="10">10 km</option>
+        </select>
+        <span style="font-family:var(--fm);font-size:11px;color:var(--tx3);margin-left:auto">🟢 = Scheduled game &nbsp;📍 = Court</span>
+      </div>
+      <div id="map"></div>
+      <div style="background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:18px;margin-top:16px">
+        <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:14px;color:var(--lime)">📊 Court Check-ins This Month</div>
+        <div id="checkinsDisplay"><p style="color:var(--tx3);font-size:13px">No check-ins yet. Tap ✅ Check In on any court marker!</p></div>
+      </div>
+    </div>
+
+    <div class="tc" id="add-court">
+      <div class="form-wrap">
+        <h3 style="font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;margin-bottom:6px">Add a New Court</h3>
+        <p style="font-size:13px;color:var(--tx2);margin-bottom:22px">Help grow pickleball in Negros Oriental — submit a court and we'll verify and list it.</p>
+        <form id="addCourtForm">
+          <div class="fg"><label>Court Name</label><input class="fc" type="text" placeholder="e.g., Silliman Tennis Courts" required></div>
+          <div class="fg"><label>Town / City</label>
+            <select class="fc" required>
+              <option value="">Select location</option>
+              <option>Dumaguete City</option><option>Valencia</option>
+              <option>Bacong</option><option>Sibulan</option><option>Dauin</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Full Address</label><input class="fc" type="text" placeholder="Street, Barangay, City" required></div>
+          <div class="fg"><label>Number of Courts</label><input class="fc" type="number" min="1" max="20" value="2"></div>
+          <div class="fg"><label>Description</label><textarea class="fc" rows="4" placeholder="Court type, hours, fees, lighting, reservations…"></textarea></div>
+          <button type="submit" class="btn btn-l" style="width:100%">Submit Court →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GAMES ═══ -->
+<div class="page" id="pg-games">
+  <div class="wrap">
+    <span class="s-eyebrow">Feature · Games</span>
+    <h2 class="s-title">Games in Dumaguete</h2>
+    <p class="s-sub" style="margin-bottom:28px">Find open play sessions, join scheduled games, or create your own and fill spots fast.</p>
+
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('open-play',this)">Open Play</button>
+      <button class="tab" onclick="switchTab('scheduled',this)">Scheduled</button>
+      <button class="tab" onclick="switchTab('create-game',this)">+ Create Game</button>
+    </div>
+
+    <div class="tc on" id="open-play">
+      <div class="grid">
+        <div class="card">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1622279457486-62dcc4c59e77?w=800&q=80')"></div>
+          <div class="card-body">
+            <h3>Silliman University Open Play</h3>
+            <div class="info-row"><span class="ico">📅</span>Every Tuesday & Thursday</div>
+            <div class="info-row"><span class="ico">⏰</span>5:30 PM – 8:30 PM</div>
+            <p>Drop-in for all skill levels. First come, first served. Paddles available to borrow.</p>
+            <div class="card-ft"><span class="bdg bdg-l">All Levels</span><button class="btn btn-l btn-sm">View Schedule</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800&q=80')"></div>
+          <div class="card-body">
+            <h3>Sunday Morning Social</h3>
+            <div class="info-row"><span class="ico">📅</span>Every Sunday</div>
+            <div class="info-row"><span class="ico">⏰</span>7:00 AM – 10:00 AM</div>
+            <p>Rotating partners, relaxed vibe, great for meeting new players. Coffee provided!</p>
+            <div class="card-ft"><span class="bdg bdg-a">Beginner-Friendly</span><button class="btn btn-l btn-sm">Join</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Rizal Blvd Evening Drop-In</h3>
+            <div class="info-row"><span class="ico">📅</span>Mon, Wed, Fri</div>
+            <div class="info-row"><span class="ico">⏰</span>6:00 PM – 9:00 PM</div>
+            <p>Outdoor evening sessions with lights. Competitive and recreational courts running simultaneously.</p>
+            <div class="card-ft"><span class="bdg bdg-s">Mixed Levels</span><button class="btn btn-l btn-sm">Join</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tc" id="scheduled">
+      <div class="grid" id="scheduledGames"></div>
+    </div>
+
+    <div class="tc" id="create-game">
+      <div class="form-wrap">
+        <h3 style="font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;margin-bottom:20px">Create a Game</h3>
+        <form id="createGameForm">
+          <div class="fg"><label>Game Title</label><input class="fc" type="text" id="gTitle" placeholder="e.g., Sunday Morning Doubles" required></div>
+          <div class="fg"><label>Date & Time</label><input class="fc" type="datetime-local" id="gDate" required></div>
+          <div class="fg"><label>Court Location</label>
+            <select class="fc" id="gLocation" required>
+              <option value="">Select court</option>
+              <option>Silliman University Courts</option>
+              <option>Robinsons Place Dumaguete</option>
+              <option>Freedom Park Court</option>
+              <option>Rizal Blvd Court</option>
+              <option>Valencia Municipal Gym</option>
+              <option>Bacong Covered Court</option>
+            </select>
+          </div>
+          <div class="fg"><label>Skill Level</label>
+            <select class="fc" id="gLevel" required>
+              <option value="">Select level</option>
+              <option>Beginner (2.0–2.5)</option>
+              <option>Intermediate (3.0–3.5)</option>
+              <option>Advanced (4.0+)</option>
+              <option>All Levels Welcome</option>
+            </select>
+          </div>
+          <div class="fg"><label>Max Players</label><input class="fc" type="number" id="gMax" min="2" max="24" value="8"></div>
+          <div class="fg"><label>Notes (optional)</label><textarea class="fc" id="gNotes" rows="3" placeholder="Any extra info for players…"></textarea></div>
+          <button type="submit" class="btn btn-l" style="width:100%">Create Game →</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PLAYERS ═══ -->
+<div class="page" id="pg-players">
+  <div class="wrap">
+    <span class="s-eyebrow">Feature · Players</span>
+    <h2 class="s-title">Players & Rankings</h2>
+    <p class="s-sub" style="margin-bottom:28px">Find nearby players, check community rankings, and chat with the Dumaguete pickleball community.</p>
+
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('near-players',this)">Nearby Players</button>
+      <button class="tab" onclick="switchTab('rankings',this)">Rankings</button>
+      <button class="tab" onclick="switchTab('community-chat',this)">Community Chat</button>
+      <button class="tab" onclick="switchTab('my-profile',this)">My Profile</button>
+    </div>
+
+    <div class="tc on" id="near-players">
+      <div class="grid" id="playerCards"></div>
+    </div>
+
+    <div class="tc" id="rankings">
+      <div class="stat-bar">
+        <div class="sb"><strong style="color:var(--lime)" id="totalPlayers">5</strong><span>Ranked Players</span></div>
+        <div class="sb"><strong style="color:var(--amber)" id="totalMatches">0</strong><span>Matches Recorded</span></div>
+        <div class="sb"><strong style="color:var(--sky)">Pts</strong><span>Win = +3 pts</span></div>
+        <div class="sb"><strong style="color:var(--tx2)">Live</strong><span>Updates instantly</span></div>
+      </div>
+
+      <div style="background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:20px;margin-bottom:24px">
+        <h3 style="font-family:var(--fh);font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;margin-bottom:16px">🏆 Submit Match Result</h3>
+        <div class="match-inputs">
+          <input class="fc" id="pA" placeholder="Player A name">
+          <input class="fc" id="pB" placeholder="Player B name">
+          <input class="fc" id="pW" placeholder="Winner's name">
+        </div>
+        <button class="btn btn-l" onclick="submitMatch()" style="width:100%">Record Match Result →</button>
+      </div>
+
+      <div id="rankList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="tc" id="community-chat">
+      <div class="chat-box">
+        <div class="chat-hd">
+          <div class="chat-av">🏓</div>
+          <div class="chat-hd-info">
+            <strong>PickleTown 6200 Community Chat</strong>
+            <span>Dumaguete City · All players welcome</span>
+          </div>
+          <div class="online"></div>
+        </div>
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg"><div class="m-av">MT</div><div class="m-bbl">Hi everyone! Anyone playing at Silliman tonight? 🏓</div></div>
+          <div class="msg me"><div class="m-av">Me</div><div class="m-bbl">Yes! We have a group of 4 going around 5:30.</div></div>
+          <div class="msg"><div class="m-av">JD</div><div class="m-bbl">Can I join? Still beginner level but I learn fast!</div></div>
+          <div class="msg me"><div class="m-av">Me</div><div class="m-bbl">Absolutely, all levels welcome. See you there! 🙌</div></div>
+          <div class="msg"><div class="m-av">SR</div><div class="m-bbl">Don't forget — Sunday morning social at 7 AM this weekend. Free coffee! ☕</div></div>
+        </div>
+        <div class="chat-inp-row">
+          <input type="text" id="msgInp" placeholder="Message the Dumaguete pickleball community…">
+          <button class="btn btn-l btn-sm" onclick="sendMsg()">Send ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tc" id="my-profile">
+      <div class="form-wrap">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-size:26px">🏓</div>
+          <div>
+            <div style="font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase">Your Profile</div>
+            <div style="font-size:12px;color:var(--tx2)">Member · PickleTown 6200 · Dumaguete</div>
+          </div>
+        </div>
+        <div class="fg"><label>Display Name</label><input class="fc" type="text" placeholder="Your name" value="Pickleball Player"></div>
+        <div class="fg"><label>Skill Level</label>
+          <select class="fc">
+            <option>2.0 – Beginner</option><option>2.5 – Advanced Beginner</option>
+            <option selected>3.0 – Intermediate</option><option>3.5 – Advanced Intermediate</option>
+            <option>4.0 – Advanced</option><option>4.5+ – Tournament Level</option>
+          </select>
+        </div>
+        <div class="fg"><label>Neighborhood / Barangay</label>
+          <select class="fc">
+            <option value="">Select area</option>
+            <option>Dumaguete City</option><option>Daro</option><option>Bantayan</option>
+            <option>Valencia</option><option>Bacong</option><option>Sibulan</option>
+          </select>
+        </div>
+        <div class="fg"><label>Availability</label><textarea class="fc" rows="3" placeholder="e.g., Weekday evenings 5–9pm, Saturday mornings"></textarea></div>
+        <button class="btn btn-l" style="width:100%" onclick="toast('✅ Profile updated!')">Save Profile →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EVENTS ═══ -->
+<div class="page" id="pg-events">
+  <div class="wrap">
+    <span class="s-eyebrow">Feature · Events</span>
+    <h2 class="s-title">Events & Tournaments</h2>
+    <p class="s-sub" style="margin-bottom:28px">Weekly socials, competitive tournaments, and coaching clinics across Dumaguete and Negros Oriental.</p>
+
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab('social-nights',this)">Weekly Socials</button>
+      <button class="tab" onclick="switchTab('tournaments',this)">Tournaments</button>
+      <button class="tab" onclick="switchTab('clinics',this)">Clinics</button>
+    </div>
+
+    <div class="tc on" id="social-nights">
+      <div class="grid">
+        <div class="card">
+          <div class="card-img" style="background-image:url('https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80')"></div>
+          <div class="card-body">
+            <h3>Friday Night Social Mixer</h3>
+            <div class="info-row"><span class="ico">📅</span>Every Friday, 6:00 PM – 9:00 PM</div>
+            <div class="info-row"><span class="ico">📍</span>Silliman University Courts</div>
+            <p>Weekly mixer with music, rotating partners, post-game drinks. All levels, all ages!</p>
+            <div class="card-ft"><span class="bdg bdg-g">32 Attending</span><button class="btn btn-l btn-sm" onclick="toast('✅ RSVP confirmed! See you Friday.')">RSVP</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Sunday Family Play</h3>
+            <div class="info-row"><span class="ico">📅</span>Every Sunday, 3:00 PM – 5:00 PM</div>
+            <div class="info-row"><span class="ico">📍</span>Robinsons Place Dumaguete</div>
+            <p>Family-friendly indoor play. Kids and first-timers especially welcome. Loaner paddles available.</p>
+            <div class="card-ft"><span class="bdg bdg-l">18 Attending</span><button class="btn btn-l btn-sm" onclick="toast('✅ RSVP confirmed!')">RSVP</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tc" id="tournaments">
+      <div class="grid">
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Dumaguete Summer Slam 2025</h3>
+            <div class="info-row"><span class="ico">📅</span>June 22–23, 2025</div>
+            <div class="info-row"><span class="ico">📍</span>Silliman University Courts</div>
+            <p>Annual tournament — men's, women's, and mixed doubles divisions. Cash prizes. DUPR points awarded.</p>
+            <div class="card-ft"><span class="bdg bdg-a">Registration Open</span><button class="btn btn-l btn-sm" onclick="toast('🏆 Registering for Summer Slam!')">Register</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Valencia Open</h3>
+            <div class="info-row"><span class="ico">📅</span>July 13, 2025</div>
+            <div class="info-row"><span class="ico">📍</span>Valencia Municipal Gym</div>
+            <p>Friendly tournament perfect for first-time competitors. All age brackets. ₱500 registration fee.</p>
+            <div class="card-ft"><span class="bdg bdg-s">Starts July 1</span><button class="btn btn-l btn-sm" onclick="toast('Registering for Valencia Open!')">Register</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Negros Oriental Provincial Cup</h3>
+            <div class="info-row"><span class="ico">📅</span>August 2–3, 2025</div>
+            <div class="info-row"><span class="ico">📍</span>Dumaguete Sports Complex</div>
+            <p>Province-wide competition. Teams from Dumaguete, Bayawan, Bais, and more. Gold, silver, bronze medals.</p>
+            <div class="card-ft"><span class="bdg bdg-r">Coming Soon</span><button class="btn btn-o btn-sm">Notify Me</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tc" id="clinics">
+      <div class="grid">
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Beginner Pickleball Clinic</h3>
+            <div class="info-row"><span class="ico">📅</span>Every Saturday, 9:00 AM – 11:00 AM</div>
+            <div class="info-row"><span class="ico">📍</span>Robinsons Place Dumaguete</div>
+            <p>Learn the fundamentals from certified coaches. Equipment provided for first-timers. ₱400/session.</p>
+            <div class="card-ft"><span class="bdg bdg-g">₱400/session</span><button class="btn btn-l btn-sm" onclick="toast('Signing up for clinic!')">Sign Up</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding-top:18px">
+            <h3>Advanced Strategy Workshop</h3>
+            <div class="info-row"><span class="ico">📅</span>June 15, 2025 · One Day</div>
+            <div class="info-row"><span class="ico">📍</span>Dumaguete Sports Club</div>
+            <p>For 3.0+ players. Shot selection, dinking strategy, transition zones, kitchen games. ₱600/workshop.</p>
+            <div class="card-ft"><span class="bdg bdg-a">₱600/workshop</span><button class="btn btn-l btn-sm" onclick="toast('Signing up for workshop!')">Sign Up</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SPONSORS ═══ -->
+<div class="page" id="pg-sponsors">
+  <div class="wrap">
+    <span class="s-eyebrow">Community · Sponsors</span>
+    <h2 class="s-title">Local Partners</h2>
+    <p class="s-sub" style="margin-bottom:28px">Businesses supporting the Dumaguete pickleball community. Show them some love — mention PickleTown 6200 for your discount!</p>
+    <div class="grid" id="sponsorGrid"></div>
+    <div class="hr"></div>
+    <div style="background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:28px;max-width:500px">
+      <h3 style="font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase;margin-bottom:8px">Become a Sponsor</h3>
+      <p style="font-size:13.5px;color:var(--tx2);margin-bottom:18px">Reach Dumaguete's most active sports community. Sponsorship packages from ₱500/month.</p>
+      <button class="btn btn-l" onclick="toast('📧 Sponsorship inquiry sent! We\'ll be in touch.')">Inquire About Sponsorship →</button>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+// ════════════════════════ DATA ════════════════════════
+const courts = [
+  {name:"Freedom Park Court",town:"Dumaguete City",coords:[9.3067,123.3047],courts:2,type:"Outdoor",open:"6AM–10PM"},
+  {name:"Rizal Boulevard Court",town:"Dumaguete City",coords:[9.3050,123.3130],courts:2,type:"Outdoor/Covered",open:"Dawn–Dusk"},
+  {name:"Silliman University Courts",town:"Dumaguete City",coords:[9.3120,123.3070],courts:4,type:"Outdoor+Lights",open:"4PM–9PM"},
+  {name:"Robinsons Place Dumaguete",town:"Dumaguete City",coords:[9.3020,123.3100],courts:2,type:"Indoor AC",open:"10AM–9PM"},
+  {name:"Valencia Municipal Gym",town:"Valencia",coords:[9.3501,123.2913],courts:2,type:"Covered",open:"Wknd Open Play"},
+  {name:"Bacong Covered Court",town:"Bacong",coords:[9.2378,123.3648],courts:1,type:"Covered",open:"Flexible"},
+  {name:"Sibulan Sports Center",town:"Sibulan",coords:[9.2644,123.3056],courts:1,type:"Multi-purpose",open:"By Reservation"},
+  {name:"Dauin Community Court",town:"Dauin",coords:[9.1901,123.3278],courts:1,type:"Outdoor",open:"Open Play Sun"},
+];
+
+const games = [
+  {court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8},
+  {court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8},
+  {court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12},
+  {court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12},
+  {court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6},
+];
+
+const players = [
+  {name:"Maria Tan",initials:"MT",dist:"1.2 km",area:"Daro, Dumaguete",level:"3.0 · Intermediate",note:"Doubles specialist. Weekday evenings & weekends. Carpool available."},
+  {name:"Juan Dela Cruz",initials:"JD",dist:"2.5 km",area:"Bantayan, Dumaguete",level:"4.0 · Advanced",note:"Competitive play only. Coaches beginners on request."},
+  {name:"Sarah Johnson",initials:"SJ",dist:"3.1 km",area:"Valencia",level:"2.0 · Beginner",note:"New to pickleball, looking for friendly games & practice partners!"},
+  {name:"Alex Reyes",initials:"AR",dist:"0.8 km",area:"Daro, Dumaguete",level:"3.5 · Advanced Intermediate",note:"Former tennis player. Plays most mornings before work."},
+  {name:"Michael Lim",initials:"ML",dist:"4.2 km",area:"Sibulan",level:"3.0 · Intermediate",note:"Brings extra paddles. Loves teaching newcomers."},
+];
+
+const sponsors = [
+  {ico:"🎾",name:"Dumaguete Sports Hub",loc:"Hibbard Ave, Dumaguete City",msg:"Your local pickleball gear shop — paddles, shoes, balls & accessories. 10% off for PickleTown members!"},
+  {ico:"☕",name:"Café 6200",loc:"Rizal Blvd, Dumaguete City",msg:"Post-game coffee and merienda. Show your court check-in receipt for a free drink upgrade!"},
+  {ico:"🏖️",name:"Dauin Beach Resort",loc:"Dauin, Negros Oriental",msg:"Play. Swim. Relax. Special weekend rates for PickleTown players. Mention 6200 when booking!"},
+  {ico:"💆",name:"Valencia Sports Clinic",loc:"Valencia, Negros Oriental",msg:"Sports massage & recovery services. Stretch, recover, play again. PickleTown discount available."},
+];
+
+// ════════════════════════ NAVIGATION ════════════════════════
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+page).classList.add('on');
+  document.querySelectorAll('.nl').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  else {
+    document.querySelectorAll('.nl').forEach(b=>{
+      if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+page+"'")) b.classList.add('on');
+    });
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelector('.nav-links').classList.remove('mob-open');
+}
+
+// Tab switching
+function switchTab(id, btn) {
+  const section = btn ? btn.closest('.page') : document.querySelector('.page.on');
+  section.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  section.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+
+// ════════════════════════ MAP ════════════════════════
+let mapInited = false, leafMap, gameMarkers = [];
+const dCenter = [9.3037, 123.3054];
+
+function initMap() {
+  if(mapInited) return;
+  leafMap = L.map('map').setView(dCenter, 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(leafMap);
+
+  // Custom marker icon
+  const coIcon = L.divIcon({
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    className:'',iconSize:[28,28],iconAnchor:[14,14]
+  });
+
+  courts.forEach(c=>{
+    const m = L.marker(c.coords, {icon:coIcon}).addTo(leafMap);
+    const qrId = 'qr-'+c.name.replace(/\s+/g,'');
+    m.bindPopup(`
+      <div style="font-family:'Barlow',sans-serif;min-width:200px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
+        <div style="font-size:11px;color:#8FAF9A;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#8FAF9A;margin-bottom:10px">⏰ ${c.open}</div>
+        <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
+        <div class="qr-wrap">
+          <div id="${qrId}"></div>
+          <p>Scan QR to check in</p>
+        </div>
+      </div>
+    `);
+    m.on('popupopen',()=>setTimeout(()=>makeQR(qrId,c.name),100));
+  });
+
+  renderGamePins(games);
+  mapInited = true;
+  updateCheckinsDisplay();
+}
+
+function makeQR(id, courtName) {
+  const el = document.getElementById(id);
+  if(!el || el.children.length > 0) return;
+  new QRCode(el,{
+    text: location.href.split('?')[0]+'?checkin='+encodeURIComponent(courtName),
+    width:90,height:90,colorDark:'#0A3D2B',colorLight:'#ffffff'
+  });
+}
+
+function renderGamePins(filtered) {
+  gameMarkers.forEach(m=>leafMap.removeLayer(m));
+  gameMarkers = [];
+  const gIcon = L.divIcon({
+    html:`<div style="width:22px;height:22px;border-radius:50%;background:#0D4F38;border:2px solid #B8F53C;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 10px rgba(184,245,60,.4)">🎮</div>`,
+    className:'',iconSize:[22,22],iconAnchor:[11,11]
+  });
+  filtered.forEach(g=>{
+    const court = courts.find(c=>c.name===g.court);
+    if(!court) return;
+    const shifted = [court.coords[0]+0.001, court.coords[1]+0.001];
+    const m = L.marker(shifted,{icon:gIcon}).addTo(leafMap).bindPopup(`
+      <div style="font-family:'Barlow',sans-serif">
+        <div style="font-weight:800;font-size:14px;color:#E8F5EE;margin-bottom:6px">${g.court}</div>
+        <div style="font-size:12px;color:#8FAF9A">📅 ${g.date} · ⏰ ${g.time}</div>
+        <div style="font-size:12px;color:#8FAF9A">📊 ${g.level}</div>
+        <div style="font-size:12px;color:#B8F53C;margin:6px 0">${g.spots}/${g.max} spots open</div>
+        <button class="popup-btn" onclick="toast('Joining game at ${g.court}!')">Join Game</button>
+      </div>
+    `);
+    gameMarkers.push(m);
+  });
+}
+
+function filterMapGames() {
+  const km = parseInt(document.getElementById('distFilt').value)||999;
+  const filtered = games.filter(g=>{
+    const court = courts.find(c=>c.name===g.court);
+    if(!court) return false;
+    return haversineDist(dCenter, court.coords) <= km;
+  });
+  renderGamePins(filtered);
+}
+
+function haversineDist(a, b) {
+  const R=6371, dLat=(b[0]-a[0])*Math.PI/180, dLon=(b[1]-a[1])*Math.PI/180;
+  const x=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+// ════════════════════════ CHECK-INS ════════════════════════
+function doCheckIn(name) {
+  const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
+  ci[name] = (ci[name]||0)+1;
+  localStorage.setItem('pt6200ci', JSON.stringify(ci));
+  updateCheckinsDisplay();
+  toast(`✅ Checked in at ${name}! (${ci[name]} total)`);
+}
+
+function updateCheckinsDisplay() {
+  const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
+  const el = document.getElementById('checkinsDisplay');
+  if(!el) return;
+  if(!Object.keys(ci).length) {
+    el.innerHTML='<p style="color:var(--tx3);font-size:13px">No check-ins yet. Tap ✅ Check In on any court marker!</p>';
+    return;
+  }
+  el.innerHTML = Object.entries(ci)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([c,n])=>`<div class="ci-item"><span style="font-size:13px">${c}</span><span>${n} check-in${n!==1?'s':''}</span></div>`)
+    .join('');
+}
+
+// ════════════════════════ RANKINGS ════════════════════════
+let rankings = JSON.parse(localStorage.getItem('pt6200ranks'))||{
+  "Maria Tan":45,"Juan Dela Cruz":38,"Sarah Johnson":32,"Alex Reyes":28,"Michael Lim":25
+};
+let totalMatches = parseInt(localStorage.getItem('pt6200matches'))||0;
+
+function submitMatch() {
+  const a=document.getElementById('pA').value.trim();
+  const b=document.getElementById('pB').value.trim();
+  const w=document.getElementById('pW').value.trim();
+  if(!a||!b||!w){toast('⚠ Please fill in all three fields');return}
+  if(w!==a&&w!==b){toast('⚠ Winner must be one of the players');return}
+  if(!rankings[a]) rankings[a]=0;
+  if(!rankings[b]) rankings[b]=0;
+  rankings[w]=(rankings[w]||0)+3;
+  totalMatches++;
+  localStorage.setItem('pt6200ranks', JSON.stringify(rankings));
+  localStorage.setItem('pt6200matches', totalMatches);
+  document.getElementById('pA').value='';
+  document.getElementById('pB').value='';
+  document.getElementById('pW').value='';
+  renderRankings();
+  toast(`🏆 Match recorded! ${w} +3 pts`);
+}
+
+function renderRankings() {
+  const sorted = Object.entries(rankings).sort((a,b)=>b[1]-a[1]);
+  const rl = document.getElementById('rankList');
+  if(!rl) return;
+  const medals = ['g1','g2','g3'];
+  const moji = ['🥇','🥈','🥉'];
+  rl.innerHTML = sorted.map(([name,pts],i)=>`
+    <div class="rank-card">
+      <div class="rank-num ${medals[i]||''}">${moji[i]||'#'+(i+1)}</div>
+      <div class="rank-avatar">${name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div class="rank-info">
+        <strong>${name}</strong>
+        <span>${pts} points · Rank #${i+1}</span>
+      </div>
+      <div class="rank-pts">${pts}</div>
+    </div>`).join('');
+  const tm = document.getElementById('totalMatches');
+  const tp = document.getElementById('totalPlayers');
+  if(tm) tm.textContent = totalMatches;
+  if(tp) tp.textContent = sorted.length;
+}
+
+// ════════════════════════ CHAT ════════════════════════
+const chatResponses = [
+  "Sounds great! I might join too 🏓",
+  "Anyone need a doubles partner?",
+  "Courts were perfect last night!",
+  "Can someone carpool from Valencia?",
+  "Just started playing — loving it already!",
+  "What time is the Saturday open play?",
+  "Great session everyone! Same time next week?",
+];
+function sendMsg() {
+  const inp = document.getElementById('msgInp');
+  const txt = inp.value.trim();
+  if(!txt) return;
+  inp.value = '';
+  const msgs = document.getElementById('chatMsgs');
+  const div = document.createElement('div');
+  div.className = 'msg me';
+  div.innerHTML = `<div class="m-av">Me</div><div class="m-bbl">${escHtml(txt)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(()=>{
+    const r = document.createElement('div');
+    r.className = 'msg';
+    const initials = ['MT','JD','SR','AR','ML'][Math.floor(Math.random()*5)];
+    r.innerHTML = `<div class="m-av">${initials}</div><div class="m-bbl">${chatResponses[Math.floor(Math.random()*chatResponses.length)]}</div>`;
+    msgs.appendChild(r);
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 900+Math.random()*800);
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.getElementById('msgInp')===document.activeElement) sendMsg();
+});
+
+// ════════════════════════ BUILD UI ════════════════════════
+function buildHomeGrid() {
+  const g = document.getElementById('homeGrid');
+  const items = [
+    {img:'https://images.unsplash.com/photo-1622279457486-62dcc4c59e77?w=800&q=80',title:'Open Play at Silliman',desc:'Weekly open play — all skill levels welcome! First come first served.',badge:'Today · 5:30 PM',badgeClass:'bdg-l'},
+    {img:'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800&q=80',title:'Beginner Clinic',desc:'Learn the basics with certified coaches at Robinsons Place Dumaguete.',badge:'Saturday · 9 AM',badgeClass:'bdg-a'},
+    {img:'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80',title:'Summer Slam 2025',desc:'Registration open for Dumaguete\'s biggest tournament. Cash prizes!',badge:'Starts June 15',badgeClass:'bdg-s'},
+  ];
+  g.innerHTML = items.map(it=>`
+    <div class="card">
+      <div class="card-img" style="background-image:url('${it.img}')"></div>
+      <div class="card-body">
+        <h3>${it.title}</h3>
+        <p>${it.desc}</p>
+        <div class="card-ft"><span class="bdg ${it.badgeClass}">${it.badge}</span><button class="btn btn-l btn-sm" onclick="toast('Joining: ${it.title}')">Join →</button></div>
+      </div>
+    </div>`).join('');
+}
+
+function buildCourtCards() {
+  document.getElementById('courtCards').innerHTML = courts.map(c=>`
+    <div class="card" onclick="goTo('courts',null);setTimeout(()=>{switchTab('court-map',document.querySelectorAll('#pg-courts .tab')[1]);initMap();setTimeout(()=>{leafMap.setView(${JSON.stringify(c.coords)},16)},300)},100)">
+      <div class="card-body" style="padding-top:18px">
+        <h3>${c.name}</h3>
+        <div class="info-row"><span class="ico">📍</span>${c.town}</div>
+        <div class="info-row"><span class="ico">🏸</span>${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div class="info-row"><span class="ico">⏰</span>${c.open}</div>
+        <div class="card-ft">
+          <span class="bdg bdg-g">Available</span>
+          <button class="btn btn-l btn-sm">View on Map</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function buildScheduledGames() {
+  document.getElementById('scheduledGames').innerHTML = games.map(g=>`
+    <div class="card">
+      <div class="card-body" style="padding-top:18px">
+        <h3>${g.court}</h3>
+        <div class="info-row"><span class="ico">📅</span>${g.date} · ${g.time}</div>
+        <div class="info-row"><span class="ico">📊</span>${g.level}</div>
+        <div class="info-row"><span class="ico">👥</span>${g.spots}/${g.max} spots remaining</div>
+        <div class="card-ft">
+          <span class="bdg ${g.spots<=2?'bdg-r':g.spots<=4?'bdg-a':'bdg-l'}">${g.spots} spots left</span>
+          <button class="btn btn-l btn-sm" onclick="toast('Joining game at ${g.court}!')">Join Game</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function buildPlayerCards() {
+  document.getElementById('playerCards').innerHTML = players.map(p=>`
+    <div class="card">
+      <div class="card-body" style="padding-top:18px;display:flex;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${p.initials}</div>
+          <div><h3 style="margin-bottom:2px">${p.name}</h3><div style="font-size:11.5px;color:var(--lime);font-family:var(--fm)">${p.level}</div></div>
+        </div>
+        <div class="info-row"><span class="ico">📍</span>${p.dist} away · ${p.area}</div>
+        <p style="margin-bottom:12px">${p.note}</p>
+        <div class="card-ft">
+          <button class="btn btn-o btn-sm">Profile</button>
+          <button class="btn btn-l btn-sm" onclick="goTo('players',null);setTimeout(()=>{switchTab('community-chat',document.querySelectorAll('#pg-players .tab')[2])},100);toast('Opening chat with ${p.name}…')">Message</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function buildSponsors() {
+  document.getElementById('sponsorGrid').innerHTML = sponsors.map(s=>`
+    <div class="sponsor-card">
+      <div class="sp-ico">${s.ico}</div>
+      <h3>${s.name}</h3>
+      <div class="loc">📍 ${s.loc}</div>
+      <p>${s.msg}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-o btn-sm">Learn More</button>
+        <button class="btn btn-l btn-sm" onclick="toast('Contacting ${s.name}…')">Contact →</button>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════ SEARCH ════════════════════════
+function handleSearch() {
+  const q = document.getElementById('heroSearch').value.toLowerCase().trim();
+  if(!q) return;
+  const res = document.getElementById('searchResults');
+  const all = [
+    ...courts.map(c=>({type:'Court',title:c.name,sub:`${c.town} · ${c.courts} courts · ${c.type}`,ico:'📍'})),
+    ...games.map(g=>({type:'Game',title:g.court,sub:`${g.date} ${g.time} · ${g.level} · ${g.spots} spots`,ico:'🎮'})),
+    ...players.map(p=>({type:'Player',title:p.name,sub:`${p.area} · ${p.level}`,ico:'👤'})),
+  ].filter(x=>x.title.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q));
+  if(!all.length){res.style.display='none';toast('No results found for "'+q+'"');return}
+  res.style.display='grid';
+  res.innerHTML = all.map(x=>`
+    <div class="card" onclick="toast('Viewing: ${x.title}')">
+      <div class="card-body" style="padding-top:18px">
+        <div style="display:flex;gap:9px;align-items:flex-start">
+          <span style="font-size:20px">${x.ico}</span>
+          <div><h3>${x.title}</h3><p style="margin-bottom:8px">${x.sub}</p><span class="bdg bdg-s">${x.type}</span></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('heroSearch')===document.activeElement) handleSearch();
+});
+
+// ════════════════════════ FORMS ════════════════════════
+document.getElementById('addCourtForm').addEventListener('submit',e=>{e.preventDefault();toast('✅ Court submitted! Our team will verify and list it soon.');e.target.reset()});
+document.getElementById('createGameForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const t=document.getElementById('gTitle').value;
+  toast(`🎮 Game "${t}" created! Players can now join.`);
+  e.target.reset();
+  switchTab('scheduled', document.querySelectorAll('#pg-games .tab')[1]);
+});
+
+// ════════════════════════ TOAST ════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('on'), 2800);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ════════════════════════ URL QR CHECK-IN ════════════════════════
+const urlP = new URLSearchParams(location.search);
+if(urlP.get('checkin')) {
+  doCheckIn(decodeURIComponent(urlP.get('checkin')));
+  history.replaceState({},document.title,location.pathname);
+}
+
+// ════════════════════════ INIT ════════════════════════
+buildHomeGrid();
+buildCourtCards();
+buildScheduledGames();
+buildPlayerCards();
+buildSponsors();
+renderRankings();
+updateCheckinsDisplay();
+</script>
+</body>
+</html>
