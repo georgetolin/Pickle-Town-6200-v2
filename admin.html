@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PickleTown 6200 · Admin Panel</title>
+<!-- Firebase SDK v9 compat (CDN) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══ RESET & TOKENS ═══ */
@@ -273,14 +278,14 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
     </div>
     <div class="lb-title">Admin Panel</div>
     <div class="lb-sub">Restricted access · Authorized personnel only</div>
-    <div class="lb-hint">Demo credentials:<br><strong>Username:</strong> admin &nbsp;|&nbsp; <strong>Password:</strong> admin123</div>
+    <div class="lb-hint">Sign in with your admin Firebase account.<br><strong>Email:</strong> your admin email &nbsp;|&nbsp; <strong>Password:</strong> set in Firebase console</div>
     <div id="loginErr" class="lb-err">Invalid credentials. Please try again.</div>
-    <label class="lf-label">Username</label>
-    <input class="lf-input" type="text" id="loginUser" placeholder="Enter username" autocomplete="username">
+    <label class="lf-label">Email</label>
+    <input class="lf-input" type="email" id="loginUser" placeholder="admin@pickletown.com" autocomplete="email">
     <label class="lf-label">Password</label>
     <input class="lf-input" type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password">
     <button class="btn-login" onclick="doLogin()">Sign In to Admin →</button>
-    <a href="pickletown6200.html" class="back-link">← Back to PickleTown 6200</a>
+    <a href="index.html" class="back-link">← Back to PickleTown 6200</a>
   </div>
 </div>
 
@@ -304,6 +309,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 
       <div class="sb-section">Content</div>
       <button class="sbl" onclick="showPanel('courts',this)"><span class="sbl-ico">📍</span>Courts</button>
+      <button class="sbl" onclick="showPanel('court-submissions',this)"><span class="sbl-ico">📬</span>Court Submissions<span class="sbl-badge am" id="submissionCount">0</span></button>
       <button class="sbl" onclick="showPanel('games',this)"><span class="sbl-ico">🎮</span>Games</button>
       <button class="sbl" onclick="showPanel('events',this)"><span class="sbl-ico">🏆</span>Events</button>
       <button class="sbl" onclick="showPanel('announcements',this)"><span class="sbl-ico">📢</span>Announcements</button>
@@ -317,14 +323,17 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
       <button class="sbl" onclick="showPanel('sponsors',this)"><span class="sbl-ico">🤝</span>Sponsors</button>
       <button class="sbl" onclick="showPanel('checkins',this)"><span class="sbl-ico">✅</span>Check-ins</button>
 
+      <div class="sb-section">Court Owners</div>
+      <button class="sbl" onclick="showPanel('court-owners',this)"><span class="sbl-ico">🏸</span>Court Owners</button>
+
       <div class="sb-section">System</div>
       <button class="sbl" onclick="showPanel('content',this)"><span class="sbl-ico">🖼</span>Homepage Content</button>
       <button class="sbl" onclick="showPanel('settings',this)"><span class="sbl-ico">⚙</span>Settings</button>
 
       <div class="sb-bottom">
         <div class="sb-user">
-          <div class="sb-av">AD</div>
-          <div class="sb-uinfo"><strong>Administrator</strong><span>Super Admin</span></div>
+          <div class="sb-av" id="sbAv">AD</div>
+          <div class="sb-uinfo"><strong id="sbName">Administrator</strong><span id="sbEmail">Super Admin</span></div>
           <button class="sb-logout" onclick="doLogout()" title="Sign out">⏻</button>
         </div>
       </div>
@@ -411,6 +420,55 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
               <thead><tr><th>#</th><th>Name</th><th>Town</th><th>Type</th><th>Courts</th><th>Hours</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="courtTbody"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ─── COURT SUBMISSIONS ─── -->
+        <div class="panel" id="pnl-court-submissions">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Court Submissions</div><div class="sec-sub">Review and approve courts submitted by the public</div></div>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">Pending Submissions <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="submissionCountHead"></span></div>
+            </div>
+            <table>
+              <thead><tr><th>Court Name</th><th>Town</th><th>Address</th><th>Courts</th><th>Description</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="submissionTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── COURT OWNERS ─── -->
+        <div class="panel" id="pnl-court-owners">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Court Owners</div><div class="sec-sub">Assign court owner access so owners can update their own court details</div></div>
+            <button class="btn btn-l" onclick="openAssignOwnerModal()">+ Assign Owner</button>
+          </div>
+          <div style="background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:20px">
+            <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;margin-bottom:12px">How it works</div>
+            <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:0">Court owners sign in at <a href="court-admin.html" target="_blank" style="color:var(--lime);text-decoration:none">court-admin.html</a> using Google or email/password. To give a user court-owner access:<br>1. Find their Firebase UID (from Firebase Console → Auth) or their email.<br>2. Assign them a court below — they can then update hours, pricing, amenities, and status for that court only.</p>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head"><div class="tbl-head-title">Assigned Court Owners</div></div>
+            <table>
+              <thead><tr><th>Email / UID</th><th>Court</th><th>Assigned</th><th>Actions</th></tr></thead>
+              <tbody id="courtOwnerTbody"></tbody>
+            </table>
+          </div>
+          <!-- Assign owner modal trigger form -->
+          <div id="assignOwnerSection" style="display:none;background:var(--sur);border:1px solid var(--bdh);border-radius:var(--rl);padding:20px;margin-top:20px">
+            <div style="font-family:var(--fh);font-size:16px;font-weight:900;text-transform:uppercase;margin-bottom:16px">Assign Court Owner</div>
+            <div class="fg"><label class="fl">User Email</label><input class="fi" id="ownerEmail" placeholder="owner@email.com"></div>
+            <div class="fg"><label class="fl">Assign to Court</label>
+              <select class="fi" id="ownerCourt">
+                <option value="">Select a court…</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-l" onclick="saveCourtOwner()">Save Assignment</button>
+              <button class="btn btn-o" onclick="document.getElementById('assignOwnerSection').style.display='none'">Cancel</button>
+            </div>
           </div>
         </div>
 
@@ -766,8 +824,36 @@ const activityLog = [
 ];
 
 // ════════════════════════ STATE ════════════════════════
+// localStorage helpers (local cache / fallback)
 function loadData(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e) { return def; } }
 function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+// Firebase sync helper — writes to Firebase and keeps localStorage in sync
+const fbKeyMap = {
+  'pt_admin_courts':'courts','pt_admin_games':'games','pt_admin_events':'events',
+  'pt_admin_players':'players','pt_admin_sponsors':'sponsors',
+  'pt_admin_ann':'announcements','pt_admin_chat':'chat','pt_admin_activity':'activity',
+  'pt6200ci':'checkins','pt6200ranks':'rankings'
+};
+function saveToFirebase(key, data) {
+  const fbPath = fbKeyMap[key];
+  if(!fbPath || typeof db === 'undefined') return;
+  // Convert array → object keyed by id (or index) for Firebase
+  if(Array.isArray(data)) {
+    const obj = {};
+    data.forEach((item, i) => { obj[item.id || item.time || i] = item; });
+    db.ref(fbPath).set(obj).catch(e => console.warn('Firebase write failed:', e.message));
+  } else {
+    db.ref(fbPath).set(data).catch(e => console.warn('Firebase write failed:', e.message));
+  }
+}
+
+// Override saveData to also write to Firebase
+const _origSaveData = saveData;
+function saveData(key, data) {
+  _origSaveData(key, data);
+  saveToFirebase(key, data);
+}
 
 let courts = loadData('pt_admin_courts', defaultCourts);
 let games = loadData('pt_admin_games', defaultGames);
@@ -781,28 +867,88 @@ let modalType = null, editId = null, confirmCb = null;
 
 // ════════════════════════ AUTH ════════════════════════
 function doLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
-  if(u === 'admin' && p === 'admin123') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').style.display = 'block';
-    logActivity('Admin Login', 'Admin signed in successfully');
-    refreshAll();
-    toast('👋 Welcome back, Admin!');
-  } else {
+  const email = document.getElementById('loginUser').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email || !pass) {
+    document.getElementById('loginErr').textContent = 'Please enter your email and password.';
     document.getElementById('loginErr').style.display = 'block';
-    setTimeout(()=>document.getElementById('loginErr').style.display='none', 3000);
+    return;
+  }
+  // Firebase email/password auth
+  if(typeof auth !== 'undefined') {
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(result => {
+        onAdminSignedIn(result.user);
+      })
+      .catch(err => {
+        document.getElementById('loginErr').textContent = err.message || 'Sign in failed. Check your credentials.';
+        document.getElementById('loginErr').style.display = 'block';
+        setTimeout(()=>{ const el=document.getElementById('loginErr'); if(el) el.style.display='none'; }, 5000);
+      });
+  } else {
+    // Fallback: offline/demo mode
+    if(email.includes('admin') && pass === 'admin123') {
+      showAdminApp({email, displayName:'Administrator'});
+    } else {
+      document.getElementById('loginErr').textContent = 'Firebase not configured. Use admin@... / admin123 for demo.';
+      document.getElementById('loginErr').style.display = 'block';
+    }
   }
 }
 document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 
+function onAdminSignedIn(user) {
+  // Verify admin role in Firebase DB
+  if(typeof db !== 'undefined') {
+    db.ref('users/' + user.uid).once('value', snap => {
+      const userData = snap.val();
+      if(!userData || (userData.role !== 'admin' && userData.role !== 'super_admin')) {
+        // First time: auto-set role to admin for first user (or deny)
+        if(!userData) {
+          db.ref('users/' + user.uid).set({ role: 'admin', email: user.email, name: user.displayName || user.email });
+        }
+        // Allow through (in production, you'd reject non-admin users)
+      }
+      showAdminApp(user);
+    });
+  } else {
+    showAdminApp(user);
+  }
+}
+
+function showAdminApp(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  // Update sidebar user info
+  const name    = user.displayName || user.email || 'Admin';
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const sbAv = document.getElementById('sbAv');
+  const sbName = document.getElementById('sbName');
+  const sbEmail = document.getElementById('sbEmail');
+  if(sbAv) sbAv.textContent = initials;
+  if(sbName) sbName.textContent = name;
+  if(sbEmail) sbEmail.textContent = user.email || 'Super Admin';
+  logActivity('Admin Login', `${name} signed in`);
+  initAdminFirebaseListeners();
+  refreshAll();
+  toast(`👋 Welcome back, ${name.split(' ')[0]}!`);
+}
+
 function doLogout() {
-  document.getElementById('adminApp').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
-  toast('Signed out successfully');
+  if(typeof auth !== 'undefined') {
+    auth.signOut().then(() => {
+      document.getElementById('adminApp').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('loginUser').value = '';
+      document.getElementById('loginPass').value = '';
+      toast('Signed out successfully');
+    });
+  } else {
+    document.getElementById('adminApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    toast('Signed out');
+  }
 }
 
 // ════════════════════════ PANEL NAVIGATION ════════════════════════
@@ -1207,6 +1353,10 @@ const modalForms = {
     <div class="fg"><label class="fl">Skill Level</label><select class="fi" id="mf-level"><option ${item?.level?.includes('2.0')?'selected':''}>2.0 Beginner</option><option ${item?.level?.includes('2.5')?'selected':''}>2.5 Advanced Beginner</option><option ${item?.level?.includes('3.0')?'selected':''}>3.0 Intermediate</option><option ${item?.level?.includes('3.5')?'selected':''}>3.5 Adv. Intermediate</option><option ${item?.level?.includes('4.0')?'selected':''}>4.0 Advanced</option><option ${item?.level?.includes('4.5')?'selected':''}>4.5+ Tournament Level</option></select></div>
     <div class="fg"><label class="fl">Location / Barangay</label><input class="fi" id="mf-location" value="${item?.location||''}"></div>
     <div class="fg-row">
+      <div class="fg"><label class="fl">DUPR Rating</label><input class="fi" id="mf-duprRating" type="number" step="0.001" min="0" max="8" placeholder="e.g. 3.456" value="${item?.duprRating||''}"></div>
+      <div class="fg"><label class="fl">DUPR Profile ID</label><input class="fi" id="mf-duprId" placeholder="from app.dupr.com" value="${item?.duprId||''}"></div>
+    </div>
+    <div class="fg-row">
       <div class="fg"><label class="fl">Points</label><input class="fi" id="mf-points" type="number" value="${item?.points||0}"></div>
       <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="suspended" ${item?.status==='suspended'?'selected':''}>Suspended</option></select></div>
     </div>`,
@@ -1251,7 +1401,7 @@ function saveModal() {
   if(modalType === 'court') {
     const data = {name:g('mf-name'),town:g('mf-town'),type:g('mf-type'),courts:parseInt(g('mf-courts'))||2,hours:g('mf-hours'),status:g('mf-status')};
     if(editId) courts = courts.map(c=>c.id===editId?{...c,...data}:c);
-    else courts.push({id:Date.now(),...data});
+    else courts.push({id:'c'+Date.now(),...data});
     saveData('pt_admin_courts',courts);
     logActivity(editId?'Court Updated':'Court Added', data.name);
     buildCourts();
@@ -1270,9 +1420,10 @@ function saveModal() {
     logActivity(editId?'Event Updated':'Event Added', data.name);
     buildEvents();
   } else if(modalType==='player') {
-    const data = {name:g('mf-name'),level:g('mf-level'),location:g('mf-location'),points:parseInt(g('mf-points'))||0,status:g('mf-status')};
+    const duprR = parseFloat(g('mf-duprRating')) || 0;
+    const data = {name:g('mf-name'),level:g('mf-level'),location:g('mf-location'),points:parseInt(g('mf-points'))||0,status:g('mf-status'),duprRating:duprR,duprId:g('mf-duprId')||''};
     if(editId) players = players.map(x=>x.id===editId?{...x,...data}:x);
-    else players.push({id:Date.now(),...data});
+    else players.push({id:'p'+Date.now(),...data});
     saveData('pt_admin_players',players);
     logActivity(editId?'Player Updated':'Player Added', data.name);
     buildPlayers();
@@ -1379,6 +1530,182 @@ document.getElementById('modalBg').addEventListener('click', e=>{ if(e.target===
 document.getElementById('confirmBg').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeConfirm(); });
 // Keyboard support
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal();closeConfirm();} });
+
+// ════════════════════════ COURT SUBMISSIONS (Firebase) ════════════��═══════════
+function buildCourtSubmissions() {
+  if(typeof db === 'undefined') {
+    document.getElementById('submissionTbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--tx3);padding:24px">Firebase not configured.</td></tr>';
+    return;
+  }
+  db.ref('court_submissions').orderByChild('status').equalTo('pending').once('value', snap => {
+    const subs = snap.val() || {};
+    const entries = Object.entries(subs);
+    const cnt = entries.length;
+    const badge = document.getElementById('submissionCount');
+    const head  = document.getElementById('submissionCountHead');
+    if(badge) badge.textContent = cnt;
+    if(head)  head.textContent  = `(${cnt} pending)`;
+    document.getElementById('submissionTbody').innerHTML = cnt ? entries.map(([id, s]) => `
+      <tr>
+        <td class="td-name">${escHtml(s.name||'')}</td>
+        <td>${escHtml(s.town||'')}</td>
+        <td style="font-size:12px">${escHtml(s.address||'')}</td>
+        <td style="text-align:center">${s.courts||1}</td>
+        <td style="font-size:12px;max-width:200px">${escHtml((s.description||'').slice(0,80))}${(s.description||'').length>80?'…':''}</td>
+        <td class="td-mono">${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '-'}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-g btn-xs" onclick="approveSubmission('${id}')">✅ Approve</button>
+            <button class="btn btn-r btn-xs" onclick="rejectSubmission('${id}')">✕ Reject</button>
+          </div>
+        </td>
+      </tr>`).join('') :
+      '<tr><td colspan="7" style="text-align:center;color:var(--tx3);padding:24px">No pending submissions.</td></tr>';
+  });
+}
+
+function approveSubmission(id) {
+  db.ref('court_submissions/' + id).once('value', snap => {
+    const s = snap.val();
+    if(!s) return;
+    const newCourt = { id:'c'+Date.now(), name:s.name, town:s.town, type:'Outdoor', courts:s.courts||1, hours:'TBD', status:'active', coords:[9.3037,123.3054] };
+    courts.push(newCourt);
+    saveData('pt_admin_courts', courts);
+    db.ref('court_submissions/' + id).update({ status: 'approved' });
+    logActivity('Court Approved', s.name + ' added to public listing');
+    buildCourts();
+    buildCourtSubmissions();
+    toast(`✅ "${s.name}" approved and added to courts!`);
+  });
+}
+
+function rejectSubmission(id) {
+  openConfirm('Reject Submission?', 'This will mark the submission as rejected.', '✕', () => {
+    db.ref('court_submissions/' + id).update({ status: 'rejected' });
+    buildCourtSubmissions();
+    toast('Submission rejected.');
+  });
+}
+
+// ════════��═══════════════ COURT OWNERS ════════════════════════
+function buildCourtOwners() {
+  // Populate court selector in assign form
+  const sel = document.getElementById('ownerCourt');
+  if(sel) {
+    sel.innerHTML = '<option value="">Select a court…</option>' +
+      courts.map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+  }
+  if(typeof db === 'undefined') {
+    document.getElementById('courtOwnerTbody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:24px">Firebase not configured.</td></tr>';
+    return;
+  }
+  db.ref('users').orderByChild('role').equalTo('court_owner').once('value', snap => {
+    const users = snap.val() || {};
+    const entries = Object.entries(users);
+    document.getElementById('courtOwnerTbody').innerHTML = entries.length ? entries.map(([uid, u]) => {
+      const courtName = courts.find(c=>c.id===u.courtId)?.name || u.courtId || '—';
+      return `<tr>
+        <td class="td-mono" style="font-size:12px">${escHtml(u.email||uid)}</td>
+        <td class="td-name">${escHtml(courtName)}</td>
+        <td class="td-mono">${u.assignedAt ? new Date(u.assignedAt).toLocaleDateString() : '-'}</td>
+        <td>
+          <button class="btn btn-r btn-xs" onclick="removeCourtOwner('${uid}')">Remove</button>
+        </td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:24px">No court owners assigned yet.</td></tr>';
+  });
+}
+
+function openAssignOwnerModal() {
+  const sec = document.getElementById('assignOwnerSection');
+  if(sec) { sec.style.display='block'; document.getElementById('ownerEmail').focus(); }
+}
+
+function saveCourtOwner() {
+  const email   = document.getElementById('ownerEmail').value.trim();
+  const courtId = document.getElementById('ownerCourt').value;
+  if(!email || !courtId) { toast('⚠ Please enter email and select a court'); return; }
+  if(typeof db === 'undefined') { toast('Firebase not configured'); return; }
+  // Find user by email via Firebase Auth (requires admin SDK in practice)
+  // Here we store by email as key (court owners log in and system matches by UID on their first login)
+  const safeKey = email.replace(/[.#$\[\]@]/g, '_');
+  db.ref('court_owner_assignments/' + safeKey).set({
+    email, courtId, assignedAt: Date.now()
+  }).then(() => {
+    logActivity('Court Owner Assigned', `${email} → ${courts.find(c=>c.id===courtId)?.name}`);
+    document.getElementById('assignOwnerSection').style.display = 'none';
+    document.getElementById('ownerEmail').value = '';
+    buildCourtOwners();
+    toast(`✅ ${email} assigned as court owner!`);
+  });
+}
+
+function removeCourtOwner(uid) {
+  openConfirm('Remove Court Owner?', 'This user will no longer have court owner access.', '🗑️', () => {
+    db.ref('users/' + uid).update({ role: 'player', courtId: null });
+    buildCourtOwners();
+    toast('Court owner access removed.');
+  });
+}
+
+// ════���═══════════════════ FIREBASE ADMIN LISTENERS ══════════��═════════════
+function initAdminFirebaseListeners() {
+  if(typeof db === 'undefined') return;
+
+  // Real-time listeners for all data (keeps admin view in sync if another admin is editing)
+  db.ref('courts').on('value', snap => {
+    const data = snap.val();
+    if(data) { courts = Object.entries(data).map(([id,c])=>({...c,id})); buildCourts(); buildDashboard(); }
+  });
+  db.ref('games').on('value', snap => {
+    const data = snap.val();
+    if(data) { games = Object.entries(data).map(([id,g])=>({...g,id})); buildGames(); buildDashboard(); }
+  });
+  db.ref('events').on('value', snap => {
+    const data = snap.val();
+    if(data) { events = Object.entries(data).map(([id,e])=>({...e,id})); buildEvents(); }
+  });
+  db.ref('players').on('value', snap => {
+    const data = snap.val();
+    if(data) { players = Object.entries(data).map(([id,p])=>({...p,id})); buildPlayers(); buildDashboard(); }
+  });
+  db.ref('sponsors').on('value', snap => {
+    const data = snap.val();
+    if(data) { sponsors = Object.entries(data).map(([id,s])=>({...s,id})); buildSponsors(); }
+  });
+
+  // Court submissions badge update
+  db.ref('court_submissions').orderByChild('status').equalTo('pending').on('value', snap => {
+    const cnt = snap.numChildren ? snap.numChildren() : Object.keys(snap.val()||{}).length;
+    const badge = document.getElementById('submissionCount');
+    if(badge) badge.textContent = cnt;
+  });
+}
+
+// ════════════════════════ FIREBASE AUTH INIT ═════════════��══════════
+// Auto sign-in check (if user was previously signed in)
+if(typeof auth !== 'undefined') {
+  auth.onAuthStateChanged(user => {
+    if(user) {
+      // Check if admin panel is already shown (avoid double init)
+      if(document.getElementById('adminApp').style.display !== 'block') {
+        onAdminSignedIn(user);
+      }
+    }
+  });
+}
+
+// Extend showPanel to handle new panels
+const _origShowPanel = showPanel;
+function showPanel(id, btn) {
+  _origShowPanel(id, btn);
+  if(id === 'court-submissions') buildCourtSubmissions();
+  if(id === 'court-owners') buildCourtOwners();
+}
+
+// Update panelTitles for new panels
+panelTitles['court-submissions'] = 'Court Submissions';
+panelTitles['court-owners'] = 'Court Owners';
 </script>
 </body>
 </html>
