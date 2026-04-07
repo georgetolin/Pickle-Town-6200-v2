@@ -39,15 +39,15 @@
  * }
  */
 
+// ── REPLACE THESE VALUES WITH YOUR FIREBASE PROJECT CONFIG ──
 const firebaseConfig = {
-  apiKey:            "AIzaSyDdAOu8gUrGrqHEcPR-bGBSRivIJzYRz2U",
-  authDomain:        "dumapicklecourtfinder.firebaseapp.com",
-  databaseURL:       "https://dumapicklecourtfinder-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "dumapicklecourtfinder",
-  storageBucket:     "dumapicklecourtfinder.firebasestorage.app",
-  messagingSenderId: "382392528490",
-  appId:             "1:382392528490:web:b901cf5caba092d845a413",
-  measurementId:     "G-1FL4S553VL"
+  apiKey:            "YOUR_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId:             "YOUR_APP_ID"
 };
 
 // Initialize Firebase
