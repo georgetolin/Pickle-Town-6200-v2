@@ -42,7 +42,7 @@
 const firebaseConfig = {
   apiKey:            "AIzaSyDdAOu8gUrGrqHEcPR-bGBSRivIJzYRz2U",
   authDomain:        "dumapicklecourtfinder.firebaseapp.com",
-  databaseURL:       "https://dumapicklecourtfinder-default-rtdb.firebaseio.com",
+  databaseURL:       "https://dumapicklecourtfinder-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "dumapicklecourtfinder",
   storageBucket:     "dumapicklecourtfinder.firebasestorage.app",
   messagingSenderId: "382392528490",
