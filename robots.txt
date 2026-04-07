@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Disallow: /admin.html
+Disallow: /court-admin.html
+
+# Sitemap location
+Sitemap: https://dumapicklecourtfinder.online/sitemap.xml
