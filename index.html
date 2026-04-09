@@ -1343,22 +1343,50 @@ function clearAuthError() {
   if(el) { el.textContent=''; el.style.display='none'; }
 }
 
+function _checkAuth() {
+  if(typeof auth === 'undefined' || !auth) {
+    showAuthError('Authentication not loaded. Please refresh the page.');
+    return false;
+  }
+  return true;
+}
+
 function signInGoogle() {
   clearAuthError();
+  if(!_checkAuth()) return;
   auth.signInWithPopup(googleProvider)
     .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
-    .catch(err => showAuthError(err.message));
+    .catch(err => {
+      if(err.code === 'auth/popup-blocked') {
+        // Fallback to redirect if popup is blocked
+        auth.signInWithRedirect(googleProvider);
+      } else if(err.code === 'auth/popup-closed-by-user') {
+        showAuthError('Sign-in cancelled. Please try again.');
+      } else {
+        showAuthError(err.message || 'Google sign-in failed. Check Firebase authorized domains.');
+      }
+    });
 }
 
 function signInFacebook() {
   clearAuthError();
+  if(!_checkAuth()) return;
   auth.signInWithPopup(facebookProvider)
     .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
-    .catch(err => showAuthError(err.message));
+    .catch(err => {
+      if(err.code === 'auth/popup-blocked') {
+        auth.signInWithRedirect(facebookProvider);
+      } else if(err.code === 'auth/popup-closed-by-user') {
+        showAuthError('Sign-in cancelled. Please try again.');
+      } else {
+        showAuthError(err.message || 'Facebook sign-in failed.');
+      }
+    });
 }
 
 function signInEmail() {
   clearAuthError();
+  if(!_checkAuth()) return;
   const email = document.getElementById('authEmail').value.trim();
   const pass  = document.getElementById('authPassword').value;
   if(!email || !pass) { showAuthError('Please enter your email and password.'); return; }
@@ -1369,6 +1397,7 @@ function signInEmail() {
 
 function registerEmail() {
   clearAuthError();
+  if(!_checkAuth()) return;
   const email = document.getElementById('authEmail').value.trim();
   const pass  = document.getElementById('authPassword').value;
   if(!email || !pass) { showAuthError('Please enter your email and a password.'); return; }
@@ -1379,10 +1408,18 @@ function registerEmail() {
 }
 
 function doSignOut() {
+  if(!_checkAuth()) return;
   auth.signOut().then(() => {
     updateNavForUser(null);
     toast('Signed out successfully.');
   });
+}
+
+// Handle redirect result (for popup-blocked fallback)
+if(typeof auth !== 'undefined') {
+  auth.getRedirectResult()
+    .then(result => { if(result.user) { closeAuthModal(); onUserSignedIn(result.user); } })
+    .catch(err => { if(err.code && err.code !== 'auth/no-current-user') showAuthError(err.message); });
 }
 
 function onUserSignedIn(user) {

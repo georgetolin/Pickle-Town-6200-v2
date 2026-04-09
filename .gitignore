@@ -1,3 +1,2 @@
-# Firebase credentials — injected at deploy time via GitHub Actions secrets
-# Never commit this file to the repository
-firebase-config.js
+# Local dev overrides only — firebase-config.js is intentionally tracked
+# (Firebase web keys are public by design; security = Rules + domain restrictions)
