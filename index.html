@@ -1354,34 +1354,16 @@ function _checkAuth() {
 function signInGoogle() {
   clearAuthError();
   if(!_checkAuth()) return;
-  auth.signInWithPopup(googleProvider)
-    .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
-    .catch(err => {
-      if(err.code === 'auth/popup-blocked') {
-        // Fallback to redirect if popup is blocked
-        auth.signInWithRedirect(googleProvider);
-      } else if(err.code === 'auth/popup-closed-by-user') {
-        showAuthError('Sign-in cancelled. Please try again.');
-      } else {
-        showAuthError(err.message || 'Google sign-in failed. Check Firebase authorized domains.');
-      }
-    });
+  // Use redirect (popup is blocked silently on most mobile browsers)
+  auth.signInWithRedirect(googleProvider)
+    .catch(err => showAuthError(err.message || 'Google sign-in failed.'));
 }
 
 function signInFacebook() {
   clearAuthError();
   if(!_checkAuth()) return;
-  auth.signInWithPopup(facebookProvider)
-    .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
-    .catch(err => {
-      if(err.code === 'auth/popup-blocked') {
-        auth.signInWithRedirect(facebookProvider);
-      } else if(err.code === 'auth/popup-closed-by-user') {
-        showAuthError('Sign-in cancelled. Please try again.');
-      } else {
-        showAuthError(err.message || 'Facebook sign-in failed.');
-      }
-    });
+  auth.signInWithRedirect(facebookProvider)
+    .catch(err => showAuthError(err.message || 'Facebook sign-in failed.'));
 }
 
 function signInEmail() {
