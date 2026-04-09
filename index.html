@@ -422,7 +422,11 @@ textarea.fc{resize:vertical;line-height:1.6}
   <div class="wrap">
     <span class="s-eyebrow">Feature · Courts</span>
     <h2 class="s-title">Courts in 6200 Area</h2>
-    <p class="s-sub" style="margin-bottom:28px">All known pickleball courts in Dumaguete City and surrounding towns. Click any card to see it on the map.</p>
+    <p class="s-sub" style="margin-bottom:16px">All known pickleball courts in Dumaguete City and surrounding towns. Click any card to see it on the map.</p>
+    <div style="margin-bottom:24px;padding:12px 18px;background:var(--ink2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <span style="font-size:13px;color:var(--tx2)">Are you a court owner? List your court and reach the Dumaguete pickleball community.</span>
+      <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-family:var(--fm);color:var(--lime);text-decoration:none;font-weight:700;white-space:nowrap">Register here →</a>
+    </div>
 
     <div class="tabs">
       <button class="tab on" onclick="switchTab('court-list',this)">Court Listings</button>
@@ -818,6 +822,7 @@ textarea.fc{resize:vertical;line-height:1.6}
         <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
         <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
         <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Portal</a>
+        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
         <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
       </div>
     </div>
@@ -867,36 +872,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 
 <script>
 // ════════════════════════ DEFAULT DATA (used as fallback if Firebase is empty) ════════════════════════
-const defaultCourts = [
-  {id:'c1',name:"Freedom Park Court",town:"Dumaguete City",coords:[9.3067,123.3047],courts:2,type:"Outdoor",open:"6AM–10PM",status:"active"},
-  {id:'c2',name:"Rizal Boulevard Court",town:"Dumaguete City",coords:[9.3050,123.3130],courts:2,type:"Outdoor/Covered",open:"Dawn–Dusk",status:"active"},
-  {id:'c3',name:"Silliman University Courts",town:"Dumaguete City",coords:[9.3120,123.3070],courts:4,type:"Outdoor+Lights",open:"4PM–9PM",status:"active"},
-  {id:'c4',name:"Robinsons Place Dumaguete",town:"Dumaguete City",coords:[9.3020,123.3100],courts:2,type:"Indoor AC",open:"10AM–9PM",status:"active"},
-  {id:'c5',name:"Valencia Municipal Gym",town:"Valencia",coords:[9.3501,123.2913],courts:2,type:"Covered",open:"Wknd Open Play",status:"active"},
-  {id:'c6',name:"Bacong Covered Court",town:"Bacong",coords:[9.2378,123.3648],courts:1,type:"Covered",open:"Flexible",status:"active"},
-  {id:'c7',name:"Sibulan Sports Center",town:"Sibulan",coords:[9.2644,123.3056],courts:1,type:"Multi-purpose",open:"By Reservation",status:"active"},
-  {id:'c8',name:"Dauin Community Court",town:"Dauin",coords:[9.1901,123.3278],courts:1,type:"Outdoor",open:"Open Play Sun",status:"active"},
-];
-const defaultGames = [
-  {id:'g1',court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8},
-  {id:'g2',court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8},
-  {id:'g3',court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12},
-  {id:'g4',court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12},
-  {id:'g5',court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6},
-];
-const defaultPlayers = [
-  {id:'p1',name:"Maria Tan",initials:"MT",dist:"1.2 km",area:"Daro, Dumaguete",level:"3.0 · Intermediate",note:"Doubles specialist. Weekday evenings & weekends. Carpool available.",duprRating:3.124,duprId:""},
-  {id:'p2',name:"Juan Dela Cruz",initials:"JD",dist:"2.5 km",area:"Bantayan, Dumaguete",level:"4.0 · Advanced",note:"Competitive play only. Coaches beginners on request.",duprRating:4.012,duprId:""},
-  {id:'p3',name:"Sarah Johnson",initials:"SJ",dist:"3.1 km",area:"Valencia",level:"2.0 · Beginner",note:"New to pickleball, looking for friendly games & practice partners!",duprRating:0,duprId:""},
-  {id:'p4',name:"Alex Reyes",initials:"AR",dist:"0.8 km",area:"Daro, Dumaguete",level:"3.5 · Advanced Intermediate",note:"Former tennis player. Plays most mornings before work.",duprRating:3.567,duprId:""},
-  {id:'p5',name:"Michael Lim",initials:"ML",dist:"4.2 km",area:"Sibulan",level:"3.0 · Intermediate",note:"Brings extra paddles. Loves teaching newcomers.",duprRating:3.001,duprId:""},
-];
-const defaultSponsors = [
-  {id:'s1',ico:"🎾",name:"Dumaguete Sports Hub",loc:"Hibbard Ave, Dumaguete City",msg:"Your local pickleball gear shop — paddles, shoes, balls & accessories. 10% off for PickleTown members!"},
-  {id:'s2',ico:"☕",name:"Café 6200",loc:"Rizal Blvd, Dumaguete City",msg:"Post-game coffee and merienda. Show your court check-in receipt for a free drink upgrade!"},
-  {id:'s3',ico:"🏖️",name:"Dauin Beach Resort",loc:"Dauin, Negros Oriental",msg:"Play. Swim. Relax. Special weekend rates for PickleTown players. Mention 6200 when booking!"},
-  {id:'s4',ico:"💆",name:"Valencia Sports Clinic",loc:"Valencia, Negros Oriental",msg:"Sports massage & recovery services. Stretch, recover, play again. PickleTown discount available."},
-];
+const defaultCourts = [];
+const defaultGames = [];
+const defaultPlayers = [];
+const defaultSponsors = [];
 
 // Live data arrays — populated by Firebase listeners (fall back to defaults)
 let courts  = [...defaultCourts];
@@ -950,7 +929,7 @@ function initMap() {
       <div style="font-family:'Barlow',sans-serif;min-width:200px">
         <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
         <div style="font-size:11px;color:#8FAF9A;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div style="font-size:12px;color:#8FAF9A;margin-bottom:10px">⏰ ${c.open}</div>
+        <div style="font-size:12px;color:#8FAF9A;margin-bottom:10px">⏰ ${c.open||c.hours||''}</div>
         <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
         <div class="qr-wrap">
           <div id="${qrId}"></div>
@@ -1174,7 +1153,7 @@ function buildCourtCards() {
         <h3>${c.name}</h3>
         <div class="info-row"><span class="ico">📍</span>${c.town}</div>
         <div class="info-row"><span class="ico">🏸</span>${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div class="info-row"><span class="ico">⏰</span>${c.open}</div>
+        <div class="info-row"><span class="ico">⏰</span>${c.open||c.hours||''}</div>
         <div class="card-ft">
           <span class="bdg bdg-g">Available</span>
           <button class="btn btn-l btn-sm">View on Map</button>
@@ -1216,7 +1195,7 @@ function buildPlayerCards() {
             ${duprHtml}
           </div>
         </div>
-        <div class="info-row"><span class="ico">📍</span>${escHtml((p.dist||'')+' away · '+(p.area||''))}</div>
+        <div class="info-row"><span class="ico">📍</span>${escHtml((p.dist||'')+' away · '+(p.area||p.location||''))}</div>
         <p style="margin-bottom:12px">${escHtml(p.note||'')}</p>
         <div class="card-ft">
           <button class="btn btn-o btn-sm">Profile</button>
@@ -1232,8 +1211,8 @@ function buildSponsors() {
     <div class="sponsor-card">
       <div class="sp-ico">${s.ico}</div>
       <h3>${s.name}</h3>
-      <div class="loc">📍 ${s.loc}</div>
-      <p>${s.msg}</p>
+      <div class="loc">📍 ${s.loc||s.location||''}</div>
+      <p>${s.msg||s.offer||''}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-o btn-sm">Learn More</button>
         <button class="btn btn-l btn-sm" onclick="toast('Contacting ${s.name}…')">Contact →</button>
@@ -1249,7 +1228,7 @@ function handleSearch() {
   const all = [
     ...courts.map(c=>({type:'Court',title:c.name,sub:`${c.town} · ${c.courts} courts · ${c.type}`,ico:'📍'})),
     ...games.map(g=>({type:'Game',title:g.court,sub:`${g.date} ${g.time} · ${g.level} · ${g.spots} spots`,ico:'🎮'})),
-    ...players.map(p=>({type:'Player',title:p.name,sub:`${p.area} · ${p.level}`,ico:'👤'})),
+    ...players.map(p=>({type:'Player',title:p.name,sub:`${p.area||p.location||''} · ${p.level}`,ico:'👤'})),
   ].filter(x=>x.title.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q));
   if(!all.length){res.style.display='none';toast('No results found for "'+q+'"');return}
   res.style.display='grid';

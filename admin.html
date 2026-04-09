@@ -1173,7 +1173,7 @@ function buildChat() {
     <tr>
       <td class="td-mono">${m.time}</td>
       <td><div style="display:flex;align-items:center;gap:6px"><div style="width:24px;height:24px;border-radius:6px;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--lime)">${m.initials}</div>${m.user}</div></td>
-      <td style="max-width:300px;font-size:13px">${escHtml(m.msg)}</td>
+      <td style="max-width:300px;font-size:13px">${escHtml(m.msg||m.text||'')}</td>
       <td><div class="td-actions">
         <button class="btn btn-r btn-xs" onclick="deleteMsg(${m.id})">Delete</button>
       </div></td>
@@ -1395,14 +1395,14 @@ function saveModal() {
   } else if(modalType==='sponsor') {
     const data = {name:g('mf-name'),location:g('mf-location'),offer:g('mf-offer'),status:g('mf-status')};
     if(editId) sponsors = sponsors.map(x=>x.id===editId?{...x,...data}:x);
-    else sponsors.push({id:Date.now(),...data});
+    else sponsors.push({id:'s'+Date.now(),...data});
     saveData('pt_admin_sponsors',sponsors);
     logActivity(editId?'Sponsor Updated':'Sponsor Added', data.name);
     buildSponsors();
   } else if(modalType==='announcement') {
     const data = {title:g('mf-title'),msg:g('mf-msg'),type:g('mf-type'),date:g('mf-date'),active:g('mf-active')==='true'};
     if(editId) announcements = announcements.map(x=>x.id===editId?{...x,...data}:x);
-    else announcements.push({id:Date.now(),...data});
+    else announcements.push({id:'a'+Date.now(),...data});
     saveData('pt_admin_ann',announcements);
     logActivity(editId?'Announcement Updated':'Announcement Added', data.title);
     buildAnnouncements();
