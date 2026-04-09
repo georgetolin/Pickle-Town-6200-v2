@@ -818,7 +818,7 @@ textarea.fc{resize:vertical;line-height:1.6}
         <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
         <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
         <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Portal</a>
-        <a href="admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin Login</a>
+        <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
       </div>
     </div>
   </div>
@@ -1433,11 +1433,12 @@ function onUserSignedIn(user) {
 }
 
 function updateNavForUser(user) {
-  const btnSignIn = document.getElementById('btnSignIn');
-  const btnJoin   = document.getElementById('btnJoin');
-  const navUser   = document.getElementById('navUser');
-  const navAv     = document.getElementById('navAvatarTxt');
-  const navName   = document.getElementById('navUserName');
+  const btnSignIn     = document.getElementById('btnSignIn');
+  const btnJoin       = document.getElementById('btnJoin');
+  const navUser       = document.getElementById('navUser');
+  const navAv         = document.getElementById('navAvatarTxt');
+  const navName       = document.getElementById('navUserName');
+  const adminLink     = document.getElementById('adminFooterLink');
   if(user) {
     if(btnSignIn) btnSignIn.style.display = 'none';
     if(btnJoin)   btnJoin.style.display   = 'none';
@@ -1445,10 +1446,18 @@ function updateNavForUser(user) {
     const initials = (user.displayName||'PB').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     if(navAv)   navAv.textContent  = initials;
     if(navName) navName.textContent = (user.displayName||user.email||'').split(' ')[0];
+    // Show admin link only if user has admin role in Firebase
+    if(adminLink && typeof db !== 'undefined') {
+      db.ref('users/' + user.uid + '/role').once('value', snap => {
+        const role = snap.val();
+        adminLink.style.display = (role === 'admin' || role === 'super_admin') ? 'inline-flex' : 'none';
+      });
+    }
   } else {
     if(btnSignIn) btnSignIn.style.display = '';
     if(btnJoin)   btnJoin.style.display   = '';
     if(navUser)   navUser.classList.remove('on');
+    if(adminLink) adminLink.style.display = 'none';
   }
 }
 

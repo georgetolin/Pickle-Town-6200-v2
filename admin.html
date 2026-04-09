@@ -899,21 +899,29 @@ document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==
 document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 
 function onAdminSignedIn(user) {
-  // Verify admin role in Firebase DB
+  // Verify admin role in Firebase DB — deny anyone without role:'admin'
   if(typeof db !== 'undefined') {
     db.ref('users/' + user.uid).once('value', snap => {
       const userData = snap.val();
       if(!userData || (userData.role !== 'admin' && userData.role !== 'super_admin')) {
-        // First time: auto-set role to admin for first user (or deny)
-        if(!userData) {
-          db.ref('users/' + user.uid).set({ role: 'admin', email: user.email, name: user.displayName || user.email });
+        // Not an admin — sign out immediately and show error
+        auth.signOut();
+        const errEl = document.getElementById('loginErr');
+        if(errEl) {
+          errEl.textContent = 'Access denied. This account does not have admin privileges.';
+          errEl.style.display = 'block';
         }
-        // Allow through (in production, you'd reject non-admin users)
+        return;
       }
       showAdminApp(user);
     });
   } else {
-    showAdminApp(user);
+    // Firebase unavailable — cannot verify role, deny access
+    const errEl = document.getElementById('loginErr');
+    if(errEl) {
+      errEl.textContent = 'Firebase not available. Cannot verify admin credentials.';
+      errEl.style.display = 'block';
+    }
   }
 }
 
