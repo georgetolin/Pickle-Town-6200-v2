@@ -427,7 +427,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <p class="s-sub" style="margin-bottom:16px">All known pickleball courts in Dumaguete City and surrounding towns. Click any card to see it on the map.</p>
     <div style="margin-bottom:24px;padding:12px 18px;background:var(--ink2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <span style="font-size:13px;color:var(--tx2)">Are you a court owner? List your court and reach the Dumaguete pickleball community.</span>
-      <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-family:var(--fm);color:var(--lime);text-decoration:none;font-weight:700;white-space:nowrap">Register here →</a>
+      <a href="#" onclick="openCourtOwnerRequestModal();return false" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-family:var(--fm);color:var(--lime);text-decoration:none;font-weight:700;white-space:nowrap">Register here →</a>
     </div>
 
     <div class="tabs">
@@ -823,7 +823,6 @@ textarea.fc{resize:vertical;line-height:1.6}
       <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
         <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
         <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
-        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Portal</a>
         <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
         <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
       </div>
@@ -861,8 +860,33 @@ textarea.fc{resize:vertical;line-height:1.6}
     </div>
 
     <p style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:18px;margin-bottom:0">
-      By signing in you agree to our community guidelines. <br>Court owners: <a href="court-admin.html" style="color:var(--lime);text-decoration:none">use the court portal →</a>
+      By signing in you agree to our community guidelines. <br>Already an approved court owner? <a href="court-admin.html" style="color:var(--lime);text-decoration:none">Go to Court Owner Portal →</a>
     </p>
+  </div>
+</div>
+
+<!-- COURT OWNER REQUEST MODAL -->
+<div class="modal-overlay" id="courtOwnerModal" onclick="if(event.target===this)closeCourtOwnerModal()">
+  <div class="auth-modal" style="max-width:480px">
+    <button class="auth-close" onclick="closeCourtOwnerModal()">✕</button>
+    <div id="courtOwnerFormView">
+      <h2>Register Your <span style="color:var(--lime)">Court</span></h2>
+      <p style="font-size:13px;color:var(--tx2);margin-bottom:20px">Fill out this form and the PickleTown admin will review your application and grant you access to manage your court listing.</p>
+      <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Your Full Name *</label><input class="fc" type="text" id="coName" placeholder="e.g. Juan dela Cruz"></div>
+      <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Court / Venue Name *</label><input class="fc" type="text" id="coVenue" placeholder="e.g. Dumaguete Sports Complex"></div>
+      <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Address / Location *</label><input class="fc" type="text" id="coAddress" placeholder="e.g. Perdices St, Dumaguete City"></div>
+      <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Contact Number *</label><input class="fc" type="tel" id="coPhone" placeholder="e.g. 09XX XXX XXXX"></div>
+      <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Additional Notes (optional)</label><textarea class="fc" id="coNotes" rows="3" placeholder="Number of courts, operating hours, pricing info, etc." style="resize:vertical;min-height:72px"></textarea></div>
+      <div id="coError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <button class="btn btn-l" style="width:100%" onclick="submitCourtOwnerRequest()">Submit Application</button>
+      <p style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:14px;margin-bottom:0">The admin typically reviews applications within 1–2 business days.</p>
+    </div>
+    <div id="courtOwnerSuccessView" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <h2 style="margin-bottom:10px">Application <span style="color:var(--lime)">Submitted!</span></h2>
+      <p style="font-size:14px;color:var(--tx2);margin-bottom:24px">Your court registration request has been sent to the PickleTown admin. You'll be notified once your account is approved and you can manage your court listing.</p>
+      <button class="btn btn-o" onclick="closeCourtOwnerModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -1331,6 +1355,70 @@ function saveProfile() {
   }
 }
 
+// ════════════════════════ COURT OWNER REQUEST MODAL ════════════════════════
+function openCourtOwnerRequestModal() {
+  // If user is not signed in, open auth modal first; after sign-in, open this modal
+  const user = auth && auth.currentUser;
+  if(!user) {
+    openAuthModal();
+    // After sign-in, _pendingCourtOwnerModal flag triggers this modal
+    window._pendingCourtOwnerModal = true;
+    return;
+  }
+  // Pre-fill name if available
+  const nameField = document.getElementById('coName');
+  if(nameField && !nameField.value && user.displayName) nameField.value = user.displayName;
+  document.getElementById('courtOwnerFormView').style.display = '';
+  document.getElementById('courtOwnerSuccessView').style.display = 'none';
+  document.getElementById('coError').style.display = 'none';
+  document.getElementById('courtOwnerModal').classList.add('on');
+}
+
+function closeCourtOwnerModal() {
+  document.getElementById('courtOwnerModal').classList.remove('on');
+}
+
+function submitCourtOwnerRequest() {
+  const user = auth && auth.currentUser;
+  if(!user) { openAuthModal(); return; }
+
+  const name    = (document.getElementById('coName').value || '').trim();
+  const venue   = (document.getElementById('coVenue').value || '').trim();
+  const address = (document.getElementById('coAddress').value || '').trim();
+  const phone   = (document.getElementById('coPhone').value || '').trim();
+  const notes   = (document.getElementById('coNotes').value || '').trim();
+  const errEl   = document.getElementById('coError');
+
+  if(!name || !venue || !address || !phone) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const btn = document.querySelector('#courtOwnerFormView .btn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  db.ref('court_owner_requests/' + user.uid).set({
+    uid:       user.uid,
+    email:     user.email || '',
+    name,
+    venue,
+    address,
+    phone,
+    notes,
+    status:    'pending',
+    createdAt: Date.now()
+  }).then(() => {
+    document.getElementById('courtOwnerFormView').style.display = 'none';
+    document.getElementById('courtOwnerSuccessView').style.display = '';
+  }).catch(err => {
+    if(btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
+    errEl.textContent = err.message || 'Failed to submit. Please try again.';
+    errEl.style.display = 'block';
+  });
+}
+
 // ════════════════════════ AUTH MODAL ════════════════════════
 function openAuthModal()  { document.getElementById('authModal').classList.add('on'); }
 function closeAuthModal() { document.getElementById('authModal').classList.remove('on'); clearAuthError(); }
@@ -1502,6 +1590,12 @@ function onUserSignedIn(user) {
     }
   });
   toast(`Welcome back, ${user.displayName || user.email}!`);
+  // If user signed in via auth modal after clicking "Register here", open court owner form
+  if(window._pendingCourtOwnerModal) {
+    window._pendingCourtOwnerModal = false;
+    closeAuthModal();
+    setTimeout(() => openCourtOwnerRequestModal(), 300);
+  }
 }
 
 function updateNavForUser(user) {

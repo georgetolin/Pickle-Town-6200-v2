@@ -20,6 +20,7 @@
  *     "activity":      { ".read": "auth != null", ".write": "auth != null" },
  *     "users":         { ".read": "auth != null", "$uid": { ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')" } },
  *     "court_submissions": { ".read": "auth != null", ".write": "auth != null" },
+ *     "court_owner_requests": { ".read": "auth != null", ".write": "auth != null" },
  *     "court_owner_assignments": { ".read": "auth != null", ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'" }
  *   }
  * }

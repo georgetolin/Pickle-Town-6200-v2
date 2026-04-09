@@ -183,8 +183,10 @@ textarea.fi{resize:vertical;line-height:1.6}
   <div style="max-width:420px;padding:32px;text-align:center">
     <div style="font-size:48px;margin-bottom:16px">🚫</div>
     <div style="font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;margin-bottom:10px">Access Denied</div>
-    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:22px">Your account is not registered as a court owner. Please contact the PickleTown admin to get access.</p>
-    <div style="display:flex;gap:10px;justify-content:center">
+    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:8px">Your account is not yet registered as a court owner.</p>
+    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:22px">If you haven't applied yet, go back to the site and click <strong style="color:var(--lime)">"Are you a court owner? Register here"</strong> in the Courts section. The admin will review and approve your application.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="index.html#courts" class="btn btn-l btn-sm">Apply as Court Owner</a>
       <a href="index.html" class="btn btn-o btn-sm">Back to site</a>
       <button class="btn btn-r btn-sm" onclick="auth.signOut().then(()=>{document.getElementById('accessDenied').classList.remove('on');document.getElementById('loginScreen').style.display='flex'})">Sign Out</button>
     </div>
