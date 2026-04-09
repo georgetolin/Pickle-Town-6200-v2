@@ -119,6 +119,7 @@ main{padding-top:60px;position:relative;z-index:1}
 .page{display:none;padding:36px 0 80px;animation:fi .2s ease}
 .page.on{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ═══════════════ HERO ═══════════════ */
 .hero{
@@ -333,6 +334,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 .auth-btn-g:hover{background:#f0f0f0;transform:translateY(-1px)}
 .auth-btn-f{background:#1877F2;color:#fff}
 .auth-btn-f:hover{background:#1468d8;transform:translateY(-1px)}
+.auth-btn:disabled{opacity:.65;cursor:not-allowed;transform:none!important}
 .auth-divider{text-align:center;font-size:11.5px;color:var(--tx3);margin:16px 0;letter-spacing:.5px;text-transform:uppercase;position:relative}
 .auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:44%;height:1px;background:var(--bd)}
 .auth-divider::before{left:0}.auth-divider::after{right:0}
@@ -1351,19 +1353,72 @@ function _checkAuth() {
   return true;
 }
 
+function _setAuthBtnLoading(selector, loading) {
+  const btn = document.querySelector(selector);
+  if(!btn) return;
+  if(loading) {
+    btn.dataset.origHtml = btn.innerHTML;
+    btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></span>Connecting...';
+    btn.disabled = true;
+  } else {
+    if(btn.dataset.origHtml) btn.innerHTML = btn.dataset.origHtml;
+    btn.disabled = false;
+  }
+}
+
 function signInGoogle() {
   clearAuthError();
   if(!_checkAuth()) return;
-  // Use redirect (popup is blocked silently on most mobile browsers)
-  auth.signInWithRedirect(googleProvider)
-    .catch(err => showAuthError(err.message || 'Google sign-in failed.'));
+  _setAuthBtnLoading('.auth-btn-g', true);
+  try {
+    auth.signInWithPopup(googleProvider)
+      .then(result => {
+        _setAuthBtnLoading('.auth-btn-g', false);
+        closeAuthModal();
+        onUserSignedIn(result.user);
+      })
+      .catch(err => {
+        _setAuthBtnLoading('.auth-btn-g', false);
+        // Popup blocked or not supported → fall back to redirect
+        if(err.code === 'auth/popup-blocked' || err.code === 'auth/popup-cancelled-by-user' ||
+           err.code === 'auth/operation-not-supported-in-this-environment') {
+          showAuthError('Popup blocked. Redirecting to Google sign-in...');
+          setTimeout(() => auth.signInWithRedirect(googleProvider), 800);
+          return;
+        }
+        showAuthError(err.message || 'Google sign-in failed. Please try again.');
+      });
+  } catch(e) {
+    _setAuthBtnLoading('.auth-btn-g', false);
+    showAuthError(e.message || 'Unexpected error. Please refresh and try again.');
+  }
 }
 
 function signInFacebook() {
   clearAuthError();
   if(!_checkAuth()) return;
-  auth.signInWithRedirect(facebookProvider)
-    .catch(err => showAuthError(err.message || 'Facebook sign-in failed.'));
+  _setAuthBtnLoading('.auth-btn-f', true);
+  try {
+    auth.signInWithPopup(facebookProvider)
+      .then(result => {
+        _setAuthBtnLoading('.auth-btn-f', false);
+        closeAuthModal();
+        onUserSignedIn(result.user);
+      })
+      .catch(err => {
+        _setAuthBtnLoading('.auth-btn-f', false);
+        if(err.code === 'auth/popup-blocked' || err.code === 'auth/popup-cancelled-by-user' ||
+           err.code === 'auth/operation-not-supported-in-this-environment') {
+          showAuthError('Popup blocked. Redirecting to Facebook sign-in...');
+          setTimeout(() => auth.signInWithRedirect(facebookProvider), 800);
+          return;
+        }
+        showAuthError(err.message || 'Facebook sign-in failed. Please try again.');
+      });
+  } catch(e) {
+    _setAuthBtnLoading('.auth-btn-f', false);
+    showAuthError(e.message || 'Unexpected error. Please refresh and try again.');
+  }
 }
 
 function signInEmail() {
@@ -1385,7 +1440,7 @@ function registerEmail() {
   if(!email || !pass) { showAuthError('Please enter your email and a password.'); return; }
   if(pass.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
   auth.createUserWithEmailAndPassword(email, pass)
-    .then(result => { closeAuthModal(); onUserSignedIn(result.user); toast('🎉 Account created! Welcome to PickleTown!'); })
+    .then(result => { closeAuthModal(); onUserSignedIn(result.user); toast('Account created! Welcome to PickleTown!'); })
     .catch(err => showAuthError(err.message));
 }
 
@@ -1397,11 +1452,30 @@ function doSignOut() {
   });
 }
 
-// Handle redirect result (for popup-blocked fallback)
+// Handle redirect result (called when user returns after signInWithRedirect)
 if(typeof auth !== 'undefined') {
-  auth.getRedirectResult()
-    .then(result => { if(result.user) { closeAuthModal(); onUserSignedIn(result.user); } })
-    .catch(err => { if(err.code && err.code !== 'auth/no-current-user') showAuthError(err.message); });
+  try {
+    auth.getRedirectResult()
+      .then(result => {
+        if(result && result.user) {
+          onUserSignedIn(result.user);
+          toast('Welcome, ' + (result.user.displayName || result.user.email) + '!');
+        }
+      })
+      .catch(err => {
+        if(err && err.code && err.code !== 'auth/no-current-user' && err.code !== 'auth/null-user') {
+          // Show redirect error in the modal if it's open, otherwise as a toast
+          const modal = document.getElementById('authModal');
+          if(modal && modal.classList.contains('on')) {
+            showAuthError(err.message);
+          } else {
+            toast('Sign-in error: ' + (err.message || err.code));
+          }
+        }
+      });
+  } catch(e) {
+    console.error('getRedirectResult error:', e);
+  }
 }
 
 function onUserSignedIn(user) {
