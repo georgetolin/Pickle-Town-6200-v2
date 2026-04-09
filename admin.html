@@ -766,62 +766,14 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 
 <script>
 // ════════════════════════ DEFAULT DATA ════════════════════════
-const defaultCourts = [
-  {id:1,name:"Freedom Park Court",town:"Dumaguete City",type:"Outdoor",courts:2,hours:"6AM–10PM",status:"active"},
-  {id:2,name:"Rizal Boulevard Court",town:"Dumaguete City",type:"Outdoor/Covered",courts:2,hours:"Dawn–Dusk",status:"active"},
-  {id:3,name:"Silliman University Courts",town:"Dumaguete City",type:"Outdoor+Lights",courts:4,hours:"4PM–9PM",status:"active"},
-  {id:4,name:"Robinsons Place Dumaguete",town:"Dumaguete City",type:"Indoor AC",courts:2,hours:"10AM–9PM",status:"active"},
-  {id:5,name:"Valencia Municipal Gym",town:"Valencia",type:"Covered",courts:2,hours:"Wknd Open Play",status:"active"},
-  {id:6,name:"Bacong Covered Court",town:"Bacong",type:"Covered",courts:1,hours:"Flexible",status:"active"},
-  {id:7,name:"Sibulan Sports Center",town:"Sibulan",type:"Multi-purpose",courts:1,hours:"By Reservation",status:"inactive"},
-  {id:8,name:"Dauin Community Court",town:"Dauin",type:"Outdoor",courts:1,hours:"Open Play Sun",status:"active"},
-];
-const defaultGames = [
-  {id:1,court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8,status:"open"},
-  {id:2,court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8,status:"open"},
-  {id:3,court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12,status:"open"},
-  {id:4,court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12,status:"open"},
-  {id:5,court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6,status:"filling"},
-];
-const defaultEvents = [
-  {id:1,name:"Friday Night Social Mixer",type:"Social",date:"Every Friday",location:"Silliman University",fee:"Free",status:"active"},
-  {id:2,name:"Dumaguete Summer Slam 2025",type:"Tournament",date:"June 22–23, 2025",location:"Silliman University",fee:"₱500",status:"active"},
-  {id:3,name:"Valencia Open",type:"Tournament",date:"July 13, 2025",location:"Valencia Municipal Gym",fee:"₱500",status:"upcoming"},
-  {id:4,name:"Beginner Pickleball Clinic",type:"Clinic",date:"Every Saturday",location:"Robinsons Place",fee:"₱400",status:"active"},
-  {id:5,name:"Advanced Strategy Workshop",type:"Workshop",date:"June 15, 2025",location:"Dumaguete Sports Club",fee:"₱600",status:"upcoming"},
-];
-const defaultPlayers = [
-  {id:1,name:"Maria Tan",level:"3.0 Intermediate",location:"Daro, Dumaguete",points:45,status:"active"},
-  {id:2,name:"Juan Dela Cruz",level:"4.0 Advanced",location:"Bantayan, Dumaguete",points:38,status:"active"},
-  {id:3,name:"Sarah Johnson",level:"2.0 Beginner",location:"Valencia",points:32,status:"active"},
-  {id:4,name:"Alex Reyes",level:"3.5 Adv. Intermediate",location:"Daro, Dumaguete",points:28,status:"active"},
-  {id:5,name:"Michael Lim",level:"3.0 Intermediate",location:"Sibulan",points:25,status:"active"},
-];
-const defaultSponsors = [
-  {id:1,name:"Dumaguete Sports Hub",location:"Hibbard Ave, Dumaguete",offer:"10% off for PickleTown members",status:"active"},
-  {id:2,name:"Café 6200",location:"Rizal Blvd, Dumaguete",offer:"Free drink upgrade with check-in receipt",status:"active"},
-  {id:3,name:"Dauin Beach Resort",location:"Dauin, Negros Oriental",offer:"Special weekend rates for players",status:"active"},
-  {id:4,name:"Valencia Sports Clinic",location:"Valencia",offer:"Sports massage discount — mention PickleTown",status:"active"},
-];
-const defaultAnnouncements = [
-  {id:1,title:"Summer League Registration Open",msg:"Sign up for the Dumaguete Summer Slam 2025 — registration closes June 10.",type:"info",active:true,date:"2025-05-28"},
-  {id:2,title:"New Courts Added",msg:"Sibulan Sports Center is now listed. Check the courts map for details.",type:"success",active:true,date:"2025-05-25"},
-  {id:3,title:"Maintenance Notice",msg:"Freedom Park courts will be resurfaced May 31 – June 1. No open play those dates.",type:"warning",active:false,date:"2025-05-20"},
-];
-const chatMessages = [
-  {id:1,user:"Maria Tan",initials:"MT",msg:"Hi everyone! Anyone playing at Silliman tonight? 🏓",time:"5:12 PM"},
-  {id:2,user:"Player",initials:"Me",msg:"Yes! We have a group of 4 going around 5:30.",time:"5:15 PM"},
-  {id:3,user:"Juan Dela Cruz",initials:"JD",msg:"Can I join? Still beginner level but I learn fast!",time:"5:18 PM"},
-  {id:4,user:"Sarah R.",initials:"SR",msg:"Don't forget — Sunday morning social at 7 AM. Free coffee! ☕",time:"5:22 PM"},
-];
-const activityLog = [
-  {time:"5 min ago",action:"Court Added",detail:"Sibulan Sports Center submitted by user",admin:"admin"},
-  {time:"1 hr ago",action:"Match Recorded",detail:"Maria Tan beat Juan Dela Cruz — +3 pts",admin:"system"},
-  {time:"2 hr ago",action:"Game Created",detail:"Advanced play at Rizal Blvd — 2 spots left",admin:"system"},
-  {time:"4 hr ago",action:"Sponsor Updated",detail:"Café 6200 offer text edited",admin:"admin"},
-  {time:"Yesterday",action:"Player Registered",detail:"Sarah Johnson joined — skill: 2.0 Beginner",admin:"system"},
-  {time:"Yesterday",action:"Event Published",detail:"Dumaguete Summer Slam 2025 set to active",admin:"admin"},
-];
+const defaultCourts = [];
+const defaultGames = [];
+const defaultEvents = [];
+const defaultPlayers = [];
+const defaultSponsors = [];
+const defaultAnnouncements = [];
+const chatMessages = [];
+const activityLog = [];
 
 // ════════════════════════ STATE ════════════════════════
 // localStorage helpers (local cache / fallback)
@@ -1042,12 +994,12 @@ function buildCourts() {
       <td>${c.town}</td>
       <td class="td-mono">${c.type}</td>
       <td style="text-align:center">${c.courts}</td>
-      <td class="td-mono">${c.hours}</td>
+      <td class="td-mono">${c.hours||c.open||''}</td>
       <td>${c.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Inactive</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-o btn-xs" onclick="openModal('court',${c.id})">Edit</button>
-        <button class="btn btn-xs" style="background:${c.status==='active'?'var(--amberd)':'var(--gnd)'};color:${c.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid ${c.status==='active'?'rgba(255,184,0,.2)':'rgba(46,213,115,.2)'}" onclick="toggleCourtStatus(${c.id})">${c.status==='active'?'Deactivate':'Activate'}</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('court',${c.id})">✕</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('court','${c.id}')">Edit</button>
+        <button class="btn btn-xs" style="background:${c.status==='active'?'var(--amberd)':'var(--gnd)'};color:${c.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid ${c.status==='active'?'rgba(255,184,0,.2)':'rgba(46,213,115,.2)'}" onclick="toggleCourtStatus('${c.id}')">${c.status==='active'?'Deactivate':'Activate'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('court','${c.id}')">✕</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1075,8 +1027,8 @@ function buildGames() {
       <td><span class="chip ${spotsClass}">${g.spots}/${g.max}</span></td>
       <td>${g.status==='open'?'<span class="chip chip-g">Open</span>':g.status==='full'?'<span class="chip chip-r">Full</span>':'<span class="chip chip-a">Filling</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-o btn-xs" onclick="openModal('game',${g.id})">Edit</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('game',${g.id})">✕</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('game','${g.id}')">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('game','${g.id}')">✕</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1094,8 +1046,8 @@ function buildEvents() {
       <td class="td-mono">${e.fee}</td>
       <td>${e.status==='active'?'<span class="chip chip-g">Active</span>':e.status==='upcoming'?'<span class="chip chip-a">Upcoming</span>':'<span class="chip chip-r">Ended</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-o btn-xs" onclick="openModal('event',${e.id})">Edit</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('event',${e.id})">✕</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('event','${e.id}')">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('event','${e.id}')">✕</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1108,13 +1060,13 @@ function buildPlayers() {
       <td class="td-mono">${p.id}</td>
       <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--lime);flex-shrink:0">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div><span class="td-name">${p.name}</span></div></td>
       <td><span class="chip chip-s">${p.level}</span></td>
-      <td>${p.location}</td>
+      <td>${p.location||p.area||''}</td>
       <td><strong style="font-family:var(--fm);color:var(--lime)">${p.points} pts</strong></td>
       <td>${p.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Suspended</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-o btn-xs" onclick="openModal('player',${p.id})">Edit</button>
-        <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(255,68,68,.2)':'rgba(46,213,115,.2)'}" onclick="togglePlayerStatus(${p.id})">${p.status==='active'?'Suspend':'Restore'}</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('player',${p.id})">✕</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('player','${p.id}')">Edit</button>
+        <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(255,68,68,.2)':'rgba(46,213,115,.2)'}" onclick="togglePlayerStatus('${p.id}')">${p.status==='active'?'Suspend':'Restore'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('player','${p.id}')">✕</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1171,13 +1123,13 @@ function buildSponsors() {
     <tr>
       <td class="td-mono">${s.id}</td>
       <td class="td-name">${s.name}</td>
-      <td>${s.location}</td>
-      <td style="max-width:200px;font-size:12px;color:var(--tx2)">${s.offer}</td>
+      <td>${s.location||s.loc||''}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--tx2)">${s.offer||s.msg||''}</td>
       <td>${s.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Paused</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-o btn-xs" onclick="openModal('sponsor',${s.id})">Edit</button>
-        <button class="btn btn-xs" style="background:${s.status==='active'?'var(--amberd)':'var(--gnd)'};color:${s.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleSponsorStatus(${s.id})">${s.status==='active'?'Pause':'Activate'}</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('sponsor',${s.id})">✕</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('sponsor','${s.id}')">Edit</button>
+        <button class="btn btn-xs" style="background:${s.status==='active'?'var(--amberd)':'var(--gnd)'};color:${s.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleSponsorStatus('${s.id}')">${s.status==='active'?'Pause':'Activate'}</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('sponsor','${s.id}')">✕</button>
       </div></td>
     </tr>`).join('');
 }
@@ -1201,9 +1153,9 @@ function buildAnnouncements() {
         <div class="ann-meta">${a.date} · <span class="chip ${t.class}" style="font-size:9.5px">${a.type}</span> · ${a.active?'<span style="color:var(--gn)">Published</span>':'<span style="color:var(--tx3)">Draft</span>'}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
-        <button class="btn btn-xs" style="background:${a.active?'var(--amberd)':'var(--gnd)'};color:${a.active?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleAnn(${a.id})">${a.active?'Unpublish':'Publish'}</button>
-        <button class="btn btn-o btn-xs" onclick="openModal('announcement',${a.id})">Edit</button>
-        <button class="btn btn-r btn-xs" onclick="deleteItem('announcement',${a.id})">✕</button>
+        <button class="btn btn-xs" style="background:${a.active?'var(--amberd)':'var(--gnd)'};color:${a.active?'var(--amber)':'var(--gn)'};border:1px solid rgba(0,0,0,.1)" onclick="toggleAnn('${a.id}')">${a.active?'Unpublish':'Publish'}</button>
+        <button class="btn btn-o btn-xs" onclick="openModal('announcement','${a.id}')">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('announcement','${a.id}')">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -1334,7 +1286,11 @@ const modalForms = {
       <div class="fg"><label class="fl">Number of Courts</label><input class="fi" id="mf-courts" type="number" min="1" max="20" value="${item?.courts||2}"></div>
       <div class="fg"><label class="fl">Hours</label><input class="fi" id="mf-hours" value="${item?.hours||'6AM–9PM'}"></div>
     </div>
-    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="inactive" ${item?.status==='inactive'?'selected':''}>Inactive</option></select></div>`,
+    <div class="fg"><label class="fl">Status</label><select class="fi" id="mf-status"><option value="active" ${item?.status==='active'?'selected':''}>Active</option><option value="inactive" ${item?.status==='inactive'?'selected':''}>Inactive</option></select></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Latitude</label><input class="fi" id="mf-lat" type="number" step="0.0001" placeholder="e.g. 9.3067" value="${item?.coords?.[0]||''}"></div>
+      <div class="fg"><label class="fl">Longitude</label><input class="fi" id="mf-lng" type="number" step="0.0001" placeholder="e.g. 123.3047" value="${item?.coords?.[1]||''}"></div>
+    </div>`,
   game: (item) => `
     <div class="fg"><label class="fl">Court</label><input class="fi" id="mf-court" value="${item?.court||''}"></div>
     <div class="fg-row">
@@ -1407,7 +1363,8 @@ function closeModal() { document.getElementById('modalBg').classList.remove('on'
 function saveModal() {
   const g = id => document.getElementById(id)?.value;
   if(modalType === 'court') {
-    const data = {name:g('mf-name'),town:g('mf-town'),type:g('mf-type'),courts:parseInt(g('mf-courts'))||2,hours:g('mf-hours'),status:g('mf-status')};
+    const lat=parseFloat(g('mf-lat')),lng=parseFloat(g('mf-lng'));
+    const data = {name:g('mf-name'),town:g('mf-town'),type:g('mf-type'),courts:parseInt(g('mf-courts'))||2,hours:g('mf-hours'),status:g('mf-status'),...(lat&&lng?{coords:[lat,lng]}:{})};
     if(editId) courts = courts.map(c=>c.id===editId?{...c,...data}:c);
     else courts.push({id:'c'+Date.now(),...data});
     saveData('pt_admin_courts',courts);
@@ -1416,14 +1373,14 @@ function saveModal() {
   } else if(modalType==='game') {
     const data = {court:g('mf-court'),date:g('mf-date'),time:g('mf-time'),level:g('mf-level'),spots:parseInt(g('mf-spots'))||4,max:parseInt(g('mf-max'))||8,status:g('mf-status')};
     if(editId) games = games.map(x=>x.id===editId?{...x,...data}:x);
-    else games.push({id:Date.now(),...data});
+    else games.push({id:'g'+Date.now(),...data});
     saveData('pt_admin_games',games);
     logActivity(editId?'Game Updated':'Game Added', data.court);
     buildGames();
   } else if(modalType==='event') {
     const data = {name:g('mf-name'),type:g('mf-type'),date:g('mf-date'),location:g('mf-location'),fee:g('mf-fee'),status:g('mf-status')};
     if(editId) events = events.map(x=>x.id===editId?{...x,...data}:x);
-    else events.push({id:Date.now(),...data});
+    else events.push({id:'e'+Date.now(),...data});
     saveData('pt_admin_events',events);
     logActivity(editId?'Event Updated':'Event Added', data.name);
     buildEvents();
