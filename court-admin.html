@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PickleTown 6200 · Court Owner Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<style>
+:root{
+  --lime:#B8F53C;--lime2:rgba(184,245,60,.12);--lime3:rgba(184,245,60,.25);
+  --amber:#FFB800;--amberd:rgba(255,184,0,.12);
+  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
+  --rd:#FF4444;--rdd:rgba(255,68,68,.1);
+  --gn:#2ED573;--gnd:rgba(46,213,115,.1);
+  --ink:#08150F;--ink2:#0E1F16;--ink3:#152B1E;--ink4:#1C3828;
+  --tx:#E8F5EE;--tx2:#8FAF9A;--tx3:#4A6B57;
+  --bd:rgba(184,245,60,.08);--bdh:rgba(184,245,60,.18);
+  --r:8px;--rl:14px;--sb:220px;
+  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--tx);font-family:var(--fb);font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(184,245,60,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(184,245,60,.012) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--ink2);border:1px solid var(--bdh);border-radius:20px;padding:44px;width:400px;max-width:calc(100vw - 40px);position:relative;overflow:hidden;animation:popIn .3s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(184,245,60,.08),transparent 70%);pointer-events:none}
+.lb-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(184,245,60,.35)}
+.lb-logo span{font-family:var(--fh);font-size:22px;font-weight:900;letter-spacing:.3px}
+.lb-logo span em{color:var(--lime);font-style:normal}
+.lb-title{font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.3px;text-align:center;margin-bottom:4px}
+.lb-sub{font-size:12.5px;color:var(--tx2);text-align:center;margin-bottom:24px;font-family:var(--fm)}
+.lf-label{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);display:block;margin-bottom:6px}
+.lf-input{width:100%;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:11px 14px;color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .15s;margin-bottom:14px}
+.lf-input:focus{border-color:rgba(184,245,60,.35)}
+.lf-input::placeholder{color:var(--tx3)}
+.lb-err{background:var(--rdd);border:1px solid rgba(255,68,68,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
+.btn-login{width:100%;background:var(--lime);color:var(--ink);border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.btn-login:hover{background:#caff55;box-shadow:0 0 24px rgba(184,245,60,.4)}
+.btn-google{width:100%;background:#fff;color:#1a1a1a;border:none;padding:11px;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.btn-google:hover{background:#f0f0f0;transform:translateY(-1px)}
+.auth-divider{text-align:center;font-size:11px;color:var(--tx3);margin:4px 0 16px;letter-spacing:.5px;text-transform:uppercase;position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--bd)}
+.auth-divider::before{left:0}.auth-divider::after{right:0}
+.back-link{display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s}
+.back-link:hover{color:var(--lime)}
+
+/* LAYOUT */
+#dashApp{display:none}
+.wrap{display:flex;min-height:100vh}
+.sidebar{width:var(--sb);background:var(--ink2);border-right:1px solid var(--bd);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:200;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:2px}
+.sb-logo{padding:18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.sb-ball{width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 0 12px rgba(184,245,60,.3)}
+.sb-name{font-family:var(--fh);font-size:15px;font-weight:900;letter-spacing:.3px;line-height:1}
+.sb-name em{color:var(--lime);font-style:normal}
+.sb-tag{font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.sb-court{padding:12px 16px;background:var(--lime2);border-bottom:1px solid var(--lime3);margin:0}
+.sb-court-name{font-family:var(--fh);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;color:var(--lime);line-height:1.2}
+.sb-court-tag{font-family:var(--fm);font-size:9.5px;color:var(--tx3);margin-top:3px}
+.sb-section{padding:16px 14px 5px;font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
+.sbl{display:flex;align-items:center;gap:9px;padding:9px 14px;margin:1px 8px;border-radius:var(--r);cursor:pointer;transition:all .15s;color:var(--tx2);font-size:13.5px;font-weight:500;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.sbl:hover{background:var(--ink3);color:var(--tx)}
+.sbl.on{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
+.sbl .ico{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--bd)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--ink3);border-radius:var(--r);border:1px solid var(--bd)}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--lime);flex-shrink:0}
+.sb-uinfo{flex:1;min-width:0}
+.sb-uinfo strong{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-uinfo span{font-size:10px;color:var(--tx3);font-family:var(--fm)}
+.sb-logout{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:15px;padding:4px;transition:color .15s;flex-shrink:0}
+.sb-logout:hover{color:var(--rd)}
+
+/* MAIN */
+.main{margin-left:var(--sb);flex:1;position:relative;z-index:1}
+.topbar{height:54px;background:rgba(8,21,15,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:100}
+.topbar-title{font-family:var(--fh);font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.body{padding:24px}
+.panel{display:none}.panel.on{display:block;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* CARDS */
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap}
+.sec-title{font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
+.sec-sub{font-size:13px;color:var(--tx2);margin-top:3px}
+.card{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:22px;margin-bottom:16px}
+.card-title{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:14px;color:var(--lime)}
+
+/* FORM */
+.fg{margin-bottom:16px}
+.fl{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--tx2);display:block;margin-bottom:6px}
+.fi{width:100%;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:10px 13px;color:var(--tx);font-family:var(--fb);font-size:13.5px;outline:none;transition:border-color .15s}
+.fi:focus{border-color:rgba(184,245,60,.35)}
+.fi::placeholder{color:var(--tx3)}
+select.fi{cursor:pointer}
+textarea.fi{resize:vertical;line-height:1.6}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* STATUS BTNS */
+.status-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.st-btn{padding:9px 18px;border-radius:var(--r);font-family:var(--fh);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;border:1px solid transparent;transition:all .17s;background:var(--ink3)}
+.st-btn.active-open{background:var(--gnd);color:var(--gn);border-color:rgba(46,213,115,.3)}
+.st-btn.active-closed{background:var(--rdd);color:var(--rd);border-color:rgba(255,68,68,.3)}
+.st-btn.active-limited{background:var(--amberd);color:var(--amber);border-color:rgba(255,184,0,.3)}
+.st-btn:not(.active-open):not(.active-closed):not(.active-limited){color:var(--tx3)}
+.st-btn:hover{color:var(--tx)}
+
+/* AMENITY PILLS */
+.amenity-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.amenity-pill{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:30px;background:var(--ink3);border:1px solid var(--bd);cursor:pointer;transition:all .15s;font-size:13px;color:var(--tx2);user-select:none}
+.amenity-pill:hover{border-color:var(--bdh);color:var(--tx)}
+.amenity-pill input[type=checkbox]{width:14px;height:14px;accent-color:var(--lime);cursor:pointer}
+.amenity-pill:has(input:checked){background:var(--lime2);border-color:var(--lime3);color:var(--lime)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-l{background:var(--lime);color:var(--ink)}.btn-l:hover{background:#caff55;box-shadow:0 0 18px rgba(184,245,60,.3)}
+.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:rgba(184,245,60,.3);color:var(--lime)}
+.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.2)}.btn-r:hover{background:rgba(255,68,68,.18)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:7px}
+
+/* INFO ROW */
+.info-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:7px}
+.info-row strong{color:var(--tx);min-width:120px;font-weight:600}
+.info-val{font-family:var(--fm);font-size:12px;color:var(--lime)}
+
+/* STATUS CHIP */
+.chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-family:var(--fm);font-size:11px}
+.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.22)}
+.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.22)}
+.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.22)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink3);border:1px solid rgba(184,245,60,.25);border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:1000;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ACCESS DENIED */
+#accessDenied{position:fixed;inset:0;background:var(--ink);z-index:9998;display:none;align-items:center;justify-content:center;text-align:center}
+#accessDenied.on{display:flex}
+
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap}.main{margin-left:0}.fg-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="lb-logo">
+      <div class="lb-ball">🏸</div>
+      <span>Pickle<em>Town</em> 6200</span>
+    </div>
+    <div class="lb-title">Court Owner Portal</div>
+    <div class="lb-sub">Restricted · Court owners only</div>
+    <button class="btn-google" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.015 17.64 11.708 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-divider">or</div>
+    <label class="lf-label">Email</label>
+    <input class="lf-input" type="email" id="loginEmail" placeholder="owner@court.com" autocomplete="email">
+    <label class="lf-label">Password</label>
+    <input class="lf-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    <div id="loginErr" class="lb-err">Sign in failed. Please check your credentials.</div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <a href="index.html" class="back-link">← Back to PickleTown 6200</a>
+  </div>
+</div>
+
+<!-- ACCESS DENIED -->
+<div id="accessDenied">
+  <div style="max-width:420px;padding:32px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🚫</div>
+    <div style="font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;margin-bottom:10px">Access Denied</div>
+    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:22px">Your account is not registered as a court owner. Please contact the PickleTown admin to get access.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <a href="index.html" class="btn btn-o btn-sm">Back to site</a>
+      <button class="btn btn-r btn-sm" onclick="auth.signOut().then(()=>{document.getElementById('accessDenied').classList.remove('on');document.getElementById('loginScreen').style.display='flex'})">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashApp">
+  <div class="wrap">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-ball">🏓</div>
+        <div>
+          <div class="sb-name">Pickle<em>Town</em> 6200</div>
+          <div class="sb-tag">Court Owner Portal</div>
+        </div>
+      </div>
+      <div class="sb-court">
+        <div class="sb-court-name" id="sbCourtName">Loading court…</div>
+        <div class="sb-court-tag">Your Court</div>
+      </div>
+      <div class="sb-section">Manage</div>
+      <button class="sbl on" onclick="showPanel('overview',this)"><span class="ico">🏸</span>My Court</button>
+      <button class="sbl" onclick="showPanel('availability',this)"><span class="ico">📅</span>Availability</button>
+      <button class="sbl" onclick="showPanel('pricing',this)"><span class="ico">💰</span>Pricing</button>
+      <button class="sbl" onclick="showPanel('amenities',this)"><span class="ico">✨</span>Amenities</button>
+      <button class="sbl" onclick="showPanel('contact',this)"><span class="ico">📞</span>Contact Info</button>
+      <button class="sbl" onclick="showPanel('status',this)"><span class="ico">🔴</span>Court Status</button>
+      <div class="sb-bottom">
+        <div class="sb-user">
+          <div class="sb-av" id="sbAv">CO</div>
+          <div class="sb-uinfo"><strong id="sbName">Court Owner</strong><span id="sbEmail">owner</span></div>
+          <button class="sb-logout" onclick="doSignOut()" title="Sign out">⏻</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="topbarTitle">My Court</div>
+        </div>
+        <div class="topbar-r">
+          <a href="index.html" target="_blank" class="btn btn-o btn-sm">↗ View Public Site</a>
+          <button class="btn btn-l btn-sm" onclick="saveAll()">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <!-- OVERVIEW -->
+        <div class="panel on" id="pnl-overview">
+          <div class="sec-hd">
+            <div><div class="sec-title">My Court</div><div class="sec-sub">Overview of your court listing on PickleTown 6200</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Court Details</div>
+            <div class="info-row"><strong>Court Name</strong><span class="info-val" id="ovName">—</span></div>
+            <div class="info-row"><strong>Location</strong><span class="info-val" id="ovTown">—</span></div>
+            <div class="info-row"><strong>Court Type</strong><span class="info-val" id="ovType">—</span></div>
+            <div class="info-row"><strong>Number of Courts</strong><span class="info-val" id="ovCourts">—</span></div>
+            <div class="info-row"><strong>Current Status</strong><span id="ovStatus">—</span></div>
+            <div class="info-row"><strong>Last Updated</strong><span class="info-val" id="ovUpdated">—</span></div>
+          </div>
+          <div class="card" style="background:var(--lime2);border-color:var(--lime3)">
+            <div style="display:flex;align-items:flex-start;gap:14px">
+              <div style="font-size:28px;flex-shrink:0">💡</div>
+              <div>
+                <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;color:var(--lime);margin-bottom:6px">Your changes are live instantly</div>
+                <p style="font-size:13px;color:var(--tx2);line-height:1.7">Any updates you save here — hours, pricing, amenities, or status — are reflected immediately on the public PickleTown site. Players visiting the court listings will see your latest information right away.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AVAILABILITY -->
+        <div class="panel" id="pnl-availability">
+          <div class="sec-hd">
+            <div><div class="sec-title">Availability</div><div class="sec-sub">Set your court's operating hours and any special closures</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Operating Hours</div>
+            <div class="fg">
+              <label class="fl">General Hours</label>
+              <input class="fi" type="text" id="avHours" placeholder="e.g. 6AM–10PM daily, or Mon–Fri 5PM–9PM, Sat–Sun 7AM–6PM">
+              <p style="font-size:11.5px;color:var(--tx3);margin-top:6px">This appears on your court card and map popup. Keep it concise.</p>
+            </div>
+            <div class="fg-row">
+              <div class="fg">
+                <label class="fl">Weekday Hours</label>
+                <input class="fi" type="text" id="avWeekday" placeholder="e.g. 5:30PM – 10PM">
+              </div>
+              <div class="fg">
+                <label class="fl">Weekend Hours</label>
+                <input class="fi" type="text" id="avWeekend" placeholder="e.g. 7AM – 8PM">
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Special Closures / Reservations</div>
+            <div class="fg">
+              <label class="fl">Upcoming Closures or Events</label>
+              <textarea class="fi" id="avClosure" rows="4" placeholder="e.g. Closed June 22–23 for Summer Slam tournament. Court 2 under maintenance until Friday June 14."></textarea>
+            </div>
+            <div class="fg">
+              <label class="fl">Reservation Policy</label>
+              <textarea class="fi" id="avReservation" rows="3" placeholder="e.g. Walk-in only during open play. Reservations available via Facebook page or call us 1 hour in advance."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRICING -->
+        <div class="panel" id="pnl-pricing">
+          <div class="sec-hd">
+            <div><div class="sec-title">Pricing</div><div class="sec-sub">Set fees and pricing information for your court</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Fee Structure</div>
+            <div class="fg-row">
+              <div class="fg">
+                <label class="fl">Drop-in Fee</label>
+                <input class="fi" type="text" id="prDropin" placeholder="e.g. ₱100/hour or Free">
+              </div>
+              <div class="fg">
+                <label class="fl">Membership / Monthly</label>
+                <input class="fi" type="text" id="prMembership" placeholder="e.g. ₱800/month">
+              </div>
+            </div>
+            <div class="fg-row">
+              <div class="fg">
+                <label class="fl">Court Rental (Full Court)</label>
+                <input class="fi" type="text" id="prRental" placeholder="e.g. ₱500/hour">
+              </div>
+              <div class="fg">
+                <label class="fl">Free Play Hours</label>
+                <input class="fi" type="text" id="prFreePlay" placeholder="e.g. Saturdays 7–9AM free">
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Pricing Notes</label>
+              <textarea class="fi" id="prNotes" rows="3" placeholder="Any extra pricing info, discounts for seniors, students, PickleTown members, etc."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- AMENITIES -->
+        <div class="panel" id="pnl-amenities">
+          <div class="sec-hd">
+            <div><div class="sec-title">Amenities</div><div class="sec-sub">Select all facilities available at your court</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Facilities & Features</div>
+            <div class="amenity-grid">
+              <label class="amenity-pill"><input type="checkbox" id="am-parking"> 🚗 Parking</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-lights"> 💡 Night Lights</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-aircon"> ❄️ Air Conditioning</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-locker"> 🔒 Locker Rooms</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-rental"> 🏓 Paddle Rental</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-water"> 💧 Water Dispenser</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-spectator"> 👀 Spectator Area</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-wifi"> 📶 WiFi</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-canteen"> 🍜 Canteen / Snacks</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-shower"> 🚿 Shower Rooms</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-firstaid"> 🩹 First Aid Kit</label>
+              <label class="amenity-pill"><input type="checkbox" id="am-covered"> 🏗️ Covered / Indoor</label>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Additional Notes</div>
+            <div class="fg">
+              <label class="fl">Other Amenities or Special Features</label>
+              <textarea class="fi" id="amNotes" rows="3" placeholder="Anything else players should know about your facilities…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="panel" id="pnl-contact">
+          <div class="sec-hd">
+            <div><div class="sec-title">Contact Info</div><div class="sec-sub">How players can reach you for bookings and inquiries</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Contact Details</div>
+            <div class="fg-row">
+              <div class="fg">
+                <label class="fl">Phone / Viber / WhatsApp</label>
+                <input class="fi" type="tel" id="ctPhone" placeholder="+63 9XX XXX XXXX">
+              </div>
+              <div class="fg">
+                <label class="fl">Email</label>
+                <input class="fi" type="email" id="ctEmail" placeholder="court@example.com">
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Facebook Page URL</label>
+              <input class="fi" type="url" id="ctFacebook" placeholder="https://facebook.com/yourcourtpage">
+            </div>
+            <div class="fg">
+              <label class="fl">Instagram / Other Social</label>
+              <input class="fi" type="text" id="ctInstagram" placeholder="@yourcourthandle or full URL">
+            </div>
+            <div class="fg">
+              <label class="fl">Google Maps Link (optional)</label>
+              <input class="fi" type="url" id="ctMaps" placeholder="https://maps.google.com/...">
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS -->
+        <div class="panel" id="pnl-status">
+          <div class="sec-hd">
+            <div><div class="sec-title">Court Status</div><div class="sec-sub">Update your court's current availability status — shown live on the public site</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Status</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Current Status</div>
+            <div class="status-btns">
+              <button class="st-btn active-open" id="stOpen" onclick="setStatus('open')">✅ Open</button>
+              <button class="st-btn" id="stLimited" onclick="setStatus('limited')">⚠️ Limited Hours</button>
+              <button class="st-btn" id="stClosed" onclick="setStatus('closed')">🔴 Closed</button>
+              <button class="st-btn" id="stMaintenance" onclick="setStatus('maintenance')">🔧 Maintenance</button>
+            </div>
+            <p style="font-size:11.5px;color:var(--tx3);margin-top:8px;margin-bottom:20px">Players will see this status badge on your court card in real time.</p>
+            <div class="fg">
+              <label class="fl">Status Note</label>
+              <input class="fi" type="text" id="stNote" placeholder="e.g. Court 2 under maintenance. Court 1 open as usual.">
+              <p style="font-size:11.5px;color:var(--tx3);margin-top:6px">Shown to players below your court status. Keep it brief and clear.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Schedule Ahead</div>
+            <div class="fg-row">
+              <div class="fg">
+                <label class="fl">Temporary Closure From</label>
+                <input class="fi" type="date" id="closeFrom">
+              </div>
+              <div class="fg">
+                <label class="fl">Reopening Date</label>
+                <input class="fi" type="date" id="closeTo">
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Reason for Closure</label>
+              <input class="fi" type="text" id="closeReason" placeholder="e.g. Annual maintenance, Private event, Holiday">
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end .body -->
+    </div><!-- end .main -->
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+let courtOwnerCourtId = null;
+let currentUser = null;
+let currentStatus = 'open';
+
+// ── AUTH ──
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if(!email || !pass) { showLoginErr('Please enter your email and password.'); return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(r => onUserSignedIn(r.user))
+    .catch(e => showLoginErr(e.message));
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function signInGoogle() {
+  auth.signInWithPopup(googleProvider)
+    .then(r => onUserSignedIn(r.user))
+    .catch(e => showLoginErr(e.message));
+}
+
+function showLoginErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display='none', 5000);
+}
+
+function onUserSignedIn(user) {
+  currentUser = user;
+  // Check court_owner_assignments by email
+  const safeEmail = user.email.replace(/[.#$\[\]@]/g,'_');
+  db.ref('court_owner_assignments/' + safeEmail).once('value', snap => {
+    if(snap.exists()) {
+      courtOwnerCourtId = snap.val().courtId;
+      showDashboard(user);
+    } else {
+      // Check users/{uid} for role
+      db.ref('users/' + user.uid).once('value', snap2 => {
+        const u = snap2.val();
+        if(u && u.role === 'court_owner' && u.courtId) {
+          courtOwnerCourtId = u.courtId;
+          showDashboard(user);
+        } else {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('accessDenied').classList.add('on');
+        }
+      });
+    }
+  });
+}
+
+function showDashboard(user) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashApp').style.display = 'block';
+  const name = user.displayName || user.email || 'Court Owner';
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sbAv').textContent    = initials;
+  document.getElementById('sbName').textContent  = name;
+  document.getElementById('sbEmail').textContent = user.email || '';
+  loadCourtData();
+  toast('Welcome, ' + name.split(' ')[0] + '!');
+}
+
+function doSignOut() {
+  auth.signOut().then(() => {
+    document.getElementById('dashApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    courtOwnerCourtId = null; currentUser = null;
+    toast('Signed out.');
+  });
+}
+
+auth.onAuthStateChanged(user => {
+  if(!user && document.getElementById('dashApp').style.display === 'block') {
+    document.getElementById('dashApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
+
+// ── LOAD ──
+function loadCourtData() {
+  if(!courtOwnerCourtId) return;
+  db.ref('courts/' + courtOwnerCourtId).on('value', snap => {
+    const c = snap.val();
+    if(!c) { toast('⚠ Court data not found. Contact admin.'); return; }
+    populateFields(c);
+  });
+}
+
+function populateFields(c) {
+  // Sidebar court name
+  document.getElementById('sbCourtName').textContent    = c.name || 'My Court';
+  // Overview
+  document.getElementById('ovName').textContent         = c.name    || '—';
+  document.getElementById('ovTown').textContent         = c.town    || '—';
+  document.getElementById('ovType').textContent         = c.type    || '—';
+  document.getElementById('ovCourts').textContent       = c.courts  ? c.courts + ' court' + (c.courts>1?'s':'') : '—';
+  document.getElementById('ovUpdated').textContent      = c.lastUpdated ? new Date(c.lastUpdated).toLocaleString('en-PH') : '—';
+  const statusMap = {open:'chip-g',closed:'chip-r',limited:'chip-a',maintenance:'chip-a'};
+  const statusLabel = {open:'Open',closed:'Closed',limited:'Limited Hours',maintenance:'Under Maintenance'};
+  const st = c.status || 'open';
+  document.getElementById('ovStatus').innerHTML = `<span class="chip ${statusMap[st]||'chip-g'}">${statusLabel[st]||st}</span>`;
+  // Availability
+  if(c.hours)       document.getElementById('avHours').value       = c.hours;
+  if(c.weekday)     document.getElementById('avWeekday').value     = c.weekday;
+  if(c.weekend)     document.getElementById('avWeekend').value     = c.weekend;
+  if(c.closureNote) document.getElementById('avClosure').value     = c.closureNote;
+  if(c.reservationPolicy) document.getElementById('avReservation').value = c.reservationPolicy;
+  // Pricing
+  if(c.dropinFee)   document.getElementById('prDropin').value      = c.dropinFee;
+  if(c.membershipFee) document.getElementById('prMembership').value = c.membershipFee;
+  if(c.rentalFee)   document.getElementById('prRental').value      = c.rentalFee;
+  if(c.freePlay)    document.getElementById('prFreePlay').value    = c.freePlay;
+  if(c.pricingNotes) document.getElementById('prNotes').value      = c.pricingNotes;
+  // Amenities
+  const am = c.amenities || {};
+  ['parking','lights','aircon','locker','rental','water','spectator','wifi','canteen','shower','firstaid','covered'].forEach(k => {
+    const el = document.getElementById('am-'+k);
+    if(el) el.checked = !!am[k];
+  });
+  if(c.amenityNotes) document.getElementById('amNotes').value = c.amenityNotes;
+  // Contact
+  if(c.contactPhone)    document.getElementById('ctPhone').value    = c.contactPhone;
+  if(c.contactEmail)    document.getElementById('ctEmail').value    = c.contactEmail;
+  if(c.contactFb)       document.getElementById('ctFacebook').value = c.contactFb;
+  if(c.contactInstagram) document.getElementById('ctInstagram').value = c.contactInstagram;
+  if(c.contactMaps)     document.getElementById('ctMaps').value    = c.contactMaps;
+  // Status
+  setStatus(c.status || 'open', false);
+  if(c.statusNote) document.getElementById('stNote').value = c.statusNote;
+  if(c.closeFrom)  document.getElementById('closeFrom').value = c.closeFrom;
+  if(c.closeTo)    document.getElementById('closeTo').value   = c.closeTo;
+  if(c.closeReason) document.getElementById('closeReason').value = c.closeReason;
+}
+
+// ── SAVE ──
+function saveAll() {
+  if(!courtOwnerCourtId) { toast('⚠ No court assigned to your account.'); return; }
+  const amenities = {};
+  ['parking','lights','aircon','locker','rental','water','spectator','wifi','canteen','shower','firstaid','covered'].forEach(k => {
+    amenities[k] = !!(document.getElementById('am-'+k)?.checked);
+  });
+  const data = {
+    hours:             document.getElementById('avHours').value.trim(),
+    weekday:           document.getElementById('avWeekday').value.trim(),
+    weekend:           document.getElementById('avWeekend').value.trim(),
+    closureNote:       document.getElementById('avClosure').value.trim(),
+    reservationPolicy: document.getElementById('avReservation').value.trim(),
+    dropinFee:         document.getElementById('prDropin').value.trim(),
+    membershipFee:     document.getElementById('prMembership').value.trim(),
+    rentalFee:         document.getElementById('prRental').value.trim(),
+    freePlay:          document.getElementById('prFreePlay').value.trim(),
+    pricingNotes:      document.getElementById('prNotes').value.trim(),
+    amenities,
+    amenityNotes:      document.getElementById('amNotes').value.trim(),
+    contactPhone:      document.getElementById('ctPhone').value.trim(),
+    contactEmail:      document.getElementById('ctEmail').value.trim(),
+    contactFb:         document.getElementById('ctFacebook').value.trim(),
+    contactInstagram:  document.getElementById('ctInstagram').value.trim(),
+    contactMaps:       document.getElementById('ctMaps').value.trim(),
+    status:            currentStatus,
+    statusNote:        document.getElementById('stNote').value.trim(),
+    closeFrom:         document.getElementById('closeFrom').value,
+    closeTo:           document.getElementById('closeTo').value,
+    closeReason:       document.getElementById('closeReason').value.trim(),
+    lastUpdated:       Date.now(),
+    updatedBy:         currentUser ? currentUser.uid : 'unknown'
+  };
+  db.ref('courts/' + courtOwnerCourtId).update(data)
+    .then(() => toast('✅ Changes saved and live on the public site!'))
+    .catch(e => toast('⚠ Save failed: ' + e.message));
+}
+
+// ── STATUS ──
+function setStatus(s, save) {
+  currentStatus = s;
+  ['open','limited','closed','maintenance'].forEach(k => {
+    const btn = document.getElementById('st'+k.charAt(0).toUpperCase()+k.slice(1));
+    if(btn) {
+      btn.className = 'st-btn';
+      if(k===s) {
+        const map = {open:'active-open',closed:'active-closed',limited:'active-limited',maintenance:'active-limited'};
+        btn.classList.add(map[k]);
+      }
+    }
+  });
+}
+
+// ── PANEL NAV ──
+const panelTitles = {overview:'My Court',availability:'Availability',pricing:'Pricing',amenities:'Amenities',contact:'Contact Info',status:'Court Status'};
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sbl').forEach(b=>b.classList.remove('on'));
+  const pnl = document.getElementById('pnl-'+id);
+  if(pnl) pnl.classList.add('on');
+  if(btn) btn.classList.add('on');
+  document.getElementById('topbarTitle').textContent = panelTitles[id] || id;
+}
+
+// ── TOAST ──
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 3000);
+}
+</script>
+</body>
+</html>

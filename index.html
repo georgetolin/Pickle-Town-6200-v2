@@ -14,6 +14,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PickleTown 6200 · Dumaguete Pickleball Community</title>
+<meta name="description" content="Dumaguete's #1 pickleball community hub. Find courts, join games, track your DUPR rating, and connect with players across the 6200 area and Negros Oriental.">
+<meta name="keywords" content="pickleball Dumaguete, pickleball courts Negros Oriental, DUPR rating Philippines, pickleball community 6200">
+<meta name="author" content="PickleTown 6200">
+<link rel="canonical" href="https://dumapicklecourtfinder.online/">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<!-- Open Graph -->
+<meta property="og:title" content="PickleTown 6200 · Dumaguete Pickleball Community">
+<meta property="og:description" content="Find courts, join games, and connect with pickleball players in Dumaguete City and Negros Oriental.">
+<meta property="og:url" content="https://dumapicklecourtfinder.online/">
+<meta property="og:type" content="website">
+<!-- Firebase SDK v9 compat (CDN — no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -115,7 +130,7 @@ main{padding-top:60px;position:relative;z-index:1}
   position:absolute;inset:0;
   background:
     linear-gradient(rgba(8,21,15,.55),rgba(8,21,15,.7)),
-    url('https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=1400&q=80') center/cover;
+    url('https://images.pexels.com/photos/29439333/pexels-photo-29439333.jpeg?auto=compress&cs=tinysrgb&w=1400') center/cover;
 }
 .hero-lines{
   position:absolute;inset:0;opacity:.12;
@@ -306,6 +321,30 @@ textarea.fc{resize:vertical;line-height:1.6}
 /* ═══════════════ MOBILE NAV ═══════════════ */
 .mob-nav-btn{display:none;background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px}
 @media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(8,21,15,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
+
+/* ═══════════════ AUTH MODAL ═══════════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.on{display:flex}
+.auth-modal{background:var(--ink2);border:1px solid var(--bdh);border-radius:20px;padding:36px 32px;max-width:420px;width:100%;position:relative}
+.auth-modal h2{font-family:var(--fh);font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-.5px;margin-bottom:6px}
+.auth-modal p{font-size:13px;color:var(--tx2);margin-bottom:28px;line-height:1.6}
+.auth-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .17s;margin-bottom:10px}
+.auth-btn-g{background:#fff;color:#1a1a1a}
+.auth-btn-g:hover{background:#f0f0f0;transform:translateY(-1px)}
+.auth-btn-f{background:#1877F2;color:#fff}
+.auth-btn-f:hover{background:#1468d8;transform:translateY(-1px)}
+.auth-divider{text-align:center;font-size:11.5px;color:var(--tx3);margin:16px 0;letter-spacing:.5px;text-transform:uppercase;position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:44%;height:1px;background:var(--bd)}
+.auth-divider::before{left:0}.auth-divider::after{right:0}
+.auth-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer;line-height:1;padding:4px}
+.auth-close:hover{color:var(--tx)}
+.nav-user{display:none;align-items:center;gap:8px;cursor:pointer}
+.nav-user.on{display:flex}
+.nav-user-av{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--bdh)}
+.nav-user-av-txt{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:900;color:var(--lime)}
+.dupr-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);font-family:var(--fm);font-size:10px;color:var(--sky)}
+.dupr-badge a{color:var(--sky);text-decoration:none}
+.dupr-badge a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -326,10 +365,14 @@ textarea.fc{resize:vertical;line-height:1.6}
       <button class="nl" onclick="goTo('events',this)">Events</button>
       <button class="nl" onclick="goTo('sponsors',this)">Sponsors</button>
     </div>
-    <div class="nav-r">
-      <button class="btn btn-o btn-sm" onclick="toast('Sign in coming soon!')">Sign In</button>
-      <button class="btn btn-l btn-sm" onclick="toast('🎉 Welcome to PickleTown 6200!')">Join Now</button>
-      <div class="nav-av">PB</div>
+    <div class="nav-r" id="navR">
+      <button class="btn btn-o btn-sm" id="btnSignIn" onclick="openAuthModal()">Sign In</button>
+      <button class="btn btn-l btn-sm" id="btnJoin" onclick="openAuthModal()">Join Now</button>
+      <div class="nav-user" id="navUser">
+        <div class="nav-user-av-txt" id="navAvatarTxt">PB</div>
+        <span style="font-family:var(--fh);font-size:13px;font-weight:700;color:var(--tx2);letter-spacing:.2px" id="navUserName"></span>
+        <button class="btn btn-o btn-sm" onclick="doSignOut()" style="margin-left:4px">Sign Out</button>
+      </div>
     </div>
   </div>
 </nav>
@@ -605,8 +648,10 @@ textarea.fc{resize:vertical;line-height:1.6}
             <option>Valencia</option><option>Bacong</option><option>Sibulan</option>
           </select>
         </div>
-        <div class="fg"><label>Availability</label><textarea class="fc" rows="3" placeholder="e.g., Weekday evenings 5–9pm, Saturday mornings"></textarea></div>
-        <button class="btn btn-l" style="width:100%" onclick="toast('✅ Profile updated!')">Save Profile →</button>
+        <div class="fg"><label>DUPR Rating</label><input class="fc" type="number" id="profileDuprRating" step="0.001" min="2.000" max="8.000" placeholder="e.g., 3.456"></div>
+        <div class="fg"><label>DUPR Profile ID <span style="font-size:11px;color:var(--tx3);font-weight:400;text-transform:none">(from app.dupr.com)</span></label><input class="fc" type="text" id="profileDuprId" placeholder="Your DUPR player ID"></div>
+        <div class="fg"><label>Availability</label><textarea class="fc" id="profileAvail" rows="3" placeholder="e.g., Weekday evenings 5–9pm, Saturday mornings"></textarea></div>
+        <button class="btn btn-l" style="width:100%" onclick="saveProfile()">Save Profile →</button>
       </div>
     </div>
   </div>
@@ -772,11 +817,47 @@ textarea.fc{resize:vertical;line-height:1.6}
       <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
         <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
         <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
+        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Portal</a>
         <a href="admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin Login</a>
       </div>
     </div>
   </div>
 </footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" onclick="if(event.target===this)closeAuthModal()">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+    <h2>Welcome to <span style="color:var(--lime)">PickleTown</span></h2>
+    <p>Sign in to join games, track your DUPR rating, and connect with players across Dumaguete.</p>
+
+    <button class="auth-btn auth-btn-g" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+
+    <button class="auth-btn auth-btn-f" onclick="signInFacebook()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Continue with Facebook
+    </button>
+
+    <div class="auth-divider">or</div>
+
+    <div id="authEmailSection">
+      <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Email</label><input class="fc" type="email" id="authEmail" placeholder="your@email.com"></div>
+      <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Password</label><input class="fc" type="password" id="authPassword" placeholder="••••••••"></div>
+      <div id="authError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-l" style="flex:1" onclick="signInEmail()">Sign In</button>
+        <button class="btn btn-o" style="flex:1" onclick="registerEmail()">Register</button>
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:18px;margin-bottom:0">
+      By signing in you agree to our community guidelines. <br>Court owners: <a href="court-admin.html" style="color:var(--lime);text-decoration:none">use the court portal →</a>
+    </p>
+  </div>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toastEl"></div>
@@ -785,40 +866,43 @@ textarea.fc{resize:vertical;line-height:1.6}
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-// ════════════════════════ DATA ════════════════════════
-const courts = [
-  {name:"Freedom Park Court",town:"Dumaguete City",coords:[9.3067,123.3047],courts:2,type:"Outdoor",open:"6AM–10PM"},
-  {name:"Rizal Boulevard Court",town:"Dumaguete City",coords:[9.3050,123.3130],courts:2,type:"Outdoor/Covered",open:"Dawn–Dusk"},
-  {name:"Silliman University Courts",town:"Dumaguete City",coords:[9.3120,123.3070],courts:4,type:"Outdoor+Lights",open:"4PM–9PM"},
-  {name:"Robinsons Place Dumaguete",town:"Dumaguete City",coords:[9.3020,123.3100],courts:2,type:"Indoor AC",open:"10AM–9PM"},
-  {name:"Valencia Municipal Gym",town:"Valencia",coords:[9.3501,123.2913],courts:2,type:"Covered",open:"Wknd Open Play"},
-  {name:"Bacong Covered Court",town:"Bacong",coords:[9.2378,123.3648],courts:1,type:"Covered",open:"Flexible"},
-  {name:"Sibulan Sports Center",town:"Sibulan",coords:[9.2644,123.3056],courts:1,type:"Multi-purpose",open:"By Reservation"},
-  {name:"Dauin Community Court",town:"Dauin",coords:[9.1901,123.3278],courts:1,type:"Outdoor",open:"Open Play Sun"},
+// ════════════════════════ DEFAULT DATA (used as fallback if Firebase is empty) ════════════════════════
+const defaultCourts = [
+  {id:'c1',name:"Freedom Park Court",town:"Dumaguete City",coords:[9.3067,123.3047],courts:2,type:"Outdoor",open:"6AM–10PM",status:"active"},
+  {id:'c2',name:"Rizal Boulevard Court",town:"Dumaguete City",coords:[9.3050,123.3130],courts:2,type:"Outdoor/Covered",open:"Dawn–Dusk",status:"active"},
+  {id:'c3',name:"Silliman University Courts",town:"Dumaguete City",coords:[9.3120,123.3070],courts:4,type:"Outdoor+Lights",open:"4PM–9PM",status:"active"},
+  {id:'c4',name:"Robinsons Place Dumaguete",town:"Dumaguete City",coords:[9.3020,123.3100],courts:2,type:"Indoor AC",open:"10AM–9PM",status:"active"},
+  {id:'c5',name:"Valencia Municipal Gym",town:"Valencia",coords:[9.3501,123.2913],courts:2,type:"Covered",open:"Wknd Open Play",status:"active"},
+  {id:'c6',name:"Bacong Covered Court",town:"Bacong",coords:[9.2378,123.3648],courts:1,type:"Covered",open:"Flexible",status:"active"},
+  {id:'c7',name:"Sibulan Sports Center",town:"Sibulan",coords:[9.2644,123.3056],courts:1,type:"Multi-purpose",open:"By Reservation",status:"active"},
+  {id:'c8',name:"Dauin Community Court",town:"Dauin",coords:[9.1901,123.3278],courts:1,type:"Outdoor",open:"Open Play Sun",status:"active"},
+];
+const defaultGames = [
+  {id:'g1',court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8},
+  {id:'g2',court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8},
+  {id:'g3',court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12},
+  {id:'g4',court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12},
+  {id:'g5',court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6},
+];
+const defaultPlayers = [
+  {id:'p1',name:"Maria Tan",initials:"MT",dist:"1.2 km",area:"Daro, Dumaguete",level:"3.0 · Intermediate",note:"Doubles specialist. Weekday evenings & weekends. Carpool available.",duprRating:3.124,duprId:""},
+  {id:'p2',name:"Juan Dela Cruz",initials:"JD",dist:"2.5 km",area:"Bantayan, Dumaguete",level:"4.0 · Advanced",note:"Competitive play only. Coaches beginners on request.",duprRating:4.012,duprId:""},
+  {id:'p3',name:"Sarah Johnson",initials:"SJ",dist:"3.1 km",area:"Valencia",level:"2.0 · Beginner",note:"New to pickleball, looking for friendly games & practice partners!",duprRating:0,duprId:""},
+  {id:'p4',name:"Alex Reyes",initials:"AR",dist:"0.8 km",area:"Daro, Dumaguete",level:"3.5 · Advanced Intermediate",note:"Former tennis player. Plays most mornings before work.",duprRating:3.567,duprId:""},
+  {id:'p5',name:"Michael Lim",initials:"ML",dist:"4.2 km",area:"Sibulan",level:"3.0 · Intermediate",note:"Brings extra paddles. Loves teaching newcomers.",duprRating:3.001,duprId:""},
+];
+const defaultSponsors = [
+  {id:'s1',ico:"🎾",name:"Dumaguete Sports Hub",loc:"Hibbard Ave, Dumaguete City",msg:"Your local pickleball gear shop — paddles, shoes, balls & accessories. 10% off for PickleTown members!"},
+  {id:'s2',ico:"☕",name:"Café 6200",loc:"Rizal Blvd, Dumaguete City",msg:"Post-game coffee and merienda. Show your court check-in receipt for a free drink upgrade!"},
+  {id:'s3',ico:"🏖️",name:"Dauin Beach Resort",loc:"Dauin, Negros Oriental",msg:"Play. Swim. Relax. Special weekend rates for PickleTown players. Mention 6200 when booking!"},
+  {id:'s4',ico:"💆",name:"Valencia Sports Clinic",loc:"Valencia, Negros Oriental",msg:"Sports massage & recovery services. Stretch, recover, play again. PickleTown discount available."},
 ];
 
-const games = [
-  {court:"Freedom Park Court",date:"Today",time:"5:30 PM",level:"All Levels",spots:4,max:8},
-  {court:"Silliman University Courts",date:"Tomorrow",time:"4:00 PM",level:"Intermediate",spots:3,max:8},
-  {court:"Valencia Municipal Gym",date:"Saturday",time:"9:00 AM",level:"Beginner",spots:5,max:12},
-  {court:"Bacong Covered Court",date:"Sunday",time:"3:00 PM",level:"All Levels",spots:6,max:12},
-  {court:"Rizal Boulevard Court",date:"Today",time:"6:00 PM",level:"Advanced",spots:2,max:6},
-];
-
-const players = [
-  {name:"Maria Tan",initials:"MT",dist:"1.2 km",area:"Daro, Dumaguete",level:"3.0 · Intermediate",note:"Doubles specialist. Weekday evenings & weekends. Carpool available."},
-  {name:"Juan Dela Cruz",initials:"JD",dist:"2.5 km",area:"Bantayan, Dumaguete",level:"4.0 · Advanced",note:"Competitive play only. Coaches beginners on request."},
-  {name:"Sarah Johnson",initials:"SJ",dist:"3.1 km",area:"Valencia",level:"2.0 · Beginner",note:"New to pickleball, looking for friendly games & practice partners!"},
-  {name:"Alex Reyes",initials:"AR",dist:"0.8 km",area:"Daro, Dumaguete",level:"3.5 · Advanced Intermediate",note:"Former tennis player. Plays most mornings before work."},
-  {name:"Michael Lim",initials:"ML",dist:"4.2 km",area:"Sibulan",level:"3.0 · Intermediate",note:"Brings extra paddles. Loves teaching newcomers."},
-];
-
-const sponsors = [
-  {ico:"🎾",name:"Dumaguete Sports Hub",loc:"Hibbard Ave, Dumaguete City",msg:"Your local pickleball gear shop — paddles, shoes, balls & accessories. 10% off for PickleTown members!"},
-  {ico:"☕",name:"Café 6200",loc:"Rizal Blvd, Dumaguete City",msg:"Post-game coffee and merienda. Show your court check-in receipt for a free drink upgrade!"},
-  {ico:"🏖️",name:"Dauin Beach Resort",loc:"Dauin, Negros Oriental",msg:"Play. Swim. Relax. Special weekend rates for PickleTown players. Mention 6200 when booking!"},
-  {ico:"💆",name:"Valencia Sports Clinic",loc:"Valencia, Negros Oriental",msg:"Sports massage & recovery services. Stretch, recover, play again. PickleTown discount available."},
-];
+// Live data arrays — populated by Firebase listeners (fall back to defaults)
+let courts  = [...defaultCourts];
+let games   = [...defaultGames];
+let players = [...defaultPlayers];
+let sponsors = [...defaultSponsors];
 
 // ════════════════════════ NAVIGATION ════════════════════════
 function goTo(page, btn) {
@@ -933,15 +1017,40 @@ function haversineDist(a, b) {
 
 // ════════════════════════ CHECK-INS ════════════════════════
 function doCheckIn(name) {
-  const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
-  ci[name] = (ci[name]||0)+1;
-  localStorage.setItem('pt6200ci', JSON.stringify(ci));
-  updateCheckinsDisplay();
-  toast(`✅ Checked in at ${name}! (${ci[name]} total)`);
+  // Write check-in to Firebase (with localStorage fallback)
+  const safeName = name.replace(/[.#$\[\]]/g,'_');
+  if(typeof db !== 'undefined') {
+    const ref = db.ref('checkins/' + safeName);
+    ref.transaction(val => (val || 0) + 1, (err, committed, snap) => {
+      if(!err && committed) {
+        updateCheckinsDisplay();
+        toast(`✅ Checked in at ${name}! (${snap.val()} total)`);
+      }
+    });
+  } else {
+    const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
+    ci[name] = (ci[name]||0)+1;
+    localStorage.setItem('pt6200ci', JSON.stringify(ci));
+    updateCheckinsDisplay();
+    toast(`✅ Checked in at ${name}! (${ci[name]} total)`);
+  }
 }
 
 function updateCheckinsDisplay() {
-  const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
+  const el = document.getElementById('checkinsDisplay');
+  if(!el) return;
+  if(typeof db !== 'undefined') {
+    db.ref('checkins').once('value', snap => {
+      const ci = snap.val() || {};
+      renderCheckinsDisplay(ci);
+    });
+  } else {
+    const ci = JSON.parse(localStorage.getItem('pt6200ci'))||{};
+    renderCheckinsDisplay(ci);
+  }
+}
+
+function renderCheckinsDisplay(ci) {
   const el = document.getElementById('checkinsDisplay');
   if(!el) return;
   if(!Object.keys(ci).length) {
@@ -950,15 +1059,13 @@ function updateCheckinsDisplay() {
   }
   el.innerHTML = Object.entries(ci)
     .sort((a,b)=>b[1]-a[1])
-    .map(([c,n])=>`<div class="ci-item"><span style="font-size:13px">${c}</span><span>${n} check-in${n!==1?'s':''}</span></div>`)
+    .map(([c,n])=>`<div class="ci-item"><span style="font-size:13px">${c.replace(/_/g,' ')}</span><span>${n} check-in${n!==1?'s':''}</span></div>`)
     .join('');
 }
 
 // ════════════════════════ RANKINGS ════════════════════════
-let rankings = JSON.parse(localStorage.getItem('pt6200ranks'))||{
-  "Maria Tan":45,"Juan Dela Cruz":38,"Sarah Johnson":32,"Alex Reyes":28,"Michael Lim":25
-};
-let totalMatches = parseInt(localStorage.getItem('pt6200matches'))||0;
+let rankings = {"Maria Tan":45,"Juan Dela Cruz":38,"Sarah Johnson":32,"Alex Reyes":28,"Michael Lim":25};
+let totalMatches = 0;
 
 function submitMatch() {
   const a=document.getElementById('pA').value.trim();
@@ -970,8 +1077,14 @@ function submitMatch() {
   if(!rankings[b]) rankings[b]=0;
   rankings[w]=(rankings[w]||0)+3;
   totalMatches++;
-  localStorage.setItem('pt6200ranks', JSON.stringify(rankings));
-  localStorage.setItem('pt6200matches', totalMatches);
+  // Persist to Firebase
+  if(typeof db !== 'undefined') {
+    db.ref('rankings').set(rankings);
+    db.ref('totalMatches').set(totalMatches);
+  } else {
+    localStorage.setItem('pt6200ranks', JSON.stringify(rankings));
+    localStorage.setItem('pt6200matches', totalMatches);
+  }
   document.getElementById('pA').value='';
   document.getElementById('pB').value='';
   document.getElementById('pW').value='';
@@ -1087,21 +1200,31 @@ function buildScheduledGames() {
 }
 
 function buildPlayerCards() {
-  document.getElementById('playerCards').innerHTML = players.map(p=>`
+  document.getElementById('playerCards').innerHTML = players.map(p=>{
+    const initials = p.initials || (p.name||'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const duprHtml = p.duprRating && p.duprRating > 0
+      ? `<span class="dupr-badge">DUPR ${p.duprId ? `<a href="https://app.dupr.com/profile/${escHtml(p.duprId)}" target="_blank" rel="noopener">${p.duprRating.toFixed ? p.duprRating.toFixed(3) : p.duprRating}</a>` : p.duprRating}</span>`
+      : '';
+    return `
     <div class="card">
       <div class="card-body" style="padding-top:18px;display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${p.initials}</div>
-          <div><h3 style="margin-bottom:2px">${p.name}</h3><div style="font-size:11.5px;color:var(--lime);font-family:var(--fm)">${p.level}</div></div>
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${initials}</div>
+          <div>
+            <h3 style="margin-bottom:2px">${escHtml(p.name||'')}</h3>
+            <div style="font-size:11.5px;color:var(--lime);font-family:var(--fm)">${escHtml(p.level||'')}</div>
+            ${duprHtml}
+          </div>
         </div>
-        <div class="info-row"><span class="ico">📍</span>${p.dist} away · ${p.area}</div>
-        <p style="margin-bottom:12px">${p.note}</p>
+        <div class="info-row"><span class="ico">📍</span>${escHtml((p.dist||'')+' away · '+(p.area||''))}</div>
+        <p style="margin-bottom:12px">${escHtml(p.note||'')}</p>
         <div class="card-ft">
           <button class="btn btn-o btn-sm">Profile</button>
-          <button class="btn btn-l btn-sm" onclick="goTo('players',null);setTimeout(()=>{switchTab('community-chat',document.querySelectorAll('#pg-players .tab')[2])},100);toast('Opening chat with ${p.name}…')">Message</button>
+          <button class="btn btn-l btn-sm" onclick="goTo('players',null);setTimeout(()=>{switchTab('community-chat',document.querySelectorAll('#pg-players .tab')[2])},100);toast('Opening chat with ${escHtml(p.name||'')}…')">Message</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function buildSponsors() {
@@ -1145,13 +1268,54 @@ document.addEventListener('keydown',e=>{
 });
 
 // ════════════════════════ FORMS ════════════════════════
-document.getElementById('addCourtForm').addEventListener('submit',e=>{e.preventDefault();toast('✅ Court submitted! Our team will verify and list it soon.');e.target.reset()});
-document.getElementById('createGameForm').addEventListener('submit',e=>{
+document.getElementById('addCourtForm').addEventListener('submit', e => {
   e.preventDefault();
-  const t=document.getElementById('gTitle').value;
-  toast(`🎮 Game "${t}" created! Players can now join.`);
-  e.target.reset();
-  switchTab('scheduled', document.querySelectorAll('#pg-games .tab')[1]);
+  const form = e.target;
+  const courtName = form.querySelector('input[placeholder*="Court"]').value.trim();
+  const courtTown = form.querySelector('select').value;
+  const address   = form.querySelector('input[placeholder*="Street"]').value.trim();
+  const numCourts = parseInt(form.querySelector('input[type="number"]').value) || 1;
+  const desc      = form.querySelector('textarea').value.trim();
+  if(typeof db !== 'undefined') {
+    const newRef = db.ref('court_submissions').push();
+    newRef.set({
+      name: courtName, town: courtTown, address, courts: numCourts,
+      description: desc, status: 'pending', submittedAt: Date.now()
+    }).then(() => {
+      toast('✅ Court submitted! Our team will verify and list it soon.');
+      form.reset();
+    }).catch(() => toast('⚠ Submission failed. Please try again.'));
+  } else {
+    toast('✅ Court submitted! Our team will verify and list it soon.');
+    form.reset();
+  }
+});
+
+document.getElementById('createGameForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title    = document.getElementById('gTitle').value.trim();
+  const dateVal  = document.getElementById('gDate').value;
+  const location = document.getElementById('gLocation').value;
+  const level    = document.getElementById('gLevel').value;
+  const maxP     = parseInt(document.getElementById('gMax').value) || 8;
+  const notes    = document.getElementById('gNotes').value.trim();
+  if(!title || !dateVal || !location || !level) { toast('⚠ Please fill in all required fields'); return; }
+  if(typeof db !== 'undefined') {
+    const newRef = db.ref('games').push();
+    newRef.set({
+      court: location, date: dateVal, time: '', level, spots: maxP, max: maxP,
+      title, notes, status: 'open', createdAt: Date.now(),
+      createdBy: (auth && auth.currentUser) ? auth.currentUser.uid : 'anonymous'
+    }).then(() => {
+      toast(`🎮 Game "${title}" created! Players can now join.`);
+      e.target.reset();
+      switchTab('scheduled', document.querySelectorAll('#pg-games .tab')[1]);
+    }).catch(() => toast('⚠ Could not create game. Please try again.'));
+  } else {
+    toast(`🎮 Game "${title}" created! Players can now join.`);
+    e.target.reset();
+    switchTab('scheduled', document.querySelectorAll('#pg-games .tab')[1]);
+  }
 });
 
 // ════════════════════════ TOAST ════════════════════════
@@ -1165,6 +1329,235 @@ function toast(msg) {
 
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ════════════════════════ PROFILE SAVE ════════════════════════
+function saveProfile() {
+  const user = auth && auth.currentUser;
+  if(!user) { openAuthModal(); return; }
+  const name    = document.getElementById('profileName')   ? document.getElementById('profileName').value.trim()   : '';
+  const level   = document.getElementById('profileLevel')  ? document.getElementById('profileLevel').value          : '';
+  const area    = document.getElementById('profileArea')   ? document.getElementById('profileArea').value           : '';
+  const avail   = document.getElementById('profileAvail')  ? document.getElementById('profileAvail').value.trim()  : '';
+  const duprR   = parseFloat(document.getElementById('profileDuprRating').value) || 0;
+  const duprId  = document.getElementById('profileDuprId').value.trim();
+  if(typeof db !== 'undefined') {
+    db.ref('players/' + user.uid).update({ name: name||user.displayName, level, area, availability: avail, duprRating: duprR, duprId, updatedAt: Date.now() })
+      .then(()=>toast('✅ Profile updated!'))
+      .catch(()=>toast('⚠ Could not save profile.'));
+  } else {
+    toast('✅ Profile updated!');
+  }
+}
+
+// ════════════════════════ AUTH MODAL ════════════════════════
+function openAuthModal()  { document.getElementById('authModal').classList.add('on'); }
+function closeAuthModal() { document.getElementById('authModal').classList.remove('on'); clearAuthError(); }
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function clearAuthError() {
+  const el = document.getElementById('authError');
+  if(el) { el.textContent=''; el.style.display='none'; }
+}
+
+function signInGoogle() {
+  clearAuthError();
+  auth.signInWithPopup(googleProvider)
+    .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
+    .catch(err => showAuthError(err.message));
+}
+
+function signInFacebook() {
+  clearAuthError();
+  auth.signInWithPopup(facebookProvider)
+    .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
+    .catch(err => showAuthError(err.message));
+}
+
+function signInEmail() {
+  clearAuthError();
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  if(!email || !pass) { showAuthError('Please enter your email and password.'); return; }
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(result => { closeAuthModal(); onUserSignedIn(result.user); })
+    .catch(err => showAuthError(err.message));
+}
+
+function registerEmail() {
+  clearAuthError();
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  if(!email || !pass) { showAuthError('Please enter your email and a password.'); return; }
+  if(pass.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(result => { closeAuthModal(); onUserSignedIn(result.user); toast('🎉 Account created! Welcome to PickleTown!'); })
+    .catch(err => showAuthError(err.message));
+}
+
+function doSignOut() {
+  auth.signOut().then(() => {
+    updateNavForUser(null);
+    toast('Signed out successfully.');
+  });
+}
+
+function onUserSignedIn(user) {
+  updateNavForUser(user);
+  // Create/update player record in Firebase
+  const initials = (user.displayName||user.email||'PB').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  db.ref('players/' + user.uid).once('value', snap => {
+    if(!snap.exists()) {
+      db.ref('players/' + user.uid).set({
+        name: user.displayName || user.email.split('@')[0],
+        initials,
+        email: user.email,
+        photoURL: user.photoURL || '',
+        level: '3.0 · Intermediate',
+        area: 'Dumaguete City',
+        dist: '',
+        note: '',
+        duprRating: 0,
+        duprId: '',
+        points: 0,
+        status: 'active',
+        createdAt: Date.now()
+      });
+    }
+  });
+  toast(`Welcome back, ${user.displayName || user.email}!`);
+}
+
+function updateNavForUser(user) {
+  const btnSignIn = document.getElementById('btnSignIn');
+  const btnJoin   = document.getElementById('btnJoin');
+  const navUser   = document.getElementById('navUser');
+  const navAv     = document.getElementById('navAvatarTxt');
+  const navName   = document.getElementById('navUserName');
+  if(user) {
+    if(btnSignIn) btnSignIn.style.display = 'none';
+    if(btnJoin)   btnJoin.style.display   = 'none';
+    if(navUser)   navUser.classList.add('on');
+    const initials = (user.displayName||'PB').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    if(navAv)   navAv.textContent  = initials;
+    if(navName) navName.textContent = (user.displayName||user.email||'').split(' ')[0];
+  } else {
+    if(btnSignIn) btnSignIn.style.display = '';
+    if(btnJoin)   btnJoin.style.display   = '';
+    if(navUser)   navUser.classList.remove('on');
+  }
+}
+
+// ════════════════════════ FIREBASE REAL-TIME LISTENERS ════════════════════════
+function initFirebase() {
+  // Auth state listener
+  auth.onAuthStateChanged(user => updateNavForUser(user));
+
+  // Courts — public read, update UI live
+  db.ref('courts').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+      courts = Object.entries(data)
+        .filter(([,c]) => c.status !== 'inactive')
+        .map(([id,c]) => ({...c, id}));
+    } else {
+      // Seed defaults to Firebase on first run
+      const seed = {};
+      defaultCourts.forEach(c => { seed[c.id] = c; });
+      db.ref('courts').set(seed);
+      courts = [...defaultCourts];
+    }
+    buildCourtCards();
+    if(mapInited) refreshMapMarkers();
+  });
+
+  // Games
+  db.ref('games').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+      games = Object.entries(data).map(([id,g]) => ({...g, id}));
+    } else {
+      const seed = {};
+      defaultGames.forEach(g => { seed[g.id] = g; });
+      db.ref('games').set(seed);
+      games = [...defaultGames];
+    }
+    buildScheduledGames();
+    if(mapInited) renderGamePins(games);
+  });
+
+  // Players
+  db.ref('players').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+      players = Object.entries(data).map(([id,p]) => ({...p, id}));
+    } else {
+      const seed = {};
+      defaultPlayers.forEach(p => { seed[p.id] = p; });
+      db.ref('players').set(seed);
+      players = [...defaultPlayers];
+    }
+    buildPlayerCards();
+  });
+
+  // Sponsors
+  db.ref('sponsors').on('value', snap => {
+    const data = snap.val();
+    if(data) {
+      sponsors = Object.entries(data).map(([id,s]) => ({...s, id}));
+    } else {
+      const seed = {};
+      defaultSponsors.forEach(s => { seed[s.id] = s; });
+      db.ref('sponsors').set(seed);
+      sponsors = [...defaultSponsors];
+    }
+    buildSponsors();
+  });
+
+  // Rankings
+  db.ref('rankings').on('value', snap => {
+    const data = snap.val();
+    if(data) { rankings = data; renderRankings(); }
+  });
+  db.ref('totalMatches').on('value', snap => {
+    if(snap.val() !== null) { totalMatches = snap.val(); renderRankings(); }
+  });
+}
+
+// Map markers refresh (after Firebase updates courts)
+function refreshMapMarkers() {
+  if(!leafMap) return;
+  leafMap.eachLayer(layer => {
+    if(layer instanceof L.Marker) leafMap.removeLayer(layer);
+  });
+  gameMarkers = [];
+  const coIcon = L.divIcon({
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    className:'',iconSize:[28,28],iconAnchor:[14,14]
+  });
+  courts.forEach(c => {
+    if(!c.coords) return;
+    const m = L.marker(c.coords, {icon:coIcon}).addTo(leafMap);
+    const qrId = 'qr-'+c.name.replace(/\s+/g,'');
+    const hours = c.availability ? Object.entries(c.availability).map(([d,h])=>`${d}: ${h}`).join(', ') : (c.open||'');
+    const pricing = c.pricing ? `<div style="font-size:11px;color:#B8F53C;margin-bottom:4px">₱${c.pricing.dropIn||''}/hr drop-in</div>` : '';
+    m.bindPopup(`
+      <div style="font-family:'Barlow',sans-serif;min-width:200px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
+        <div style="font-size:11px;color:#8FAF9A;margin-bottom:4px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#8FAF9A;margin-bottom:4px">⏰ ${hours}</div>
+        ${pricing}
+        <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
+        <div class="qr-wrap"><div id="${qrId}"></div><p>Scan QR to check in</p></div>
+      </div>
+    `);
+    m.on('popupopen', ()=>setTimeout(()=>makeQR(qrId,c.name),100));
+  });
+  renderGamePins(games);
 }
 
 // ════════════════════════ URL QR CHECK-IN ════════════════════════
@@ -1182,6 +1575,14 @@ buildPlayerCards();
 buildSponsors();
 renderRankings();
 updateCheckinsDisplay();
+
+// Start Firebase (will override defaults when data loads)
+try {
+  initFirebase();
+} catch(e) {
+  // Firebase not configured yet — running on static defaults
+  console.warn('Firebase not configured. Running in offline/demo mode.', e.message);
+}
 </script>
 </body>
 </html>
