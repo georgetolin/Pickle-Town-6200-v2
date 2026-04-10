@@ -787,35 +787,29 @@ const chatMessages = [];
 const activityLog = [];
 
 // ════════════════════════ STATE ════════════════════════
-// localStorage helpers (local cache / fallback)
 function loadData(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e) { return def; } }
-function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
-// Firebase sync helper — writes to Firebase and keeps localStorage in sync
+// Firebase path map for sync
 const fbKeyMap = {
   'pt_admin_courts':'courts','pt_admin_games':'games','pt_admin_events':'events',
   'pt_admin_players':'players','pt_admin_sponsors':'sponsors',
   'pt_admin_ann':'announcements','pt_admin_chat':'chat','pt_admin_activity':'activity',
   'pt6200ci':'checkins','pt6200ranks':'rankings'
 };
-function saveToFirebase(key, data) {
-  const fbPath = fbKeyMap[key];
-  if(!fbPath || typeof db === 'undefined') return;
-  // Convert array → object keyed by id (or index) for Firebase
-  if(Array.isArray(data)) {
-    const obj = {};
-    data.forEach((item, i) => { obj[item.id || item.time || i] = item; });
-    db.ref(fbPath).set(obj).catch(e => console.warn('Firebase write failed:', e.message));
-  } else {
-    db.ref(fbPath).set(data).catch(e => console.warn('Firebase write failed:', e.message));
-  }
-}
 
-// Override saveData to also write to Firebase
-const _origSaveData = saveData;
+// saveData: writes to localStorage AND Firebase
 function saveData(key, data) {
-  _origSaveData(key, data);
-  saveToFirebase(key, data);
+  localStorage.setItem(key, JSON.stringify(data));
+  const fbPath = fbKeyMap[key];
+  if(fbPath && typeof db !== 'undefined') {
+    if(Array.isArray(data)) {
+      const obj = {};
+      data.forEach((item, i) => { obj[item.id || item.time || i] = item; });
+      db.ref(fbPath).set(obj).catch(e => console.warn('Firebase write failed:', e.message));
+    } else {
+      db.ref(fbPath).set(data).catch(e => console.warn('Firebase write failed:', e.message));
+    }
+  }
 }
 
 let courts = loadData('pt_admin_courts', defaultCourts);
