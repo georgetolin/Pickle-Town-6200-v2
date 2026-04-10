@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PickleTown 6200 · Court Owner Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -215,6 +216,7 @@ textarea.fi{resize:vertical;line-height:1.6}
       <button class="sbl" onclick="showPanel('pricing',this)"><span class="ico">💰</span>Pricing</button>
       <button class="sbl" onclick="showPanel('amenities',this)"><span class="ico">✨</span>Amenities</button>
       <button class="sbl" onclick="showPanel('contact',this)"><span class="ico">📞</span>Contact Info</button>
+      <button class="sbl" onclick="showPanel('location',this);initLocationMap()"><span class="ico">📍</span>Map Location</button>
       <button class="sbl" onclick="showPanel('status',this)"><span class="ico">🔴</span>Court Status</button>
       <div class="sb-bottom">
         <div class="sb-user">
@@ -401,6 +403,40 @@ textarea.fi{resize:vertical;line-height:1.6}
           </div>
         </div>
 
+        <!-- LOCATION -->
+        <div class="panel" id="pnl-location">
+          <div class="sec-hd">
+            <div><div class="sec-title">Map Location</div><div class="sec-sub">Pin your court's exact location on the public map</div></div>
+            <button class="btn btn-l" onclick="saveAll()">Save Location</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Drop a Pin</div>
+            <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:16px">
+              Click anywhere on the map to place your court's pin. The marker updates the public map instantly when you save. You can also type coordinates directly or use your device's GPS.
+            </p>
+            <!-- Map container -->
+            <div id="locationMap" style="height:380px;border-radius:10px;border:1px solid var(--bd);overflow:hidden;margin-bottom:16px;background:var(--ink2)"></div>
+            <!-- Coordinate inputs -->
+            <div class="fg-row" style="margin-bottom:12px">
+              <div class="fg">
+                <label class="fl">Latitude</label>
+                <input class="fi" type="number" id="coordLat" step="0.000001" placeholder="e.g. 9.3073" oninput="onCoordsTyped()">
+              </div>
+              <div class="fg">
+                <label class="fl">Longitude</label>
+                <input class="fi" type="number" id="coordLng" step="0.000001" placeholder="e.g. 123.3081" oninput="onCoordsTyped()">
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-o btn-sm" onclick="useMyLocation()">📡 Use My GPS Location</button>
+              <button class="btn btn-o btn-sm" onclick="resetToCenter()">🗺 Reset to Dumaguete</button>
+            </div>
+            <p style="font-size:11.5px;color:var(--tx3);margin-top:12px">
+              Tip: Zoom in on the map first, then click the exact spot. The coordinates update automatically when you click.
+            </p>
+          </div>
+        </div>
+
         <!-- STATUS -->
         <div class="panel" id="pnl-status">
           <div class="sec-hd">
@@ -448,6 +484,7 @@ textarea.fi{resize:vertical;line-height:1.6}
 
 <div class="toast" id="toastEl"></div>
 
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 let courtOwnerCourtId = null;
 let currentUser = null;
@@ -582,6 +619,14 @@ function populateFields(c) {
   if(c.closeFrom)  document.getElementById('closeFrom').value = c.closeFrom;
   if(c.closeTo)    document.getElementById('closeTo').value   = c.closeTo;
   if(c.closeReason) document.getElementById('closeReason').value = c.closeReason;
+  // Coordinates
+  if(c.coords && c.coords.length === 2) {
+    document.getElementById('coordLat').value = c.coords[0];
+    document.getElementById('coordLng').value = c.coords[1];
+    _savedCoords = [c.coords[0], c.coords[1]];
+    // Update map if already initialized
+    if(_locMap) setLocationPin(c.coords[0], c.coords[1]);
+  }
 }
 
 // ── SAVE ──
@@ -617,6 +662,10 @@ function saveAll() {
     lastUpdated:       Date.now(),
     updatedBy:         currentUser ? currentUser.uid : 'unknown'
   };
+  // Coordinates — only include if valid
+  const lat = parseFloat(document.getElementById('coordLat').value);
+  const lng = parseFloat(document.getElementById('coordLng').value);
+  if(!isNaN(lat) && !isNaN(lng)) data.coords = [lat, lng];
   db.ref('courts/' + courtOwnerCourtId).update(data)
     .then(() => toast('✅ Changes saved and live on the public site!'))
     .catch(e => toast('⚠ Save failed: ' + e.message));
@@ -637,8 +686,77 @@ function setStatus(s, save) {
   });
 }
 
+// ── LOCATION MAP ──
+const DUMAGETE_CENTER = [9.3073, 123.3081];
+let _locMap = null, _locMarker = null, _savedCoords = null;
+
+function _pinIcon() {
+  return L.divIcon({
+    html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:#B8F53C;border:3px solid #0A3D2B;transform:rotate(-45deg);box-shadow:0 0 14px rgba(184,245,60,.6)"></div>`,
+    className:'', iconSize:[32,32], iconAnchor:[16,32]
+  });
+}
+
+function initLocationMap() {
+  if(_locMap) { setTimeout(()=>_locMap.invalidateSize(), 100); return; }
+  const center = _savedCoords || DUMAGETE_CENTER;
+  _locMap = L.map('locationMap').setView(center, _savedCoords ? 17 : 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap', maxZoom:19
+  }).addTo(_locMap);
+
+  // Click to place pin
+  _locMap.on('click', e => {
+    setLocationPin(e.latlng.lat, e.latlng.lng);
+    document.getElementById('coordLat').value = e.latlng.lat.toFixed(6);
+    document.getElementById('coordLng').value = e.latlng.lng.toFixed(6);
+  });
+
+  // Place pin if we already have coords
+  if(_savedCoords) setLocationPin(_savedCoords[0], _savedCoords[1]);
+}
+
+function setLocationPin(lat, lng) {
+  if(!_locMap) return;
+  if(_locMarker) _locMap.removeLayer(_locMarker);
+  _locMarker = L.marker([lat, lng], {icon: _pinIcon(), draggable: true}).addTo(_locMap);
+  _locMarker.on('dragend', e => {
+    const p = e.target.getLatLng();
+    document.getElementById('coordLat').value = p.lat.toFixed(6);
+    document.getElementById('coordLng').value = p.lng.toFixed(6);
+  });
+  _locMap.setView([lat, lng], Math.max(_locMap.getZoom(), 16));
+}
+
+function onCoordsTyped() {
+  const lat = parseFloat(document.getElementById('coordLat').value);
+  const lng = parseFloat(document.getElementById('coordLng').value);
+  if(!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+    if(!_locMap) return;
+    setLocationPin(lat, lng);
+  }
+}
+
+function useMyLocation() {
+  if(!navigator.geolocation) { toast('⚠ GPS not supported by your browser.'); return; }
+  toast('Getting your location…');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    document.getElementById('coordLat').value = lat.toFixed(6);
+    document.getElementById('coordLng').value = lng.toFixed(6);
+    if(!_locMap) initLocationMap();
+    setLocationPin(lat, lng);
+    toast('✅ Location detected! Move the pin to fine-tune.');
+  }, () => toast('⚠ Could not get your location. Check browser permissions.'));
+}
+
+function resetToCenter() {
+  if(!_locMap) return;
+  _locMap.setView(DUMAGETE_CENTER, 14);
+}
+
 // ── PANEL NAV ──
-const panelTitles = {overview:'My Court',availability:'Availability',pricing:'Pricing',amenities:'Amenities',contact:'Contact Info',status:'Court Status'};
+const panelTitles = {overview:'My Court',availability:'Availability',pricing:'Pricing',amenities:'Amenities',contact:'Contact Info',location:'Map Location',status:'Court Status'};
 function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.sbl').forEach(b=>b.classList.remove('on'));
