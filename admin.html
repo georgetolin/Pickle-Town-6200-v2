@@ -324,7 +324,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
       <button class="sbl" onclick="showPanel('checkins',this)"><span class="sbl-ico">✅</span>Check-ins</button>
 
       <div class="sb-section">Court Owners</div>
-      <button class="sbl" onclick="showPanel('court-owners',this)"><span class="sbl-ico">🏸</span>Court Owners</button>
+      <button class="sbl" onclick="showPanel('court-owners',this)"><span class="sbl-ico">🏸</span>Court Owners<span class="sbl-badge rd" id="courtOwnerRequestCount" style="display:none">0</span></button>
 
       <div class="sb-section">System</div>
       <button class="sbl" onclick="showPanel('content',this)"><span class="sbl-ico">🖼</span>Homepage Content</button>
@@ -449,6 +449,17 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
             <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;margin-bottom:12px">How it works</div>
             <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:0">Court owners sign in at <a href="court-admin.html" target="_blank" style="color:var(--lime);text-decoration:none">court-admin.html</a> using Google or email/password. To give a user court-owner access:<br>1. Find their Firebase UID (from Firebase Console → Auth) or their email.<br>2. Assign them a court below — they can then update hours, pricing, amenities, and status for that court only.</p>
           </div>
+          <!-- Pending court owner applications -->
+          <div class="tbl-wrap" style="margin-bottom:24px">
+            <div class="tbl-head">
+              <div class="tbl-head-title">Pending Applications <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="ownerRequestCountHead"></span></div>
+            </div>
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Venue</th><th>Address</th><th>Phone</th><th>Notes</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="courtOwnerRequestsTbody"><tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:24px">No pending applications.</td></tr></tbody>
+            </table>
+          </div>
+
           <div class="tbl-wrap">
             <div class="tbl-head"><div class="tbl-head-title">Assigned Court Owners</div></div>
             <table>
@@ -914,6 +925,7 @@ function doLogout() {
 // ════════════════════════ PANEL NAVIGATION ════════════════════════
 const panelTitles = {
   dashboard:'Dashboard', activity:'Activity Log', courts:'Court Management',
+  'court-submissions':'Court Submissions', 'court-owners':'Court Owners',
   games:'Game Management', events:'Events & Tournaments', announcements:'Announcements',
   players:'Player Management', rankings:'Rankings Manager', chat:'Chat Moderation',
   sponsors:'Sponsor Management', checkins:'Check-in Analytics', content:'Homepage Content',
@@ -937,6 +949,8 @@ function showPanel(id, btn) {
   if(id==='chat') buildChat();
   if(id==='checkins') buildCheckins();
   if(id==='activity') buildActivity();
+  if(id==='court-submissions') buildCourtSubmissions();
+  if(id==='court-owners') buildCourtOwners();
 }
 
 // ════════════════════════ REFRESH ALL ════════════════════════
@@ -1564,6 +1578,36 @@ function buildCourtOwners() {
     document.getElementById('courtOwnerTbody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:24px">Firebase not configured.</td></tr>';
     return;
   }
+
+  // Pending court owner applications
+  db.ref('court_owner_requests').orderByChild('status').equalTo('pending').once('value', snap => {
+    const reqs = snap.val() || {};
+    const entries = Object.entries(reqs);
+    const cnt = entries.length;
+    const badge = document.getElementById('courtOwnerRequestCount');
+    const head  = document.getElementById('ownerRequestCountHead');
+    if(badge) { badge.textContent = cnt; badge.style.display = cnt ? '' : 'none'; }
+    if(head)  head.textContent = `(${cnt} pending)`;
+    document.getElementById('courtOwnerRequestsTbody').innerHTML = cnt ? entries.map(([uid, r]) => `
+      <tr>
+        <td class="td-name">${escHtml(r.name||'')}</td>
+        <td class="td-mono" style="font-size:11px">${escHtml(r.email||uid)}</td>
+        <td>${escHtml(r.venue||'')}</td>
+        <td style="font-size:12px">${escHtml(r.address||'')}</td>
+        <td class="td-mono" style="font-size:12px">${escHtml(r.phone||'')}</td>
+        <td style="font-size:12px;max-width:160px">${escHtml((r.notes||'').slice(0,60))}${(r.notes||'').length>60?'…':''}</td>
+        <td class="td-mono">${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '-'}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-g btn-xs" onclick="approveOwnerRequest('${uid}')">✅ Approve</button>
+            <button class="btn btn-r btn-xs" onclick="denyOwnerRequest('${uid}')">✕ Deny</button>
+          </div>
+        </td>
+      </tr>`).join('') :
+      '<tr><td colspan="8" style="text-align:center;color:var(--tx3);padding:24px">No pending applications.</td></tr>';
+  });
+
+  // Assigned court owners
   db.ref('users').orderByChild('role').equalTo('court_owner').once('value', snap => {
     const users = snap.val() || {};
     const entries = Object.entries(users);
@@ -1578,6 +1622,26 @@ function buildCourtOwners() {
         </td>
       </tr>`;
     }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--tx3);padding:24px">No court owners assigned yet.</td></tr>';
+  });
+}
+
+function approveOwnerRequest(uid) {
+  db.ref('court_owner_requests/' + uid).once('value', snap => {
+    const r = snap.val();
+    if(!r) return;
+    db.ref('court_owner_requests/' + uid).update({ status: 'approved' });
+    db.ref('users/' + uid).update({ role: 'court_owner', email: r.email||'', updatedAt: Date.now() });
+    logActivity('Court Owner Approved', `${r.name} (${r.email}) approved as court owner`);
+    buildCourtOwners();
+    toast(`✅ ${r.name} approved — now assign them a court using "+ Assign Owner".`);
+  });
+}
+
+function denyOwnerRequest(uid) {
+  openConfirm('Deny Application?', 'This will mark the application as denied.', '✕', () => {
+    db.ref('court_owner_requests/' + uid).update({ status: 'denied' });
+    buildCourtOwners();
+    toast('Application denied.');
   });
 }
 
@@ -1641,9 +1705,16 @@ function initAdminFirebaseListeners() {
 
   // Court submissions badge update
   db.ref('court_submissions').orderByChild('status').equalTo('pending').on('value', snap => {
-    const cnt = snap.numChildren ? snap.numChildren() : Object.keys(snap.val()||{}).length;
+    const cnt = Object.keys(snap.val()||{}).length;
     const badge = document.getElementById('submissionCount');
     if(badge) badge.textContent = cnt;
+  });
+
+  // Court owner requests badge update
+  db.ref('court_owner_requests').orderByChild('status').equalTo('pending').on('value', snap => {
+    const cnt = Object.keys(snap.val()||{}).length;
+    const badge = document.getElementById('courtOwnerRequestCount');
+    if(badge) { badge.textContent = cnt; badge.style.display = cnt ? '' : 'none'; }
   });
 }
 
@@ -1660,17 +1731,6 @@ if(typeof auth !== 'undefined') {
   });
 }
 
-// Extend showPanel to handle new panels
-const _origShowPanel = showPanel;
-function showPanel(id, btn) {
-  _origShowPanel(id, btn);
-  if(id === 'court-submissions') buildCourtSubmissions();
-  if(id === 'court-owners') buildCourtOwners();
-}
-
-// Update panelTitles for new panels
-panelTitles['court-submissions'] = 'Court Submissions';
-panelTitles['court-owners'] = 'Court Owners';
 </script>
 </body>
 </html>
