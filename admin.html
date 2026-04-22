@@ -9,21 +9,30 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%238FC337' stroke='%23F48C06' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='20' cy='13' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='14' cy='20' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='22' cy='21' r='1.6' fill='%233D5C20'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══ RESET & TOKENS ═══ */
 :root{
-  --bg:#060D0A;--sur:#0B1610;--sur2:#101E14;--sur3:#162519;--sur4:#1D2E21;
-  --lime:#B8F53C;--lime2:rgba(184,245,60,.1);--lime3:rgba(184,245,60,.22);
-  --amber:#FFB800;--amberd:rgba(255,184,0,.1);
-  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
-  --rd:#FF4444;--rdd:rgba(255,68,68,.1);
-  --gn:#2ED573;--gnd:rgba(46,213,115,.1);
+  /* Admin accent: orange per reference design */
+  --forest:#3D5C20;--forest-d:#2A3F16;--forest-l:#4E7429;
+  --grass:#8FC337;--grass-l:#A8D44E;
+  --orange:#F48C06;--orange-d:#C97200;--orange-l:#F9A94A;
+  --cream:#F2F5EE;
+  --bg:#F5F7F2;--sur:#FFFFFF;--sur2:#F2F5EE;--sur3:#E4EDD6;--sur4:#D5E0C8;
+  --lime:#8FC337;--lime2:rgba(143,195,55,.12);--lime3:rgba(143,195,55,.26);
+  --amber:#F48C06;--amberd:rgba(244,140,6,.12);
+  --sky:#2563EB;--skyd:rgba(37,99,235,.1);
+  --rd:#DC2626;--rdd:rgba(220,38,38,.1);
+  --gn:#16A34A;--gnd:rgba(22,163,74,.1);
   --pu:#A855F7;--pud:rgba(168,85,247,.1);
-  --tx:#E0EDDF;--tx2:#7A9B85;--tx3:#3D5F48;
-  --bd:rgba(184,245,60,.07);--bdh:rgba(184,245,60,.16);
-  --r:8px;--rl:12px;
-  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  --tx:#1C2B0E;--tx2:#435A2E;--tx3:#7A9668;--tx4:#ADBF99;
+  --bd:rgba(61,92,32,.12);--bdh:rgba(61,92,32,.26);
+  --r:8px;--rl:12px;--rx:18px;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --fh:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;
   --sb:240px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -31,7 +40,7 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
 
 /* Grid texture */
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(184,245,60,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(184,245,60,.012) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(61,92,32,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(61,92,32,.035) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
 
 /* ═══ LOGIN SCREEN ═══ */
 #loginScreen{
@@ -44,23 +53,23 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   animation:popIn .3s ease;
 }
 @keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(184,245,60,.08),transparent 70%);pointer-events:none}
+.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(143,195,55,.08),transparent 70%);pointer-events:none}
 .lb-logo{display:flex;align-items:center;gap:10px;margin-bottom:30px;justify-content:center}
-.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(184,245,60,.35)}
+.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(143,195,55,.35)}
 .lb-logo span{font-family:var(--fh);font-size:22px;font-weight:900;letter-spacing:.3px}
-.lb-logo span em{color:var(--lime);font-style:normal}
+.lb-logo span em{color:var(--orange);font-style:normal}
 .lb-title{font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.3px;text-align:center;margin-bottom:6px}
 .lb-sub{font-size:12.5px;color:var(--tx2);text-align:center;margin-bottom:28px;font-family:var(--fm)}
 .lf-label{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);display:block;margin-bottom:6px}
 .lf-input{width:100%;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:11px 14px;color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .15s;margin-bottom:14px}
-.lf-input:focus{border-color:rgba(184,245,60,.35)}
+.lf-input:focus{border-color:rgba(143,195,55,.35)}
 .lf-input::placeholder{color:var(--tx3)}
-.lb-err{background:var(--rdd);border:1px solid rgba(255,68,68,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
+.lb-err{background:var(--rdd);border:1px solid rgba(220,38,38,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
 .lb-hint{background:var(--lime2);border:1px solid var(--lime3);border-radius:var(--r);padding:9px 13px;font-size:11.5px;color:var(--tx2);margin-bottom:18px;font-family:var(--fm);text-align:center;line-height:1.5}
-.btn-login{width:100%;background:var(--lime);color:var(--bg);border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s}
-.btn-login:hover{background:#caff55;box-shadow:0 0 24px rgba(184,245,60,.4)}
+.btn-login{width:100%;background:var(--orange);color:#fff;border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:800;letter-spacing:.3px;cursor:pointer;transition:all .15s}
+.btn-login:hover{background:var(--orange-d);box-shadow:0 6px 18px rgba(244,140,6,.32)}
 .back-link{display:block;text-align:center;margin-top:16px;font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s}
-.back-link:hover{color:var(--lime)}
+.back-link:hover{color:var(--orange)}
 
 /* ═══ ADMIN LAYOUT ═══ */
 #adminApp{display:none}
@@ -75,9 +84,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--sur3);border-radius:2px}
 .sb-logo{padding:20px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
-.sb-ball{width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;box-shadow:0 0 14px rgba(184,245,60,.3)}
+.sb-ball{width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;box-shadow:0 0 14px rgba(143,195,55,.3)}
 .sb-name{font-family:var(--fh);font-size:17px;font-weight:900;letter-spacing:.3px;line-height:1}
-.sb-name em{color:var(--lime);font-style:normal}
+.sb-name em{color:var(--orange);font-style:normal}
 .sb-tag{font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
 .sb-section{padding:18px 14px 6px;font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
 .sbl{
@@ -86,24 +95,24 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   color:var(--tx2);font-size:13.5px;font-weight:500;border:none;background:none;width:calc(100% - 16px);text-align:left;
 }
 .sbl:hover{background:var(--sur2);color:var(--tx)}
-.sbl.on{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
+.sbl.on{background:var(--amberd);color:var(--orange);border:1px solid rgba(244,140,6,.28)}
 .sbl .sbl-ico{width:20px;text-align:center;font-size:14px;flex-shrink:0}
-.sbl-badge{margin-left:auto;background:var(--lime);color:var(--bg);font-family:var(--fm);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+.sbl-badge{margin-left:auto;background:var(--orange);color:#fff;font-family:var(--fm);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
 .sbl-badge.rd{background:var(--rd);color:#fff}
-.sbl-badge.am{background:var(--amber);color:var(--bg)}
+.sbl-badge.am{background:var(--amber);color:#fff}
 .sb-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--bd)}
 .sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--sur2);border-radius:var(--r);border:1px solid var(--bd)}
-.sb-av{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:var(--lime);flex-shrink:0}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:11px;color:var(--orange);flex-shrink:0}
 .sb-uinfo{flex:1;min-width:0}
 .sb-uinfo strong{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-uinfo span{font-size:10.5px;color:var(--lime);font-family:var(--fm)}
+.sb-uinfo span{font-size:10.5px;color:var(--orange);font-family:var(--fm)}
 .sb-logout{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px;padding:4px;transition:color .15s;flex-shrink:0}
 .sb-logout:hover{color:var(--rd)}
 
 /* ═══ MAIN CONTENT ═══ */
 .admin-main{margin-left:var(--sb);flex:1;padding:0;position:relative;z-index:1}
 .admin-topbar{
-  height:56px;background:rgba(6,13,10,.92);backdrop-filter:blur(20px);
+  height:56px;background:rgba(242,245,238,.92);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--bd);display:flex;align-items:center;
   padding:0 24px;gap:14px;position:sticky;top:0;z-index:100;
 }
@@ -135,33 +144,33 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .tbl-head{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .tbl-head-title{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;flex:1}
 .tbl-search{background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:7px 12px;color:var(--tx);font-family:var(--fb);font-size:13px;outline:none;width:220px;transition:border-color .15s}
-.tbl-search:focus{border-color:rgba(184,245,60,.3)}.tbl-search::placeholder{color:var(--tx3)}
+.tbl-search:focus{border-color:rgba(143,195,55,.3)}.tbl-search::placeholder{color:var(--tx3)}
 table{width:100%;border-collapse:collapse}
 thead tr{background:var(--sur2)}
 th{padding:10px 14px;font-family:var(--fh);font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);text-align:left;white-space:nowrap;border-bottom:1px solid var(--bd)}
-td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(184,245,60,.04);vertical-align:middle}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(143,195,55,.04);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(184,245,60,.025)}
+tr:hover td{background:rgba(143,195,55,.025)}
 .td-name{font-weight:600;color:var(--tx)}
 .td-mono{font-family:var(--fm);font-size:12px;color:var(--tx2)}
 .td-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 
 /* ═══ BADGES ═══ */
 .chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-family:var(--fm);font-size:10.5px;font-weight:500;white-space:nowrap}
-.chip-l{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
-.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.22)}
-.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.22)}
-.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.22)}
-.chip-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(0,212,255,.22)}
+.chip-l{background:var(--lime2);color:var(--orange);border:1px solid var(--lime3)}
+.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(244,140,6,.22)}
+.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(220,38,38,.22)}
+.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(22,163,74,.22)}
+.chip-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(37,99,235,.22)}
 .chip-p{background:var(--pud);color:var(--pu);border:1px solid rgba(168,85,247,.22)}
 
 /* ═══ BUTTONS ═══ */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
-.btn-l{background:var(--lime);color:var(--bg)}.btn-l:hover{background:#caff55;box-shadow:0 0 18px rgba(184,245,60,.3)}
-.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:rgba(184,245,60,.3);color:var(--lime)}
-.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.2)}.btn-r:hover{background:rgba(255,68,68,.18)}
-.btn-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.2)}.btn-a:hover{background:rgba(255,184,0,.18)}
-.btn-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.2)}.btn-g:hover{background:rgba(46,213,115,.18)}
+.btn-l{background:var(--orange);color:#fff}.btn-l:hover{background:var(--orange-d);box-shadow:0 6px 16px rgba(244,140,6,.3);transform:translateY(-1px)}
+.btn-o{background:#fff;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:var(--orange);color:var(--orange);background:var(--cream)}
+.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(220,38,38,.2)}.btn-r:hover{background:rgba(220,38,38,.18)}
+.btn-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(244,140,6,.2)}.btn-a:hover{background:rgba(244,140,6,.18)}
+.btn-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(22,163,74,.2)}.btn-g:hover{background:rgba(22,163,74,.18)}
 .btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
 .btn-xs{padding:3px 8px;font-size:11px;border-radius:6px}
 
@@ -178,14 +187,14 @@ tr:hover td{background:rgba(184,245,60,.025)}
 .fg{margin-bottom:16px}
 .fl{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--tx2);display:block;margin-bottom:6px}
 .fi{width:100%;background:var(--sur2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 13px;color:var(--tx);font-family:var(--fb);font-size:13.5px;outline:none;transition:border-color .15s}
-.fi:focus{border-color:rgba(184,245,60,.35)}.fi::placeholder{color:var(--tx3)}
+.fi:focus{border-color:rgba(143,195,55,.35)}.fi::placeholder{color:var(--tx3)}
 select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
 /* ═══ CONFIRM DIALOG ═══ */
 .confirm-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center}
 .confirm-bg.on{display:flex}
-.confirm-box{background:var(--sur);border:1px solid rgba(255,68,68,.3);border-radius:16px;padding:28px;width:380px;animation:popIn .2s ease;text-align:center}
+.confirm-box{background:var(--sur);border:1px solid rgba(220,38,38,.3);border-radius:16px;padding:28px;width:380px;animation:popIn .2s ease;text-align:center}
 .confirm-ico{font-size:40px;margin-bottom:12px}
 .confirm-title{font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase;margin-bottom:8px}
 .confirm-msg{font-size:13px;color:var(--tx2);margin-bottom:22px}
@@ -197,7 +206,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 /* ═══ ACTIVITY FEED ═══ */
 .act-feed{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
 .act-hd{padding:14px 18px;border-bottom:1px solid var(--bd);font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.2px}
-.act-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(184,245,60,.04)}
+.act-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(143,195,55,.04)}
 .act-item:last-child{border-bottom:none}
 .act-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px}
 .act-info{flex:1;min-width:0}
@@ -211,10 +220,10 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 .bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px}
 .bar-col{display:flex;flex-direction:column;align-items:center;flex:1;height:100%}
 .bar-track{flex:1;display:flex;align-items:flex-end;width:100%}
-.bar{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease;background:var(--lime2);border:1px solid rgba(184,245,60,.2);position:relative}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .6s ease;background:var(--lime2);border:1px solid rgba(143,195,55,.2);position:relative}
 .bar:hover{background:var(--lime3)}
 .bar-lbl{font-family:var(--fm);font-size:9px;color:var(--tx3);margin-top:4px;text-align:center;white-space:nowrap}
-.bar-val{font-family:var(--fm);font-size:9px;color:var(--lime);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.bar-val{font-family:var(--fm);font-size:9px;color:var(--orange);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap}
 
 /* ═══ TOGGLE ═══ */
 .toggle-wrap{display:flex;align-items:center;gap:8px}
@@ -226,7 +235,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 
 /* ═══ INLINE EDIT ═══ */
 .editable{cursor:pointer;border-bottom:1px dashed var(--tx3);transition:border-color .15s}
-.editable:hover{border-color:var(--lime)}
+.editable:hover{border-color:var(--orange)}
 
 /* ═══ SECTION DIVIDER ═══ */
 .sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
@@ -244,18 +253,18 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
 @media(max-width:800px){.settings-grid{grid-template-columns:1fr}}
 .set-card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:20px}
 .set-card h4{font-family:var(--fh);font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.2px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
-.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(184,245,60,.04)}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(143,195,55,.04)}
 .set-row:last-child{border-bottom:none}
 .set-row-left strong{display:block;font-size:13px;font-weight:500}
 .set-row-left span{font-size:11.5px;color:var(--tx2)}
 
 /* ═══ CHECKINS ═══ */
-.ci-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(184,245,60,.04)}
+.ci-bar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(143,195,55,.04)}
 .ci-bar:last-child{border-bottom:none}
 .ci-name{flex:1;font-size:13px}
 .ci-track{flex:2;height:6px;background:var(--sur3);border-radius:3px;overflow:hidden}
-.ci-fill{height:100%;background:linear-gradient(90deg,var(--lime),rgba(184,245,60,.5));border-radius:3px;transition:width .6s ease}
-.ci-count{font-family:var(--fm);font-size:11px;color:var(--lime);min-width:30px;text-align:right}
+.ci-fill{height:100%;background:linear-gradient(90deg,var(--lime),rgba(143,195,55,.5));border-radius:3px;transition:width .6s ease}
+.ci-count{font-family:var(--fm);font-size:11px;color:var(--orange);min-width:30px;text-align:right}
 
 /* ═══ CONTENT EDITOR ═══ */
 .ann-list{display:flex;flex-direction:column;gap:9px}
@@ -447,7 +456,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
           </div>
           <div style="background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:20px">
             <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;margin-bottom:12px">How it works</div>
-            <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:0">Court owners sign in at <a href="court-admin.html" target="_blank" style="color:var(--lime);text-decoration:none">court-admin.html</a> using Google or email/password. To give a user court-owner access:<br>1. Find their Firebase UID (from Firebase Console → Auth) or their email.<br>2. Assign them a court below — they can then update hours, pricing, amenities, and status for that court only.</p>
+            <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:0">Court owners sign in at <a href="court-admin.html" target="_blank" style="color:var(--orange);text-decoration:none">court-admin.html</a> using Google or email/password. To give a user court-owner access:<br>1. Find their Firebase UID (from Firebase Console → Auth) or their email.<br>2. Assign them a court below — they can then update hours, pricing, amenities, and status for that court only.</p>
           </div>
           <!-- Pending court owner applications -->
           <div class="tbl-wrap" style="margin-bottom:24px">
@@ -731,9 +740,9 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
               <div class="set-row"><div class="set-row-left"><strong>Court grid animation</strong><span>Background grid texture</span></div><button class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></button></div>
               <div class="fg" style="margin-top:14px"><label class="fl">Accent Color</label>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
-                  <div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;cursor:pointer;border:3px solid rgba(255,255,255,.3)" title="Lime (default)" onclick="toast('Accent: Lime')"></div>
-                  <div style="width:28px;height:28px;border-radius:50%;background:#00D4FF;cursor:pointer;border:2px solid transparent" title="Sky" onclick="toast('Accent: Sky')"></div>
-                  <div style="width:28px;height:28px;border-radius:50%;background:#FFB800;cursor:pointer;border:2px solid transparent" title="Amber" onclick="toast('Accent: Amber')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#8FC337;cursor:pointer;border:3px solid rgba(255,255,255,.3)" title="Lime (default)" onclick="toast('Accent: Lime')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#2563EB;cursor:pointer;border:2px solid transparent" title="Sky" onclick="toast('Accent: Sky')"></div>
+                  <div style="width:28px;height:28px;border-radius:50%;background:#F48C06;cursor:pointer;border:2px solid transparent" title="Amber" onclick="toast('Accent: Amber')"></div>
                   <div style="width:28px;height:28px;border-radius:50%;background:#FF6B35;cursor:pointer;border:2px solid transparent" title="Orange" onclick="toast('Accent: Orange')"></div>
                 </div>
               </div>
@@ -765,6 +774,10 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
     <div class="confirm-ico" id="confirmIco">⚠️</div>
     <div class="confirm-title" id="confirmTitle">Are you sure?</div>
     <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div id="confirmTypeToWrap" style="display:none;margin:12px 0 4px;text-align:left">
+      <label style="display:block;font-family:var(--fm);font-size:11px;color:var(--tx3);margin-bottom:6px">Type <strong id="confirmTypeWord" style="color:var(--rd);font-family:var(--fm);letter-spacing:1px">WIPE</strong> to enable the destructive action</label>
+      <input id="confirmTypeInput" type="text" autocomplete="off" spellcheck="false" style="width:100%;background:var(--sur2);border:1px solid var(--bd);border-radius:8px;padding:10px 13px;color:var(--tx);font-family:var(--fm);font-size:14px;outline:none" placeholder="Type to confirm">
+    </div>
     <div class="confirm-acts">
       <button class="btn btn-o btn-sm" onclick="closeConfirm()">Cancel</button>
       <button class="btn btn-r btn-sm" id="confirmOk">Confirm</button>
@@ -981,7 +994,7 @@ function buildDashboard() {
   const levels = [{l:'Beginner',v:2},{l:'Interm.',v:3},{l:'Advanced',v:1},{l:'All',v:4}];
   const lmax = Math.max(...levels.map(l=>l.v));
   document.getElementById('levelChart').innerHTML = levels.map(l=>`
-    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(l.v/lmax*100)}%;background:var(--skyd);border-color:rgba(0,212,255,.25)"><div class="bar-val" style="color:var(--sky)">${l.v}</div></div></div><div class="bar-lbl">${l.l}</div></div>`).join('');
+    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(l.v/lmax*100)}%;background:var(--skyd);border-color:rgba(37,99,235,.25)"><div class="bar-val" style="color:var(--sky)">${l.v}</div></div></div><div class="bar-lbl">${l.l}</div></div>`).join('');
 
   // Today's games
   document.getElementById('dashGames').innerHTML = games.slice(0,5).map(g=>`
@@ -1006,7 +1019,7 @@ function buildCourts() {
       <td>${c.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Inactive</span>'}</td>
       <td><div class="td-actions">
         <button class="btn btn-o btn-xs" onclick="openModal('court','${c.id}')">Edit</button>
-        <button class="btn btn-xs" style="background:${c.status==='active'?'var(--amberd)':'var(--gnd)'};color:${c.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid ${c.status==='active'?'rgba(255,184,0,.2)':'rgba(46,213,115,.2)'}" onclick="toggleCourtStatus('${c.id}')">${c.status==='active'?'Deactivate':'Activate'}</button>
+        <button class="btn btn-xs" style="background:${c.status==='active'?'var(--amberd)':'var(--gnd)'};color:${c.status==='active'?'var(--amber)':'var(--gn)'};border:1px solid ${c.status==='active'?'rgba(244,140,6,.2)':'rgba(22,163,74,.2)'}" onclick="toggleCourtStatus('${c.id}')">${c.status==='active'?'Deactivate':'Activate'}</button>
         <button class="btn btn-r btn-xs" onclick="deleteItem('court','${c.id}')">✕</button>
       </div></td>
     </tr>`).join('');
@@ -1066,14 +1079,14 @@ function buildPlayers() {
   document.getElementById('playerTbody').innerHTML = players.map(p=>`
     <tr>
       <td class="td-mono">${p.id}</td>
-      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--lime);flex-shrink:0">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div><span class="td-name">${p.name}</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--orange);flex-shrink:0">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div><span class="td-name">${p.name}</span></div></td>
       <td><span class="chip chip-s">${p.level}</span></td>
       <td>${p.location||p.area||''}</td>
-      <td><strong style="font-family:var(--fm);color:var(--lime)">${p.points} pts</strong></td>
+      <td><strong style="font-family:var(--fm);color:var(--orange)">${p.points} pts</strong></td>
       <td>${p.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Suspended</span>'}</td>
       <td><div class="td-actions">
         <button class="btn btn-o btn-xs" onclick="openModal('player','${p.id}')">Edit</button>
-        <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(255,68,68,.2)':'rgba(46,213,115,.2)'}" onclick="togglePlayerStatus('${p.id}')">${p.status==='active'?'Suspend':'Restore'}</button>
+        <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(220,38,38,.2)':'rgba(22,163,74,.2)'}" onclick="togglePlayerStatus('${p.id}')">${p.status==='active'?'Suspend':'Restore'}</button>
         <button class="btn btn-r btn-xs" onclick="deleteItem('player','${p.id}')">✕</button>
       </div></td>
     </tr>`).join('');
@@ -1096,7 +1109,7 @@ function buildRankings() {
     <tr>
       <td><span style="font-family:var(--fh);font-size:18px">${moji[i]||'#'+(i+1)}</span></td>
       <td class="td-name">${name}</td>
-      <td><strong style="font-family:var(--fm);font-size:14px;color:var(--lime)">${pts} pts</strong></td>
+      <td><strong style="font-family:var(--fm);font-size:14px;color:var(--orange)">${pts} pts</strong></td>
       <td class="td-mono">${Math.floor(pts/3)} wins</td>
       <td><div class="td-actions">
         <button class="btn btn-o btn-xs" onclick="openModal('rankAdjust',null,'${name}')">Adjust</button>
@@ -1150,7 +1163,7 @@ function toggleSponsorStatus(id) {
 
 // ════════════════════════ ANNOUNCEMENTS ════════════════════════
 function buildAnnouncements() {
-  const types = {info:{class:'chip-s',dot:'#00D4FF'},success:{class:'chip-g',dot:'#2ED573'},warning:{class:'chip-a',dot:'#FFB800'},error:{class:'chip-r',dot:'#FF4444'}};
+  const types = {info:{class:'chip-s',dot:'#2563EB'},success:{class:'chip-g',dot:'#16A34A'},warning:{class:'chip-a',dot:'#F48C06'},error:{class:'chip-r',dot:'#DC2626'}};
   document.getElementById('annList').innerHTML = announcements.map(a=>{
     const t = types[a.type]||types.info;
     return `<div class="ann">
@@ -1180,7 +1193,7 @@ function buildChat() {
   document.getElementById('chatTbody').innerHTML = chatMsgs.map(m=>`
     <tr>
       <td class="td-mono">${m.time}</td>
-      <td><div style="display:flex;align-items:center;gap:6px"><div style="width:24px;height:24px;border-radius:6px;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--lime)">${m.initials}</div>${m.user}</div></td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div style="width:24px;height:24px;border-radius:6px;background:var(--lime2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--orange)">${m.initials}</div>${m.user}</div></td>
       <td style="max-width:300px;font-size:13px">${escHtml(m.msg||m.text||'')}</td>
       <td><div class="td-actions">
         <button class="btn btn-r btn-xs" onclick="deleteMsg(${m.id})">Delete</button>
@@ -1200,7 +1213,7 @@ function clearChat() {
     buildChat();
     logActivity('Chat Cleared', 'All messages deleted by admin');
     toast('✅ Chat cleared');
-  });
+  }, 'CLEAR');
 }
 function postAdminMsg() {
   const v = document.getElementById('adminMsg').value.trim();
@@ -1232,7 +1245,7 @@ function buildCheckins() {
     sorted.map(([name,count])=>`
       <tr>
         <td class="td-name">${name}</td>
-        <td><strong style="font-family:var(--fm);color:var(--lime)">${count}</strong></td>
+        <td><strong style="font-family:var(--fm);color:var(--orange)">${count}</strong></td>
         <td><span class="chip chip-l">${((count/(total||1))*100).toFixed(1)}%</span></td>
         <td><button class="btn btn-r btn-xs" onclick="deleteCheckin('${name}')">Reset</button></td>
       </tr>`).join('') :
@@ -1242,7 +1255,7 @@ function buildCheckins() {
   const vals = days.map(()=>Math.floor(Math.random()*15)+1);
   const wmax = Math.max(...vals);
   document.getElementById('ciWeekChart').innerHTML = days.map((d,i)=>`
-    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(vals[i]/wmax*100)}%;background:var(--skyd);border-color:rgba(0,212,255,.25)"><div class="bar-val" style="color:var(--sky)">${vals[i]}</div></div></div><div class="bar-lbl">${d}</div></div>`).join('');
+    <div class="bar-col"><div class="bar-track"><div class="bar" style="height:${(vals[i]/wmax*100)}%;background:var(--skyd);border-color:rgba(37,99,235,.25)"><div class="bar-val" style="color:var(--sky)">${vals[i]}</div></div></div><div class="bar-lbl">${d}</div></div>`).join('');
 }
 function deleteCheckin(name) {
   const ci = loadData('pt6200ci', {});
@@ -1446,14 +1459,39 @@ function deleteItem(type, id) {
 }
 
 // ════════════════════════ CONFIRM DIALOG ════════════════════════
-function openConfirm(title, msg, ico, cb) {
+function openConfirm(title, msg, ico, cb, typeWord) {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
   document.getElementById('confirmIco').textContent = ico;
+  const wrap = document.getElementById('confirmTypeToWrap');
+  const input = document.getElementById('confirmTypeInput');
+  const okBtn = document.getElementById('confirmOk');
+  if(typeWord){
+    wrap.style.display = 'block';
+    document.getElementById('confirmTypeWord').textContent = typeWord;
+    input.value = '';
+    okBtn.disabled = true; okBtn.style.opacity = '.5'; okBtn.style.cursor = 'not-allowed';
+    input.oninput = ()=>{
+      const ok = input.value.trim() === typeWord;
+      okBtn.disabled = !ok;
+      okBtn.style.opacity = ok ? '1' : '.5';
+      okBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
+    };
+    setTimeout(()=>input.focus(), 60);
+  } else {
+    wrap.style.display = 'none';
+    okBtn.disabled = false; okBtn.style.opacity = ''; okBtn.style.cursor = '';
+  }
   document.getElementById('confirmBg').classList.add('on');
   confirmCb = cb;
 }
-function closeConfirm() { document.getElementById('confirmBg').classList.remove('on'); confirmCb=null; }
+function closeConfirm() {
+  document.getElementById('confirmBg').classList.remove('on');
+  document.getElementById('confirmTypeToWrap').style.display = 'none';
+  const okBtn = document.getElementById('confirmOk');
+  okBtn.disabled = false; okBtn.style.opacity = ''; okBtn.style.cursor = '';
+  confirmCb=null;
+}
 document.getElementById('confirmOk').onclick = ()=>{ if(confirmCb) confirmCb(); closeConfirm(); };
 
 // ════════════════════════ DATA OPS ════════════════════════
@@ -1466,15 +1504,23 @@ function exportData() {
   logActivity('Data Exported', 'Full JSON backup downloaded');
   toast('📥 Data exported!');
 }
-function resetCourts() { courts=[...defaultCourts]; saveData('pt_admin_courts',courts); buildCourts(); toast('✅ Courts reset to default'); }
-function resetGames() { games=[...defaultGames]; saveData('pt_admin_games',games); buildGames(); toast('✅ Games reset to default'); }
+function resetCourts() {
+  openConfirm('Reset Courts','All court listings will be replaced with the default seed set. Custom edits will be lost.','🔄',()=>{
+    courts=[...defaultCourts]; saveData('pt_admin_courts',courts); buildCourts(); toast('✅ Courts reset to default');
+  }, 'RESET');
+}
+function resetGames() {
+  openConfirm('Reset Games','All game listings will be replaced with the default seed set.','🔄',()=>{
+    games=[...defaultGames]; saveData('pt_admin_games',games); buildGames(); toast('✅ Games reset to default');
+  }, 'RESET');
+}
 function confirmWipe() {
   openConfirm('FACTORY RESET','This will permanently delete ALL data including courts, games, players, rankings, and check-ins. There is no undo.','💥',()=>{
     ['pt_admin_courts','pt_admin_games','pt_admin_events','pt_admin_players','pt_admin_sponsors','pt_admin_ann','pt_admin_chat','pt_admin_activity','pt6200ci','pt6200ranks','pt6200matches'].forEach(k=>localStorage.removeItem(k));
     courts=[...defaultCourts]; games=[...defaultGames]; events=[...defaultEvents];
     players=[...defaultPlayers]; sponsors=[...defaultSponsors]; announcements=[...defaultAnnouncements];
     refreshAll(); toast('💥 Factory reset complete');
-  });
+  }, 'WIPE');
 }
 function saveContent() { logActivity('Content Updated','Homepage content saved'); toast('✅ Homepage content saved!'); }
 

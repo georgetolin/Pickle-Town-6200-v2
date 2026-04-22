@@ -29,41 +29,51 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%238FC337' stroke='%233D5C20' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='20' cy='13' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='14' cy='20' r='1.6' fill='%233D5C20'/%3E%3Ccircle cx='22' cy='21' r='1.6' fill='%233D5C20'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* ═══════════════ TOKENS ═══════════════ */
 :root{
-  --court:#0A3D2B;--court2:#0D4F38;--court3:#155C42;
-  --lime:#B8F53C;--lime2:rgba(184,245,60,.12);--lime3:rgba(184,245,60,.25);
-  --amber:#FFB800;--amberd:rgba(255,184,0,.12);
-  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
-  --rd:#FF4444;
-  --ink:#08150F;--ink2:#0E1F16;--ink3:#152B1E;--ink4:#1C3828;
-  --tx:#E8F5EE;--tx2:#8FAF9A;--tx3:#4A6B57;
-  --bd:rgba(184,245,60,.08);--bdh:rgba(184,245,60,.18);
-  --r:8px;--rl:14px;
-  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  /* Forest/grass/orange palette ported from reference design */
+  --court:#3D5C20;--court2:#4E7429;--court3:#2A3F16;
+  --forest:#3D5C20;--forest-d:#2A3F16;--forest-l:#4E7429;
+  --grass:#8FC337;--grass-l:#A8D44E;
+  --orange:#F48C06;--orange-d:#C97200;
+  --lime:#8FC337;--lime2:rgba(143,195,55,.14);--lime3:rgba(143,195,55,.28);
+  --amber:#F48C06;--amberd:rgba(244,140,6,.14);
+  --sky:#2563EB;--skyd:rgba(37,99,235,.1);
+  --rd:#DC2626;
+  --cream:#F2F5EE;
+  --ink:#F5F7F2;--ink2:#FFFFFF;--ink3:#F2F5EE;--ink4:#E4EDD6;
+  --tx:#1C2B0E;--tx2:#435A2E;--tx3:#7A9668;--tx4:#ADBF99;
+  --bd:rgba(61,92,32,.12);--bdh:rgba(61,92,32,.28);
+  --r:8px;--rl:14px;--rx:20px;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --fh:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--ink);color:var(--tx);font-family:var(--fb);font-size:15px;line-height:1.6;overflow-x:hidden}
 
-/* Court-line texture */
+/* Court-line texture (subtle on cream bg) */
 body::before{
   content:'';position:fixed;inset:0;
   background-image:
-    linear-gradient(rgba(184,245,60,.015) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(184,245,60,.015) 1px,transparent 1px);
+    linear-gradient(rgba(61,92,32,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(61,92,32,.035) 1px,transparent 1px);
   background-size:60px 60px;pointer-events:none;z-index:0
 }
 
 /* ═══════════════ NAV ═══════════════ */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:600;height:60px;
-  background:rgba(8,21,15,.95);backdrop-filter:blur(24px);
+  background:rgba(255,255,255,.92);backdrop-filter:blur(24px);
   border-bottom:1px solid var(--bd);
+  box-shadow:0 1px 0 rgba(61,92,32,.04);
 }
 .nav-inner{
   max-width:1200px;margin:0 auto;padding:0 20px;
@@ -78,12 +88,12 @@ nav{
   width:34px;height:34px;border-radius:50%;background:var(--lime);
   display:flex;align-items:center;justify-content:center;
   font-size:17px;position:relative;flex-shrink:0;
-  box-shadow:0 0 18px rgba(184,245,60,.3);
+  box-shadow:0 0 18px rgba(143,195,55,.3);
 }
 .logo-ball::after{
   content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);
-  width:26px;height:2px;background:rgba(8,21,15,.4);border-radius:1px;
-  box-shadow:0 5px 0 rgba(8,21,15,.4),0 10px 0 rgba(8,21,15,.4)
+  width:26px;height:2px;background:rgba(42,63,22,.4);border-radius:1px;
+  box-shadow:0 5px 0 rgba(42,63,22,.4),0 10px 0 rgba(42,63,22,.4)
 }
 .logo span{color:var(--lime)}
 .nav-links{display:flex;gap:1px;flex:1}
@@ -93,7 +103,7 @@ nav{
   padding:7px 13px;border-radius:7px;cursor:pointer;transition:all .15s;
   text-transform:uppercase;
 }
-.nl:hover{color:var(--tx);background:rgba(255,255,255,.05)}
+.nl:hover{color:var(--tx);background:rgba(61,92,32,.06)}
 .nl.on{color:var(--lime);background:var(--lime2)}
 .nav-r{margin-left:auto;display:flex;gap:9px;align-items:center}
 .nav-av{
@@ -106,10 +116,10 @@ nav{
   border-radius:var(--r);font-family:var(--fb);font-size:13.5px;font-weight:600;
   cursor:pointer;border:none;transition:all .17s;white-space:nowrap;
 }
-.btn-l{background:var(--lime);color:var(--ink);letter-spacing:-.1px}
-.btn-l:hover{background:#caff55;box-shadow:0 0 20px rgba(184,245,60,.35);transform:translateY(-1px)}
-.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}
-.btn-o:hover{border-color:rgba(184,245,60,.35);color:var(--lime)}
+.btn-l{background:var(--forest);color:#fff;letter-spacing:-.1px}
+.btn-l:hover{background:var(--forest-l);box-shadow:0 6px 16px rgba(61,92,32,.22);transform:translateY(-1px)}
+.btn-o{background:#fff;color:var(--forest);border:1px solid var(--bdh)}
+.btn-o:hover{border-color:var(--forest);color:var(--forest-d);background:var(--cream)}
 .btn-sm{padding:6px 13px;font-size:12.5px;border-radius:7px}
 .btn-xs{padding:4px 9px;font-size:11.5px;border-radius:6px}
 
@@ -120,6 +130,7 @@ main{padding-top:60px;position:relative;z-index:1}
 .page.on{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:.95}}
 
 /* ═══════════════ HERO ═══════════════ */
 .hero{
@@ -130,7 +141,7 @@ main{padding-top:60px;position:relative;z-index:1}
 .hero-court{
   position:absolute;inset:0;
   background:
-    linear-gradient(rgba(8,21,15,.55),rgba(8,21,15,.7)),
+    linear-gradient(rgba(42,63,22,.55),rgba(42,63,22,.7)),
     url('https://images.pexels.com/photos/29439333/pexels-photo-29439333.jpeg?auto=compress&cs=tinysrgb&w=1400') center/cover;
 }
 .hero-lines{
@@ -142,7 +153,7 @@ main{padding-top:60px;position:relative;z-index:1}
 .hero-content{position:relative;z-index:1;max-width:640px}
 .hero-tag{
   display:inline-flex;align-items:center;gap:8px;
-  background:rgba(184,245,60,.1);border:1px solid rgba(184,245,60,.25);
+  background:rgba(143,195,55,.1);border:1px solid rgba(143,195,55,.25);
   padding:5px 13px;border-radius:30px;margin-bottom:22px;
   font-family:var(--fm);font-size:11px;color:var(--lime);letter-spacing:.5px;
 }
@@ -151,15 +162,15 @@ main{padding-top:60px;position:relative;z-index:1}
 .hero h1{
   font-family:var(--fh);font-size:clamp(40px,6vw,76px);
   font-weight:900;line-height:1;letter-spacing:-1px;
-  color:var(--tx);margin-bottom:14px;text-transform:uppercase;
+  color:#fff;margin-bottom:14px;
 }
-.hero h1 span{color:var(--lime)}
-.hero p{font-size:16px;color:var(--tx2);max-width:500px;margin-bottom:28px;font-weight:300;line-height:1.7}
+.hero h1 span{color:var(--grass-l)}
+.hero p{font-size:16px;color:rgba(255,255,255,.88);max-width:500px;margin-bottom:28px;font-weight:400;line-height:1.7}
 .hero-acts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px}
 .hero-stats{display:flex;gap:32px;flex-wrap:wrap}
 .hs{display:flex;flex-direction:column}
-.hs strong{font-family:var(--fh);font-size:28px;font-weight:900;color:var(--lime);letter-spacing:-1px}
-.hs span{font-size:11px;color:var(--tx3);font-family:var(--fm);text-transform:uppercase;letter-spacing:.6px}
+.hs strong{font-family:var(--fh);font-size:28px;font-weight:800;color:var(--grass-l);letter-spacing:-1px}
+.hs span{font-size:11px;color:rgba(255,255,255,.7);font-family:var(--fm);text-transform:uppercase;letter-spacing:.6px}
 
 /* ═══════════════ SECTION HEADER ═══════════════ */
 .s-eyebrow{font-family:var(--fm);font-size:10.5px;color:var(--lime);text-transform:uppercase;letter-spacing:1.4px;margin-bottom:10px;display:block}
@@ -174,7 +185,7 @@ main{padding-top:60px;position:relative;z-index:1}
   color:var(--tx2);text-transform:uppercase;transition:all .15s;border:none;background:none;
 }
 .tab:hover{color:var(--tx)}
-.tab.on{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.25)}
+.tab.on{background:var(--lime2);color:var(--lime);border:1px solid rgba(143,195,55,.25)}
 .tc{display:none}.tc.on{display:block;animation:fi .2s ease}
 
 /* ═══════════════ CARDS ═══════════════ */
@@ -195,11 +206,11 @@ main{padding-top:60px;position:relative;z-index:1}
   padding:3px 9px;border-radius:20px;
   font-family:var(--fm);font-size:10.5px;font-weight:500;
 }
-.bdg-l{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.2)}
-.bdg-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
-.bdg-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(0,212,255,.2)}
-.bdg-r{background:rgba(255,68,68,.1);color:var(--rd);border:1px solid rgba(255,68,68,.2)}
-.bdg-g{background:rgba(46,213,115,.1);color:#2ed573;border:1px solid rgba(46,213,115,.2)}
+.bdg-l{background:var(--lime2);color:var(--lime);border:1px solid rgba(143,195,55,.2)}
+.bdg-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(244,140,6,.2)}
+.bdg-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(37,99,235,.2)}
+.bdg-r{background:rgba(220,38,38,.1);color:var(--rd);border:1px solid rgba(220,38,38,.2)}
+.bdg-g{background:rgba(22,163,74,.1);color:#16A34A;border:1px solid rgba(22,163,74,.2)}
 
 /* ═══════════════ FORMS ═══════════════ */
 .form-wrap{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:28px;max-width:560px}
@@ -210,7 +221,7 @@ main{padding-top:60px;position:relative;z-index:1}
   border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;
   transition:border-color .15s;
 }
-.fc:focus{border-color:rgba(184,245,60,.35)}
+.fc:focus{border-color:rgba(143,195,55,.35)}
 .fc::placeholder{color:var(--tx3)}
 select.fc{cursor:pointer}
 textarea.fc{resize:vertical;line-height:1.6}
@@ -223,10 +234,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 /* ═══════════════ CHAT ═══════════════ */
 .chat-box{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);display:flex;flex-direction:column;height:500px;overflow:hidden}
 .chat-hd{background:var(--ink3);padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:11px}
-.chat-av{width:36px;height:36px;border-radius:10px;background:var(--lime2);border:1px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.chat-av{width:36px;height:36px;border-radius:10px;background:var(--lime2);border:1px solid rgba(143,195,55,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .chat-hd-info strong{display:block;font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
 .chat-hd-info span{font-size:11.5px;color:var(--tx2)}
-.online{width:7px;height:7px;border-radius:50%;background:#2ed573;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px rgba(46,213,115,.6)}
+.online{width:7px;height:7px;border-radius:50%;background:#16A34A;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px rgba(22,163,74,.6)}
 .chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
 .chat-msgs::-webkit-scrollbar{width:3px}
 .chat-msgs::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:2px}
@@ -236,10 +247,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 .msg.me .m-av{background:var(--lime2);color:var(--lime)}
 .m-bbl{padding:10px 13px;border-radius:11px;font-size:13px;line-height:1.6}
 .msg:not(.me) .m-bbl{background:var(--ink3);border:1px solid var(--bd);border-radius:11px 11px 11px 3px}
-.msg.me .m-bbl{background:var(--lime2);border:1px solid rgba(184,245,60,.2);border-radius:11px 11px 3px 11px;color:var(--tx)}
+.msg.me .m-bbl{background:var(--lime2);border:1px solid rgba(143,195,55,.2);border-radius:11px 11px 3px 11px;color:var(--tx)}
 .chat-inp-row{padding:12px;border-top:1px solid var(--bd);display:flex;gap:8px}
 .chat-inp-row input{flex:1;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:9px 13px;color:var(--tx);font-family:var(--fb);font-size:13px;outline:none;transition:border-color .15s}
-.chat-inp-row input:focus{border-color:rgba(184,245,60,.3)}
+.chat-inp-row input:focus{border-color:rgba(143,195,55,.3)}
 .chat-inp-row input::placeholder{color:var(--tx3)}
 
 /* ═══════════════ RANKINGS ═══════════════ */
@@ -252,7 +263,7 @@ textarea.fc{resize:vertical;line-height:1.6}
   font-family:var(--fh);font-size:28px;font-weight:900;color:var(--tx3);
   min-width:36px;letter-spacing:-1px;
 }
-.rank-num.g1{color:var(--lime);text-shadow:0 0 20px rgba(184,245,60,.4)}
+.rank-num.g1{color:var(--lime);text-shadow:0 0 20px rgba(143,195,55,.4)}
 .rank-num.g2{color:var(--amber)}
 .rank-num.g3{color:var(--sky)}
 .rank-avatar{width:44px;height:44px;border-radius:50%;background:var(--ink4);border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--tx2);flex-shrink:0}
@@ -269,7 +280,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 .sponsor-card:hover{border-color:var(--bdh);transform:translateY(-2px)}
 .sp-ico{
   width:52px;height:52px;border-radius:12px;background:var(--lime2);
-  border:1px solid rgba(184,245,60,.2);display:flex;align-items:center;
+  border:1px solid rgba(143,195,55,.2);display:flex;align-items:center;
   justify-content:center;font-size:22px;margin-bottom:12px;
 }
 .sponsor-card h3{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:5px}
@@ -292,7 +303,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 /* ═══════════════ TOAST ═══════════════ */
 .toast{
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--ink3);border:1px solid rgba(184,245,60,.25);
+  background:var(--ink3);border:1px solid rgba(143,195,55,.25);
   border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:900;
   opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);
   pointer-events:none;
@@ -305,7 +316,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 .qr-wrap{text-align:center;margin-top:10px;padding:10px;background:var(--ink4);border-radius:8px}
 .qr-wrap p{font-size:10.5px;color:var(--tx2);margin-top:6px;font-family:var(--fm)}
 .popup-btn{background:var(--lime);color:var(--ink);border:none;padding:7px 14px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;width:100%;margin-top:8px;font-family:var(--fh);letter-spacing:.3px;text-transform:uppercase;transition:background .15s}
-.popup-btn:hover{background:#caff55}
+.popup-btn:hover{background:#A8D44E}
 
 /* ═══════════════ MATCH SUBMIT ═══════════════ */
 .match-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
@@ -321,7 +332,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 
 /* ═══════════════ MOBILE NAV ═══════════════ */
 .mob-nav-btn{display:none;background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px}
-@media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(8,21,15,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
+@media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(42,63,22,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
 
 /* ═══════════════ AUTH MODAL ═══════════════ */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
@@ -341,8 +352,8 @@ textarea.fc{resize:vertical;line-height:1.6}
 .nav-user{display:none;align-items:center;gap:8px;cursor:pointer}
 .nav-user.on{display:flex}
 .nav-user-av{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--bdh)}
-.nav-user-av-txt{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:900;color:var(--lime)}
-.dupr-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);font-family:var(--fm);font-size:10px;color:var(--sky)}
+.nav-user-av-txt{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid rgba(143,195,55,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:900;color:var(--lime)}
+.dupr-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);font-family:var(--fm);font-size:10px;color:var(--sky)}
 .dupr-badge a{color:var(--sky);text-decoration:none}
 .dupr-badge a:hover{text-decoration:underline}
 </style>
@@ -423,15 +434,15 @@ textarea.fc{resize:vertical;line-height:1.6}
     <span class="s-eyebrow">Feature · Courts</span>
     <h2 class="s-title">Courts in 6200 Area</h2>
     <p class="s-sub" style="margin-bottom:16px">All known pickleball courts in Dumaguete City and surrounding towns. Click any card to see it on the map.</p>
-    <div style="margin-bottom:24px;padding:12px 18px;background:var(--ink2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <span style="font-size:13px;color:var(--tx2)">Are you a court owner? List your court and reach the Dumaguete pickleball community.</span>
-      <a href="#" onclick="openCourtOwnerRequestModal();return false" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-family:var(--fm);color:var(--lime);text-decoration:none;font-weight:700;white-space:nowrap">Register here →</a>
+    <div style="margin-bottom:24px;padding:14px 18px;background:var(--ink2);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <span style="font-size:13px;color:var(--tx2)"><strong style="color:var(--tx)">Own a pickleball court?</strong> &nbsp;Apply to manage your listing — set hours, pricing, amenities, and get verified.</span>
+      <a href="#" onclick="openCourtOwnerRequestModal();return false" class="btn btn-l btn-sm" style="text-decoration:none;white-space:nowrap">Apply as Court Owner →</a>
     </div>
 
     <div class="tabs">
       <button class="tab on" onclick="switchTab('court-list',this)">Court Listings</button>
       <button class="tab" onclick="switchTab('court-map',this);initMap()">Interactive Map</button>
-      <button class="tab" onclick="switchTab('add-court',this)">+ Add a Court</button>
+      <button class="tab" onclick="switchTab('add-court',this)" title="Know a court we missed? Suggest it and admins will verify.">+ Suggest a Court</button>
     </div>
 
     <div class="tc on" id="court-list">
@@ -458,8 +469,8 @@ textarea.fc{resize:vertical;line-height:1.6}
 
     <div class="tc" id="add-court">
       <div class="form-wrap">
-        <h3 style="font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;margin-bottom:6px">Add a New Court</h3>
-        <p style="font-size:13px;color:var(--tx2);margin-bottom:22px">Help grow pickleball in Negros Oriental — submit a court and we'll verify and list it.</p>
+        <h3 style="font-family:var(--fh);font-size:22px;font-weight:800;margin-bottom:6px">Suggest a Court</h3>
+        <p style="font-size:13px;color:var(--tx2);margin-bottom:14px">Know of a court we haven't listed? Submit it and admins will verify and add it. <em style="color:var(--tx3)">If you <strong>own</strong> the court and want to manage your own listing, <a href="#" onclick="openCourtOwnerRequestModal();return false" style="color:var(--forest);font-weight:700">apply as a Court Owner</a> instead.</em></p>
         <form id="addCourtForm">
           <div class="fg"><label>Court Name</label><input class="fc" type="text" placeholder="e.g., Silliman Tennis Courts" required></div>
           <div class="fg"><label>Town / City</label>
@@ -482,9 +493,14 @@ textarea.fc{resize:vertical;line-height:1.6}
 <!-- ═══ GAMES ═══ -->
 <div class="page" id="pg-games">
   <div class="wrap">
-    <span class="s-eyebrow">Feature · Games</span>
-    <h2 class="s-title">Games in Dumaguete</h2>
-    <p class="s-sub" style="margin-bottom:28px">Find open play sessions, join scheduled games, or create your own and fill spots fast.</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:28px">
+      <div>
+        <span class="s-eyebrow">Feature · Games</span>
+        <h2 class="s-title">Games in Dumaguete</h2>
+        <p class="s-sub">Find open play sessions, join scheduled games, or create your own and fill spots fast.</p>
+      </div>
+      <button class="btn btn-l" onclick="openCheckInFlow()" title="Arrive at a court? Check in to claim points and show you played.">✅ Check In at a Court</button>
+    </div>
 
     <div class="tabs">
       <button class="tab on" onclick="switchTab('open-play',this)">Open Play</button>
@@ -631,7 +647,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div class="tc" id="my-profile">
       <div class="form-wrap">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
-          <div style="width:64px;height:64px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-size:26px">🏓</div>
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--lime2);border:2px solid rgba(143,195,55,.3);display:flex;align-items:center;justify-content:center;font-size:26px">🏓</div>
           <div>
             <div style="font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase">Your Profile</div>
             <div style="font-size:12px;color:var(--tx2)">Member · PickleTown 6200 · Dumaguete</div>
@@ -778,7 +794,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:36px;margin-bottom:36px">
       <div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px rgba(184,245,60,.3)">🏓</div>
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px rgba(143,195,55,.3)">🏓</div>
           <span style="font-family:var(--fh);font-size:17px;font-weight:900;letter-spacing:.4px">Pickle<span style="color:var(--lime)">Town</span> 6200</span>
         </div>
         <p style="font-size:12.5px;color:var(--tx3);line-height:1.7;max-width:240px">Connecting the Dumaguete City pickleball community since 2026. Serving the 6200 area code and Negros Oriental.</p>
@@ -799,15 +815,6 @@ textarea.fc{resize:vertical;line-height:1.6}
         </div>
       </div>
       <div>
-        <div style="font-family:var(--fh);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:14px">Resources</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <a href="#" onclick="toast('Beginner guides coming soon!');return false" style="color:var(--tx3);font-size:13px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">Beginner Guides</a>
-          <a href="#" onclick="toast('Coach directory coming soon!');return false" style="color:var(--tx3);font-size:13px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">Local Coaches</a>
-          <a href="#" onclick="toast('Gear guide coming soon!');return false" style="color:var(--tx3);font-size:13px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">Gear Recommendations</a>
-          <a href="#" onclick="toast('Rules page coming soon!');return false" style="color:var(--tx3);font-size:13px;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx)'" onmouseout="this.style.color='var(--tx3)'">Rules & Regulations</a>
-        </div>
-      </div>
-      <div>
         <div style="font-family:var(--fh);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:14px">Contact</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <span style="font-size:12.5px;color:var(--tx3)">📧 hello@pickletown6200.com</span>
@@ -819,10 +826,8 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div style="border-top:1px solid var(--bd);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <span style="font-size:12px;color:var(--tx3)">© 2025 PickleTown 6200 · Dumaguete City Pickleball Community</span>
       <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-        <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
-        <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
-        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
-        <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
+        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(37,99,235,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
+        <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(143,195,55,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
       </div>
     </div>
   </div>
@@ -845,7 +850,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div id="authEmailSection">
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Email</label><input class="fc" type="email" id="authEmail" placeholder="your@email.com"></div>
       <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Password</label><input class="fc" type="password" id="authPassword" placeholder="••••••••"></div>
-      <div id="authError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <div id="authError" style="display:none;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-l" style="flex:1" onclick="signInEmail()">Sign In</button>
         <button class="btn btn-o" style="flex:1" onclick="registerEmail()">Register</button>
@@ -870,7 +875,7 @@ textarea.fc{resize:vertical;line-height:1.6}
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Address / Location *</label><input class="fc" type="text" id="coAddress" placeholder="e.g. Perdices St, Dumaguete City"></div>
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Contact Number *</label><input class="fc" type="tel" id="coPhone" placeholder="e.g. 09XX XXX XXXX"></div>
       <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Additional Notes (optional)</label><textarea class="fc" id="coNotes" rows="3" placeholder="Number of courts, operating hours, pricing info, etc." style="resize:vertical;min-height:72px"></textarea></div>
-      <div id="coError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <div id="coError" style="display:none;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
       <button class="btn btn-l" style="width:100%" onclick="submitCourtOwnerRequest()">Submit Application</button>
       <p style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:14px;margin-bottom:0">The admin typically reviews applications within 1–2 business days.</p>
     </div>
@@ -917,6 +922,21 @@ function goTo(page, btn) {
   document.querySelector('.nav-links').classList.remove('mob-open');
 }
 
+// Deep-link: #courts?apply or ?apply=1 auto-opens the court owner application.
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const h = window.location.hash || '';
+    const q = window.location.search || '';
+    if(h.startsWith('#') && h.length>1){
+      const page = h.slice(1).split('?')[0];
+      if(document.getElementById('pg-'+page)) goTo(page, null);
+    }
+    if(/apply=1|[?&]apply\b|\bapply=1/.test(q+h)){
+      setTimeout(()=>{ if(typeof openCourtOwnerRequestModal==='function') openCourtOwnerRequestModal(); }, 200);
+    }
+  } catch(_){}
+});
+
 // Tab switching
 function switchTab(id, btn) {
   const section = btn ? btn.closest('.page') : document.querySelector('.page.on');
@@ -924,6 +944,36 @@ function switchTab(id, btn) {
   section.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   if(btn) btn.classList.add('on');
+}
+
+// Route players to the Courts map and hint the check-in flow.
+function openCheckInFlow(){
+  goTo('courts', null);
+  setTimeout(()=>{
+    const mapTab = document.querySelectorAll('#pg-courts .tab')[1];
+    if(mapTab){ switchTab('court-map', mapTab); initMap(); }
+    toast('Tap any 📍 pin, then "✅ Check In" to record your visit.');
+  }, 80);
+}
+
+// ═══ LIST EMPTY / LOADING STATE HELPERS ═══
+function renderEmpty(el, msg, ctaHtml){
+  if(!el) return;
+  el.innerHTML = `<div style="grid-column:1/-1;background:var(--ink2);border:1px dashed var(--bdh);border-radius:var(--rl);padding:38px 22px;text-align:center;color:var(--tx2)">
+    <div style="font-size:34px;margin-bottom:10px;opacity:.6">🎾</div>
+    <div style="font-family:var(--fh);font-size:18px;font-weight:800;color:var(--tx);margin-bottom:6px">${msg||'Nothing here yet'}</div>
+    <div style="font-size:12.5px;color:var(--tx3);max-width:420px;margin:0 auto 14px">Be the first to get things started in the community.</div>
+    ${ctaHtml||''}
+  </div>`;
+}
+function renderSkeleton(el, rows){
+  if(!el) return;
+  const card = `<div style="background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:18px;min-height:150px;animation:pulse 1.4s ease-in-out infinite">
+    <div style="height:14px;width:60%;background:var(--ink4);border-radius:4px;margin-bottom:10px"></div>
+    <div style="height:10px;width:90%;background:var(--ink4);border-radius:4px;margin-bottom:8px"></div>
+    <div style="height:10px;width:75%;background:var(--ink4);border-radius:4px"></div>
+  </div>`;
+  el.innerHTML = card.repeat(rows||3);
 }
 
 // ════════════════════════ MAP ════════════════════════
@@ -937,7 +987,7 @@ function initMap() {
 
   // Custom marker icon
   const coIcon = L.divIcon({
-    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#8FC337;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(143,195,55,.5)">📍</div>`,
     className:'',iconSize:[28,28],iconAnchor:[14,14]
   });
 
@@ -946,9 +996,9 @@ function initMap() {
     const qrId = 'qr-'+c.name.replace(/\s+/g,'');
     m.bindPopup(`
       <div style="font-family:'Barlow',sans-serif;min-width:200px">
-        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
-        <div style="font-size:11px;color:#8FAF9A;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div style="font-size:12px;color:#8FAF9A;margin-bottom:10px">⏰ ${c.open||c.hours||''}</div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#1C2B0E">${c.name}</div>
+        <div style="font-size:11px;color:#435A2E;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#435A2E;margin-bottom:10px">⏰ ${c.open||c.hours||''}</div>
         <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
         <div class="qr-wrap">
           <div id="${qrId}"></div>
@@ -977,7 +1027,7 @@ function renderGamePins(filtered) {
   gameMarkers.forEach(m=>leafMap.removeLayer(m));
   gameMarkers = [];
   const gIcon = L.divIcon({
-    html:`<div style="width:22px;height:22px;border-radius:50%;background:#0D4F38;border:2px solid #B8F53C;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 10px rgba(184,245,60,.4)">🎮</div>`,
+    html:`<div style="width:22px;height:22px;border-radius:50%;background:#0D4F38;border:2px solid #8FC337;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 10px rgba(143,195,55,.4)">🎮</div>`,
     className:'',iconSize:[22,22],iconAnchor:[11,11]
   });
   filtered.forEach(g=>{
@@ -986,10 +1036,10 @@ function renderGamePins(filtered) {
     const shifted = [court.coords[0]+0.001, court.coords[1]+0.001];
     const m = L.marker(shifted,{icon:gIcon}).addTo(leafMap).bindPopup(`
       <div style="font-family:'Barlow',sans-serif">
-        <div style="font-weight:800;font-size:14px;color:#E8F5EE;margin-bottom:6px">${g.court}</div>
-        <div style="font-size:12px;color:#8FAF9A">📅 ${g.date} · ⏰ ${g.time}</div>
-        <div style="font-size:12px;color:#8FAF9A">📊 ${g.level}</div>
-        <div style="font-size:12px;color:#B8F53C;margin:6px 0">${g.spots}/${g.max} spots open</div>
+        <div style="font-weight:800;font-size:14px;color:#1C2B0E;margin-bottom:6px">${g.court}</div>
+        <div style="font-size:12px;color:#435A2E">📅 ${g.date} · ⏰ ${g.time}</div>
+        <div style="font-size:12px;color:#435A2E">📊 ${g.level}</div>
+        <div style="font-size:12px;color:#8FC337;margin:6px 0">${g.spots}/${g.max} spots open</div>
         <button class="popup-btn" onclick="toast('Joining game at ${g.court}!')">Join Game</button>
       </div>
     `);
@@ -1207,7 +1257,7 @@ function buildPlayerCards() {
     <div class="card">
       <div class="card-body" style="padding-top:18px;display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${initials}</div>
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(143,195,55,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${initials}</div>
           <div>
             <h3 style="margin-bottom:2px">${escHtml(p.name||'')}</h3>
             <div style="font-size:11.5px;color:var(--lime);font-family:var(--fm)">${escHtml(p.level||'')}</div>
@@ -1677,7 +1727,7 @@ function refreshMapMarkers() {
   });
   gameMarkers = [];
   const coIcon = L.divIcon({
-    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#8FC337;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(143,195,55,.5)">📍</div>`,
     className:'',iconSize:[28,28],iconAnchor:[14,14]
   });
   courts.forEach(c => {
@@ -1685,12 +1735,12 @@ function refreshMapMarkers() {
     const m = L.marker(c.coords, {icon:coIcon}).addTo(leafMap);
     const qrId = 'qr-'+c.name.replace(/\s+/g,'');
     const hours = c.availability ? Object.entries(c.availability).map(([d,h])=>`${d}: ${h}`).join(', ') : (c.open||'');
-    const pricing = c.pricing ? `<div style="font-size:11px;color:#B8F53C;margin-bottom:4px">₱${c.pricing.dropIn||''}/hr drop-in</div>` : '';
+    const pricing = c.pricing ? `<div style="font-size:11px;color:#8FC337;margin-bottom:4px">₱${c.pricing.dropIn||''}/hr drop-in</div>` : '';
     m.bindPopup(`
       <div style="font-family:'Barlow',sans-serif;min-width:200px">
-        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
-        <div style="font-size:11px;color:#8FAF9A;margin-bottom:4px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div style="font-size:12px;color:#8FAF9A;margin-bottom:4px">⏰ ${hours}</div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#1C2B0E">${c.name}</div>
+        <div style="font-size:11px;color:#435A2E;margin-bottom:4px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#435A2E;margin-bottom:4px">⏰ ${hours}</div>
         ${pricing}
         <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
         <div class="qr-wrap"><div id="${qrId}"></div><p>Scan QR to check in</p></div>

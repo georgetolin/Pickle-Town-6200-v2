@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PickleTown 6200 · Court Owner Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%238FC337' stroke='%230F766E' stroke-width='2'/%3E%3Ccircle cx='11' cy='11' r='1.6' fill='%230F766E'/%3E%3Ccircle cx='20' cy='13' r='1.6' fill='%230F766E'/%3E%3Ccircle cx='14' cy='20' r='1.6' fill='%230F766E'/%3E%3Ccircle cx='22' cy='21' r='1.6' fill='%230F766E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -12,47 +15,54 @@
 <script src="firebase-config.js"></script>
 <style>
 :root{
-  --lime:#B8F53C;--lime2:rgba(184,245,60,.12);--lime3:rgba(184,245,60,.25);
-  --amber:#FFB800;--amberd:rgba(255,184,0,.12);
-  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
-  --rd:#FF4444;--rdd:rgba(255,68,68,.1);
-  --gn:#2ED573;--gnd:rgba(46,213,115,.1);
-  --ink:#08150F;--ink2:#0E1F16;--ink3:#152B1E;--ink4:#1C3828;
-  --tx:#E8F5EE;--tx2:#8FAF9A;--tx3:#4A6B57;
-  --bd:rgba(184,245,60,.08);--bdh:rgba(184,245,60,.18);
-  --r:8px;--rl:14px;--sb:220px;
-  --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+  /* Court owner accent: teal (--ca) per reference design */
+  --ca:#0F766E;--ca-d:#0B5952;--ca-l:#14B8A6;
+  --forest:#3D5C20;--forest-d:#2A3F16;--forest-l:#4E7429;
+  --grass:#8FC337;--grass-l:#A8D44E;
+  --orange:#F48C06;--orange-d:#C97200;
+  --lime:#8FC337;--lime2:rgba(143,195,55,.14);--lime3:rgba(143,195,55,.28);
+  --amber:#F48C06;--amberd:rgba(244,140,6,.14);
+  --sky:#2563EB;--skyd:rgba(37,99,235,.1);
+  --rd:#DC2626;--rdd:rgba(220,38,38,.1);
+  --gn:#16A34A;--gnd:rgba(22,163,74,.1);
+  --cream:#F2F5EE;
+  --ink:#F5F7F2;--ink2:#FFFFFF;--ink3:#F2F5EE;--ink4:#E4EDD6;
+  --tx:#1C2B0E;--tx2:#435A2E;--tx3:#7A9668;--tx4:#ADBF99;
+  --bd:rgba(61,92,32,.12);--bdh:rgba(61,92,32,.28);
+  --r:8px;--rl:14px;--rx:20px;--sb:220px;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --fh:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--ink);color:var(--tx);font-family:var(--fb);font-size:14px;line-height:1.6;overflow-x:hidden;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(184,245,60,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(184,245,60,.012) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(61,92,32,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(61,92,32,.035) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
 
 /* LOGIN */
 #loginScreen{position:fixed;inset:0;background:var(--ink);z-index:9999;display:flex;align-items:center;justify-content:center}
 .login-box{background:var(--ink2);border:1px solid var(--bdh);border-radius:20px;padding:44px;width:400px;max-width:calc(100vw - 40px);position:relative;overflow:hidden;animation:popIn .3s ease}
 @keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
-.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(184,245,60,.08),transparent 70%);pointer-events:none}
+.login-box::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(143,195,55,.08),transparent 70%);pointer-events:none}
 .lb-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
-.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(184,245,60,.35)}
+.lb-ball{width:38px;height:38px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(143,195,55,.35)}
 .lb-logo span{font-family:var(--fh);font-size:22px;font-weight:900;letter-spacing:.3px}
-.lb-logo span em{color:var(--lime);font-style:normal}
+.lb-logo span em{color:var(--ca);font-style:normal}
 .lb-title{font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;letter-spacing:-.3px;text-align:center;margin-bottom:4px}
 .lb-sub{font-size:12.5px;color:var(--tx2);text-align:center;margin-bottom:24px;font-family:var(--fm)}
 .lf-label{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);display:block;margin-bottom:6px}
 .lf-input{width:100%;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:11px 14px;color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;transition:border-color .15s;margin-bottom:14px}
-.lf-input:focus{border-color:rgba(184,245,60,.35)}
+.lf-input:focus{border-color:rgba(143,195,55,.35)}
 .lf-input::placeholder{color:var(--tx3)}
-.lb-err{background:var(--rdd);border:1px solid rgba(255,68,68,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
-.btn-login{width:100%;background:var(--lime);color:var(--ink);border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s;margin-bottom:10px}
-.btn-login:hover{background:#caff55;box-shadow:0 0 24px rgba(184,245,60,.4)}
+.lb-err{background:var(--rdd);border:1px solid rgba(220,38,38,.22);border-radius:var(--r);padding:9px 13px;font-size:12.5px;color:var(--rd);margin-bottom:14px;display:none;text-align:center}
+.btn-login{width:100%;background:var(--ca);color:#fff;border:none;padding:12px;border-radius:var(--r);font-family:var(--fh);font-size:16px;font-weight:800;letter-spacing:.3px;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.btn-login:hover{background:var(--ca-d);box-shadow:0 6px 16px rgba(15,118,110,.3)}
 .btn-google{width:100%;background:#fff;color:#1a1a1a;border:none;padding:11px;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
 .btn-google:hover{background:#f0f0f0;transform:translateY(-1px)}
 .auth-divider{text-align:center;font-size:11px;color:var(--tx3);margin:4px 0 16px;letter-spacing:.5px;text-transform:uppercase;position:relative}
 .auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--bd)}
 .auth-divider::before{left:0}.auth-divider::after{right:0}
 .back-link{display:block;text-align:center;margin-top:14px;font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s}
-.back-link:hover{color:var(--lime)}
+.back-link:hover{color:var(--ca)}
 
 /* LAYOUT */
 #dashApp{display:none}
@@ -61,21 +71,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .sidebar::-webkit-scrollbar{width:3px}
 .sidebar::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:2px}
 .sb-logo{padding:18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
-.sb-ball{width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 0 12px rgba(184,245,60,.3)}
+.sb-ball{width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 0 12px rgba(143,195,55,.3)}
 .sb-name{font-family:var(--fh);font-size:15px;font-weight:900;letter-spacing:.3px;line-height:1}
-.sb-name em{color:var(--lime);font-style:normal}
+.sb-name em{color:var(--ca);font-style:normal}
 .sb-tag{font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
 .sb-court{padding:12px 16px;background:var(--lime2);border-bottom:1px solid var(--lime3);margin:0}
-.sb-court-name{font-family:var(--fh);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;color:var(--lime);line-height:1.2}
+.sb-court-name{font-family:var(--fh);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;color:var(--ca);line-height:1.2}
 .sb-court-tag{font-family:var(--fm);font-size:9.5px;color:var(--tx3);margin-top:3px}
 .sb-section{padding:16px 14px 5px;font-family:var(--fm);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:1px}
 .sbl{display:flex;align-items:center;gap:9px;padding:9px 14px;margin:1px 8px;border-radius:var(--r);cursor:pointer;transition:all .15s;color:var(--tx2);font-size:13.5px;font-weight:500;border:none;background:none;width:calc(100% - 16px);text-align:left}
 .sbl:hover{background:var(--ink3);color:var(--tx)}
-.sbl.on{background:var(--lime2);color:var(--lime);border:1px solid var(--lime3)}
+.sbl.on{background:var(--lime2);color:var(--ca);border:1px solid var(--lime3)}
 .sbl .ico{width:18px;text-align:center;font-size:14px;flex-shrink:0}
 .sb-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--bd)}
 .sb-user{display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--ink3);border-radius:var(--r);border:1px solid var(--bd)}
-.sb-av{width:30px;height:30px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--lime);flex-shrink:0}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--lime2);border:2px solid var(--lime3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:10px;color:var(--ca);flex-shrink:0}
 .sb-uinfo{flex:1;min-width:0}
 .sb-uinfo strong{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-uinfo span{font-size:10px;color:var(--tx3);font-family:var(--fm)}
@@ -84,7 +94,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 /* MAIN */
 .main{margin-left:var(--sb);flex:1;position:relative;z-index:1}
-.topbar{height:54px;background:rgba(8,21,15,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:100}
+.topbar{height:54px;background:rgba(42,63,22,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:100}
 .topbar-title{font-family:var(--fh);font-size:18px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
 .topbar-r{margin-left:auto;display:flex;align-items:center;gap:10px}
 .body{padding:24px}
@@ -96,13 +106,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .sec-title{font-family:var(--fh);font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-.2px}
 .sec-sub{font-size:13px;color:var(--tx2);margin-top:3px}
 .card{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:22px;margin-bottom:16px}
-.card-title{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:14px;color:var(--lime)}
+.card-title{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:14px;color:var(--ca)}
 
 /* FORM */
 .fg{margin-bottom:16px}
 .fl{font-family:var(--fh);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--tx2);display:block;margin-bottom:6px}
 .fi{width:100%;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:10px 13px;color:var(--tx);font-family:var(--fb);font-size:13.5px;outline:none;transition:border-color .15s}
-.fi:focus{border-color:rgba(184,245,60,.35)}
+.fi:focus{border-color:rgba(143,195,55,.35)}
 .fi::placeholder{color:var(--tx3)}
 select.fi{cursor:pointer}
 textarea.fi{resize:vertical;line-height:1.6}
@@ -111,9 +121,9 @@ textarea.fi{resize:vertical;line-height:1.6}
 /* STATUS BTNS */
 .status-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
 .st-btn{padding:9px 18px;border-radius:var(--r);font-family:var(--fh);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;border:1px solid transparent;transition:all .17s;background:var(--ink3)}
-.st-btn.active-open{background:var(--gnd);color:var(--gn);border-color:rgba(46,213,115,.3)}
-.st-btn.active-closed{background:var(--rdd);color:var(--rd);border-color:rgba(255,68,68,.3)}
-.st-btn.active-limited{background:var(--amberd);color:var(--amber);border-color:rgba(255,184,0,.3)}
+.st-btn.active-open{background:var(--gnd);color:var(--gn);border-color:rgba(22,163,74,.3)}
+.st-btn.active-closed{background:var(--rdd);color:var(--rd);border-color:rgba(220,38,38,.3)}
+.st-btn.active-limited{background:var(--amberd);color:var(--amber);border-color:rgba(244,140,6,.3)}
 .st-btn:not(.active-open):not(.active-closed):not(.active-limited){color:var(--tx3)}
 .st-btn:hover{color:var(--tx)}
 
@@ -121,29 +131,29 @@ textarea.fi{resize:vertical;line-height:1.6}
 .amenity-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .amenity-pill{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:30px;background:var(--ink3);border:1px solid var(--bd);cursor:pointer;transition:all .15s;font-size:13px;color:var(--tx2);user-select:none}
 .amenity-pill:hover{border-color:var(--bdh);color:var(--tx)}
-.amenity-pill input[type=checkbox]{width:14px;height:14px;accent-color:var(--lime);cursor:pointer}
-.amenity-pill:has(input:checked){background:var(--lime2);border-color:var(--lime3);color:var(--lime)}
+.amenity-pill input[type=checkbox]{width:14px;height:14px;accent-color:var(--ca);cursor:pointer}
+.amenity-pill:has(input:checked){background:var(--lime2);border-color:var(--lime3);color:var(--ca)}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
-.btn-l{background:var(--lime);color:var(--ink)}.btn-l:hover{background:#caff55;box-shadow:0 0 18px rgba(184,245,60,.3)}
-.btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:rgba(184,245,60,.3);color:var(--lime)}
-.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.2)}.btn-r:hover{background:rgba(255,68,68,.18)}
+.btn-l{background:var(--ca);color:#fff}.btn-l:hover{background:var(--ca-d);box-shadow:0 6px 16px rgba(15,118,110,.28);transform:translateY(-1px)}
+.btn-o{background:#fff;color:var(--tx);border:1px solid var(--bdh)}.btn-o:hover{border-color:var(--ca);color:var(--ca);background:var(--cream)}
+.btn-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(220,38,38,.2)}.btn-r:hover{background:rgba(220,38,38,.18)}
 .btn-sm{padding:5px 12px;font-size:12px;border-radius:7px}
 
 /* INFO ROW */
 .info-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);margin-bottom:7px}
 .info-row strong{color:var(--tx);min-width:120px;font-weight:600}
-.info-val{font-family:var(--fm);font-size:12px;color:var(--lime)}
+.info-val{font-family:var(--fm);font-size:12px;color:var(--ca)}
 
 /* STATUS CHIP */
 .chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-family:var(--fm);font-size:11px}
-.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(46,213,115,.22)}
-.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(255,68,68,.22)}
-.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.22)}
+.chip-g{background:var(--gnd);color:var(--gn);border:1px solid rgba(22,163,74,.22)}
+.chip-r{background:var(--rdd);color:var(--rd);border:1px solid rgba(220,38,38,.22)}
+.chip-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(244,140,6,.22)}
 
 /* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink3);border:1px solid rgba(184,245,60,.25);border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:1000;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);pointer-events:none}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink3);border:1px solid rgba(143,195,55,.25);border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:1000;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ACCESS DENIED */
@@ -185,9 +195,9 @@ textarea.fi{resize:vertical;line-height:1.6}
     <div style="font-size:48px;margin-bottom:16px">🚫</div>
     <div style="font-family:var(--fh);font-size:26px;font-weight:900;text-transform:uppercase;margin-bottom:10px">Access Denied</div>
     <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:8px">Your account is not yet registered as a court owner.</p>
-    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:22px">If you haven't applied yet, go back to the site and click <strong style="color:var(--lime)">"Are you a court owner? Register here"</strong> in the Courts section. The admin will review and approve your application.</p>
+    <p style="color:var(--tx2);font-size:13.5px;line-height:1.7;margin-bottom:22px">If you haven't applied yet, go back to the site and click <strong style="color:var(--ca)">"Are you a court owner? Register here"</strong> in the Courts section. The admin will review and approve your application.</p>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <a href="index.html#courts" class="btn btn-l btn-sm">Apply as Court Owner</a>
+      <a href="index.html#courts?apply=1" class="btn btn-l btn-sm">Apply as Court Owner</a>
       <a href="index.html" class="btn btn-o btn-sm">Back to site</a>
       <button class="btn btn-r btn-sm" onclick="auth.signOut().then(()=>{document.getElementById('accessDenied').classList.remove('on');document.getElementById('loginScreen').style.display='flex'})">Sign Out</button>
     </div>
@@ -234,8 +244,9 @@ textarea.fi{resize:vertical;line-height:1.6}
           <div class="topbar-title" id="topbarTitle">My Court</div>
         </div>
         <div class="topbar-r">
+          <span id="dirtyPill" style="display:none;align-items:center;gap:6px;font-family:var(--fm);font-size:11px;color:var(--orange);background:var(--amberd);border:1px solid rgba(244,140,6,.3);padding:4px 10px;border-radius:20px">● Unsaved changes</span>
           <a href="index.html" target="_blank" class="btn btn-o btn-sm">↗ View Public Site</a>
-          <button class="btn btn-l btn-sm" onclick="saveAll()">Save Changes</button>
+          <button class="btn btn-l btn-sm" id="saveBtnTop" onclick="saveAll()" disabled style="opacity:.55;cursor:not-allowed">Save Changes</button>
         </div>
       </div>
 
@@ -259,7 +270,7 @@ textarea.fi{resize:vertical;line-height:1.6}
             <div style="display:flex;align-items:flex-start;gap:14px">
               <div style="font-size:28px;flex-shrink:0">💡</div>
               <div>
-                <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;color:var(--lime);margin-bottom:6px">Your changes are live instantly</div>
+                <div style="font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;color:var(--ca);margin-bottom:6px">Your changes are live instantly</div>
                 <p style="font-size:13px;color:var(--tx2);line-height:1.7">Any updates you save here — hours, pricing, amenities, or status — are reflected immediately on the public PickleTown site. Players visiting the court listings will see your latest information right away.</p>
               </div>
             </div>
@@ -270,7 +281,6 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-availability">
           <div class="sec-hd">
             <div><div class="sec-title">Availability</div><div class="sec-sub">Set your court's operating hours and any special closures</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
           </div>
           <div class="card">
             <div class="card-title">Operating Hours</div>
@@ -307,7 +317,6 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-pricing">
           <div class="sec-hd">
             <div><div class="sec-title">Pricing</div><div class="sec-sub">Set fees and pricing information for your court</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
           </div>
           <div class="card">
             <div class="card-title">Fee Structure</div>
@@ -342,7 +351,6 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-amenities">
           <div class="sec-hd">
             <div><div class="sec-title">Amenities</div><div class="sec-sub">Select all facilities available at your court</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
           </div>
           <div class="card">
             <div class="card-title">Facilities & Features</div>
@@ -374,10 +382,8 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-contact">
           <div class="sec-hd">
             <div><div class="sec-title">Contact Info</div><div class="sec-sub">How players can reach you for bookings and inquiries</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Changes</button>
           </div>
           <div class="card">
-            <div class="card-title">Contact Details</div>
             <div class="fg-row">
               <div class="fg">
                 <label class="fl">Phone / Viber / WhatsApp</label>
@@ -407,11 +413,9 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-location">
           <div class="sec-hd">
             <div><div class="sec-title">Map Location</div><div class="sec-sub">Pin your court's exact location on the public map</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Location</button>
           </div>
           <div class="card">
             <div class="card-title">Drop a Pin</div>
-            <p style="font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:16px">
               Click anywhere on the map to place your court's pin. The marker updates the public map instantly when you save. You can also type coordinates directly or use your device's GPS.
             </p>
             <!-- Map container -->
@@ -441,12 +445,10 @@ textarea.fi{resize:vertical;line-height:1.6}
         <div class="panel" id="pnl-status">
           <div class="sec-hd">
             <div><div class="sec-title">Court Status</div><div class="sec-sub">Update your court's current availability status — shown live on the public site</div></div>
-            <button class="btn btn-l" onclick="saveAll()">Save Status</button>
           </div>
           <div class="card">
             <div class="card-title">Current Status</div>
             <div class="status-btns">
-              <button class="st-btn active-open" id="stOpen" onclick="setStatus('open')">✅ Open</button>
               <button class="st-btn" id="stLimited" onclick="setStatus('limited')">⚠️ Limited Hours</button>
               <button class="st-btn" id="stClosed" onclick="setStatus('closed')">🔴 Closed</button>
               <button class="st-btn" id="stMaintenance" onclick="setStatus('maintenance')">🔧 Maintenance</button>
@@ -546,6 +548,8 @@ function showDashboard(user) {
   document.getElementById('sbName').textContent  = name;
   document.getElementById('sbEmail').textContent = user.email || '';
   loadCourtData();
+  setTimeout(bindDirtyListeners, 400); // attach after inputs have been populated
+  window.addEventListener('beforeunload', e => { if(_formDirty){ e.preventDefault(); e.returnValue = ''; } });
   toast('Welcome, ' + name.split(' ')[0] + '!');
 }
 
@@ -572,6 +576,9 @@ function loadCourtData() {
     const c = snap.val();
     if(!c) { toast('⚠ Court data not found. Contact admin.'); return; }
     populateFields(c);
+    // Firebase snapshot drives programmatic .value= writes which don't fire 'input'.
+    // Reset dirty so the sticky Save bar stays inert until the user edits.
+    setDirty(false);
   });
 }
 
@@ -630,8 +637,64 @@ function populateFields(c) {
 }
 
 // ── SAVE ──
+// ── DIRTY / SAVING STATE ──────────────────────────────────────
+let _formDirty = false;
+function setDirty(v){
+  _formDirty = v;
+  const btn = document.getElementById('saveBtnTop');
+  if(!btn) return;
+  btn.disabled = !v;
+  btn.style.opacity = v ? '1' : '.55';
+  btn.style.cursor = v ? 'pointer' : 'not-allowed';
+  const pill = document.getElementById('dirtyPill');
+  if(pill) pill.style.display = v ? 'inline-flex' : 'none';
+}
+function setSaving(on){
+  const btn = document.getElementById('saveBtnTop');
+  if(!btn) return;
+  if(on){ btn.dataset._label = btn.textContent; btn.textContent = 'Saving…'; btn.disabled = true; btn.style.cursor = 'wait'; }
+  else { btn.textContent = btn.dataset._label || 'Save Changes'; btn.disabled = !_formDirty; btn.style.cursor = _formDirty ? 'pointer' : 'not-allowed'; }
+}
+function bindDirtyListeners(){
+  document.querySelectorAll('#dashApp input, #dashApp textarea, #dashApp select')
+    .forEach(el => { if(!el.dataset._dirtyBound){ el.addEventListener('input', ()=>setDirty(true)); el.addEventListener('change', ()=>setDirty(true)); el.dataset._dirtyBound='1'; } });
+}
+function validateBeforeSave(){
+  const req = [
+    {id:'ctEmail', label:'Contact email', pattern:/^[^\s@]+@[^\s@]+\.[^\s@]+$/}
+  ];
+  for(const r of req){
+    const el = document.getElementById(r.id); if(!el) continue;
+    const v = el.value.trim();
+    if(r.pattern && v && !r.pattern.test(v)){
+      el.style.borderColor = 'var(--rd)';
+      toast('⚠ ' + r.label + ' looks invalid — check format.');
+      el.focus(); return false;
+    }
+    if(!r.pattern && !v){
+      el.style.borderColor = 'var(--rd)';
+      toast('⚠ ' + r.label + ' is required.');
+      el.focus(); return false;
+    }
+    el.style.borderColor = '';
+  }
+  const lat = document.getElementById('coordLat').value;
+  const lng = document.getElementById('coordLng').value;
+  if(lat || lng){
+    const la = parseFloat(lat), ln = parseFloat(lng);
+    if(isNaN(la) || isNaN(ln) || la<-90 || la>90 || ln<-180 || ln>180){
+      toast('⚠ Coordinates are out of range.');
+      document.getElementById('coordLat').style.borderColor = 'var(--rd)';
+      document.getElementById('coordLng').style.borderColor = 'var(--rd)';
+      return false;
+    }
+  }
+  return true;
+}
+
 function saveAll() {
   if(!courtOwnerCourtId) { toast('⚠ No court assigned to your account.'); return; }
+  if(!validateBeforeSave()) return;
   const amenities = {};
   ['parking','lights','aircon','locker','rental','water','spectator','wifi','canteen','shower','firstaid','covered'].forEach(k => {
     amenities[k] = !!(document.getElementById('am-'+k)?.checked);
@@ -662,13 +725,13 @@ function saveAll() {
     lastUpdated:       Date.now(),
     updatedBy:         currentUser ? currentUser.uid : 'unknown'
   };
-  // Coordinates — only include if valid
   const lat = parseFloat(document.getElementById('coordLat').value);
   const lng = parseFloat(document.getElementById('coordLng').value);
   if(!isNaN(lat) && !isNaN(lng)) data.coords = [lat, lng];
+  setSaving(true);
   db.ref('courts/' + courtOwnerCourtId).update(data)
-    .then(() => toast('✅ Changes saved and live on the public site!'))
-    .catch(e => toast('⚠ Save failed: ' + e.message));
+    .then(() => { setSaving(false); setDirty(false); toast('✅ Changes saved and live on the public site!'); })
+    .catch(e => { setSaving(false); toast('⚠ Save failed: ' + (e && e.message ? e.message : e)); });
 }
 
 // ── STATUS ──
@@ -692,7 +755,7 @@ let _locMap = null, _locMarker = null, _savedCoords = null;
 
 function _pinIcon() {
   return L.divIcon({
-    html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:#B8F53C;border:3px solid #0A3D2B;transform:rotate(-45deg);box-shadow:0 0 14px rgba(184,245,60,.6)"></div>`,
+    html:`<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;background:#8FC337;border:3px solid #0A3D2B;transform:rotate(-45deg);box-shadow:0 0 14px rgba(143,195,55,.6)"></div>`,
     className:'', iconSize:[32,32], iconAnchor:[16,32]
   });
 }
