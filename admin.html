@@ -120,7 +120,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
 /* ═══ CARDS / WIDGETS ═══ */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
 @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 .kpi{background:var(--sur);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 20px;position:relative;overflow:hidden;transition:all .2s}
 .kpi:hover{border-color:var(--bdh)}
@@ -311,6 +311,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
       <button class="sbl" onclick="showPanel('courts',this)"><span class="sbl-ico">📍</span>Courts</button>
       <button class="sbl" onclick="showPanel('court-submissions',this)"><span class="sbl-ico">📬</span>Court Submissions<span class="sbl-badge am" id="submissionCount">0</span></button>
       <button class="sbl" onclick="showPanel('games',this)"><span class="sbl-ico">🎮</span>Games</button>
+      <button class="sbl" onclick="showPanel('matches',this)"><span class="sbl-ico">🏓</span>Matches</button>
       <button class="sbl" onclick="showPanel('events',this)"><span class="sbl-ico">🏆</span>Events</button>
       <button class="sbl" onclick="showPanel('announcements',this)"><span class="sbl-ico">📢</span>Announcements</button>
 
@@ -363,6 +364,7 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
             <div class="kpi" style="--ac:var(--sky)"><label>Active Games</label><div class="kv" id="kpi-games">5</div><div class="ks up">↑ 1 today</div></div>
             <div class="kpi" style="--ac:var(--amber)"><label>Registered Players</label><div class="kv" id="kpi-players">5</div><div class="ks up">↑ 3 this week</div></div>
             <div class="kpi" style="--ac:var(--pu)"><label>Check-ins This Month</label><div class="kv" id="kpi-checkins">0</div><div class="ks" id="kpi-ci-sub">Tap courts on map</div></div>
+            <div class="kpi" style="--ac:var(--rd)"><label>Matches This Month</label><div class="kv" id="kpi-matches">0</div><div class="ks" id="kpi-match-sub">No matches yet</div></div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
@@ -388,6 +390,14 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
                 <tbody id="dashGames"></tbody>
               </table>
             </div>
+          </div>
+
+          <div class="tbl-wrap" style="margin-top:16px">
+            <div class="tbl-head"><div class="tbl-head-title">🏓 Recent Match Results</div></div>
+            <table>
+              <thead><tr><th>Date</th><th>Court</th><th>Team 1</th><th>Score</th><th>Team 2</th><th>Winner</th></tr></thead>
+              <tbody id="dashMatches"></tbody>
+            </table>
           </div>
         </div>
 
@@ -497,6 +507,27 @@ select.fi{cursor:pointer}textarea.fi{resize:vertical;line-height:1.6}
             <table>
               <thead><tr><th>#</th><th>Court</th><th>Date</th><th>Time</th><th>Level</th><th>Spots</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="gameTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── MATCHES ─── -->
+        <div class="panel" id="pnl-matches">
+          <div class="sec-hd">
+            <div class="sec-hd-left"><div class="sec-title">Match Results</div><div class="sec-sub">Record game outcomes — points flow to the leaderboard automatically</div></div>
+            <button class="btn btn-l" onclick="openModal('match',null)">+ Record Match</button>
+          </div>
+          <div class="tbl-wrap">
+            <div class="tbl-head">
+              <div class="tbl-head-title">All Matches <span style="font-family:var(--fm);font-size:12px;color:var(--tx3)" id="matchCount"></span></div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="matchFilter" class="fi" style="min-width:180px;padding:6px 10px;font-size:12px" onchange="setMatchFilter(this.value)"></select>
+                <input class="tbl-search" type="text" placeholder="Search matches…" oninput="filterTable('matchTbody',this.value)">
+              </div>
+            </div>
+            <table>
+              <thead><tr><th>Date</th><th>Court</th><th>Format</th><th>Team 1</th><th>Score</th><th>Team 2</th><th>Winner</th><th>Recorded By</th><th>Actions</th></tr></thead>
+              <tbody id="matchTbody"></tbody>
             </table>
           </div>
         </div>
@@ -794,6 +825,7 @@ const fbKeyMap = {
   'pt_admin_courts':'courts','pt_admin_games':'games','pt_admin_events':'events',
   'pt_admin_players':'players','pt_admin_sponsors':'sponsors',
   'pt_admin_ann':'announcements','pt_admin_chat':'chat','pt_admin_activity':'activity',
+  'pt_admin_matches':'matches',
   'pt6200ci':'checkins','pt6200ranks':'rankings'
 };
 
@@ -820,6 +852,8 @@ let sponsors = loadData('pt_admin_sponsors', defaultSponsors);
 let announcements = loadData('pt_admin_ann', defaultAnnouncements);
 let chatMsgs = loadData('pt_admin_chat', chatMessages);
 let actLog = loadData('pt_admin_activity', activityLog);
+let matches = loadData('pt_admin_matches', []);
+let matchPlayerFilter = '';
 let modalType = null, editId = null, confirmCb = null;
 
 // ════════════════════════ AUTH ════════════════════════
@@ -920,7 +954,7 @@ function doLogout() {
 const panelTitles = {
   dashboard:'Dashboard', activity:'Activity Log', courts:'Court Management',
   'court-submissions':'Court Submissions', 'court-owners':'Court Owners',
-  games:'Game Management', events:'Events & Tournaments', announcements:'Announcements',
+  games:'Game Management', matches:'Match Results', events:'Events & Tournaments', announcements:'Announcements',
   players:'Player Management', rankings:'Rankings Manager', chat:'Chat Moderation',
   sponsors:'Sponsor Management', checkins:'Check-in Analytics', content:'Homepage Content',
   settings:'System Settings'
@@ -935,6 +969,7 @@ function showPanel(id, btn) {
   if(id==='dashboard') buildDashboard();
   if(id==='courts') buildCourts();
   if(id==='games') buildGames();
+  if(id==='matches') buildMatches();
   if(id==='events') buildEvents();
   if(id==='players') buildPlayers();
   if(id==='rankings') buildRankings();
@@ -952,6 +987,7 @@ function refreshAll() {
   buildDashboard();
   buildCourts();
   buildGames();
+  buildMatches();
   buildEvents();
   buildPlayers();
   buildRankings();
@@ -972,6 +1008,15 @@ function buildDashboard() {
   document.getElementById('kpi-checkins').textContent = total;
   document.getElementById('kpi-ci-sub').textContent = total ? `Across ${Object.keys(ci).length} courts` : 'Tap courts on map';
 
+  // Matches this month
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthMatches = matches.filter(m => (m.date||'').startsWith(ym));
+  const mkpi = document.getElementById('kpi-matches');
+  const msub = document.getElementById('kpi-match-sub');
+  if(mkpi) mkpi.textContent = monthMatches.length;
+  if(msub) msub.textContent = matches.length ? `${matches.length} total recorded` : 'No matches yet';
+
   // Bar chart
   const chartData = courts.slice(0,6).map(c=>({label:c.name.split(' ')[0],val:ci[c.name]||Math.floor(Math.random()*12)+1}));
   const max = Math.max(...chartData.map(d=>d.val));
@@ -990,6 +1035,25 @@ function buildDashboard() {
   // Activity feed
   document.getElementById('actFeed').innerHTML = actLog.slice(0,6).map(a=>`
     <div class="act-item"><div class="act-ico" style="background:var(--lime2)">⚡</div><div class="act-info"><p><strong>${a.action}</strong> — ${a.detail}</p><span>${a.time} · by ${a.admin}</span></div></div>`).join('');
+
+  // Recent match results
+  const dashMatches = document.getElementById('dashMatches');
+  if(dashMatches) {
+    const recent = [...matches].sort((a,b)=>(b.recordedAt||0)-(a.recordedAt||0)).slice(0,5);
+    dashMatches.innerHTML = recent.length ? recent.map(m=>{
+      const t1 = (m.team1||[]).join(' & ');
+      const t2 = (m.team2||[]).join(' & ');
+      const winnerTeam = m.winner===1 ? t1 : t2;
+      return `<tr>
+        <td class="td-mono">${escHtml(m.date||'')}</td>
+        <td>${escHtml(m.court||'')}</td>
+        <td class="td-name">${escHtml(t1)}</td>
+        <td class="td-mono"><strong>${m.score1??''} – ${m.score2??''}</strong></td>
+        <td class="td-name">${escHtml(t2)}</td>
+        <td><span class="chip chip-g">${escHtml(winnerTeam)}</span></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--tx3);padding:16px">No matches recorded yet.</td></tr>`;
+  }
 }
 
 // ════════════════════════ COURTS ════════════════════════
@@ -1035,12 +1099,93 @@ function buildGames() {
       <td><span class="chip ${spotsClass}">${g.spots}/${g.max}</span></td>
       <td>${g.status==='open'?'<span class="chip chip-g">Open</span>':g.status==='full'?'<span class="chip chip-r">Full</span>':'<span class="chip chip-a">Filling</span>'}</td>
       <td><div class="td-actions">
+        <button class="btn btn-l btn-xs" onclick="openMatchForGame('${g.id}')">Record Result</button>
         <button class="btn btn-o btn-xs" onclick="openModal('game','${g.id}')">Edit</button>
         <button class="btn btn-r btn-xs" onclick="deleteItem('game','${g.id}')">✕</button>
       </div></td>
     </tr>`;
   }).join('');
 }
+
+// ════════════════════════ MATCHES ════════════════════════
+const MATCH_WIN_PTS = 10;
+const MATCH_LOSS_PTS = 2;
+
+function applyMatchPoints(m, sign) {
+  if(!m || !m.winner) return;
+  const winners = m.winner===1 ? (m.team1||[]) : (m.team2||[]);
+  const losers  = m.winner===1 ? (m.team2||[]) : (m.team1||[]);
+  const winPts  = (m.tournament ? MATCH_WIN_PTS*2 : MATCH_WIN_PTS) * sign;
+  const lossPts = MATCH_LOSS_PTS * sign;
+  const rnks = loadData('pt6200ranks', {});
+  winners.forEach(n => { if(!n) return; rnks[n] = Math.max(0, (rnks[n]||0) + winPts); });
+  losers.forEach(n  => { if(!n) return; rnks[n] = Math.max(0, (rnks[n]||0) + lossPts); });
+  saveData('pt6200ranks', rnks);
+  // Mirror points onto player records (by name match)
+  let changed = false;
+  players = players.map(p => {
+    const delta = winners.includes(p.name) ? winPts : losers.includes(p.name) ? lossPts : 0;
+    if(delta) { changed = true; return {...p, points: Math.max(0, (p.points||0) + delta)}; }
+    return p;
+  });
+  if(changed) saveData('pt_admin_players', players);
+}
+
+function matchWinsFor(name) {
+  return matches.filter(m => (m.winner===1 ? m.team1 : m.team2)?.includes(name)).length;
+}
+
+function setMatchFilter(v) { matchPlayerFilter = v; buildMatches(); }
+
+function buildMatches() {
+  const tbody = document.getElementById('matchTbody');
+  if(!tbody) return;
+  // Player filter dropdown
+  const fil = document.getElementById('matchFilter');
+  if(fil) {
+    const cur = matchPlayerFilter;
+    const names = Array.from(new Set([...players.map(p=>p.name), ...matches.flatMap(m=>[...(m.team1||[]),...(m.team2||[])])])).filter(Boolean).sort();
+    fil.innerHTML = `<option value="">All players</option>` + names.map(n=>`<option value="${escHtml(n)}" ${n===cur?'selected':''}>${escHtml(n)}</option>`).join('');
+  }
+  // Most-recent first
+  const sorted = [...matches].sort((a,b)=>(b.recordedAt||0)-(a.recordedAt||0));
+  const rows = matchPlayerFilter
+    ? sorted.filter(m => [...(m.team1||[]),...(m.team2||[])].includes(matchPlayerFilter))
+    : sorted;
+  document.getElementById('matchCount').textContent = `(${rows.length}${matchPlayerFilter?` for ${matchPlayerFilter}`:''})`;
+  tbody.innerHTML = rows.length ? rows.map(m=>{
+    const t1 = (m.team1||[]).join(' & ');
+    const t2 = (m.team2||[]).join(' & ');
+    const score = `${m.score1??''} – ${m.score2??''}`;
+    const winnerChip = m.winner===1
+      ? `<span class="chip chip-g">${escHtml(t1)}</span>`
+      : `<span class="chip chip-g">${escHtml(t2)}</span>`;
+    const tourney = m.tournament ? ' <span class="chip chip-a" style="font-size:9.5px">Tourney</span>' : '';
+    return `<tr>
+      <td class="td-mono">${escHtml(m.date||'')}</td>
+      <td>${escHtml(m.court||'')}</td>
+      <td><span class="chip chip-s">${m.format||'doubles'}</span>${tourney}</td>
+      <td class="td-name">${escHtml(t1)}</td>
+      <td class="td-mono"><strong>${escHtml(score)}</strong></td>
+      <td class="td-name">${escHtml(t2)}</td>
+      <td>${winnerChip}</td>
+      <td style="font-size:11px;color:var(--tx3)">${escHtml(m.recordedBy||'')}</td>
+      <td><div class="td-actions">
+        <button class="btn btn-o btn-xs" onclick="openModal('match','${m.id}')">Edit</button>
+        <button class="btn btn-r btn-xs" onclick="deleteItem('match','${m.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--tx3);padding:24px">No matches recorded yet. Record one from the Games panel or click + Record Match.</td></tr>`;
+}
+
+function viewPlayerMatches(playerId) {
+  const p = players.find(x => x.id === playerId);
+  matchPlayerFilter = p ? p.name : '';
+  const btn = document.querySelector('[onclick*="showPanel(\'matches\'"]');
+  showPanel('matches', btn);
+}
+
+function openMatchForGame(gameId) { openModal('match', null, {gameId}); }
 
 // ════════════════════════ EVENTS ════════════════════════
 function buildEvents() {
@@ -1073,6 +1218,7 @@ function buildPlayers() {
       <td>${p.status==='active'?'<span class="chip chip-g">Active</span>':'<span class="chip chip-r">Suspended</span>'}</td>
       <td><div class="td-actions">
         <button class="btn btn-o btn-xs" onclick="openModal('player','${p.id}')">Edit</button>
+        <button class="btn btn-o btn-xs" onclick="viewPlayerMatches('${p.id}')">Matches</button>
         <button class="btn btn-xs" style="background:${p.status==='active'?'var(--rdd)':'var(--gnd)'};color:${p.status==='active'?'var(--rd)':'var(--gn)'};border:1px solid ${p.status==='active'?'rgba(255,68,68,.2)':'rgba(46,213,115,.2)'}" onclick="togglePlayerStatus('${p.id}')">${p.status==='active'?'Suspend':'Restore'}</button>
         <button class="btn btn-r btn-xs" onclick="deleteItem('player','${p.id}')">✕</button>
       </div></td>
@@ -1097,7 +1243,7 @@ function buildRankings() {
       <td><span style="font-family:var(--fh);font-size:18px">${moji[i]||'#'+(i+1)}</span></td>
       <td class="td-name">${name}</td>
       <td><strong style="font-family:var(--fm);font-size:14px;color:var(--lime)">${pts} pts</strong></td>
-      <td class="td-mono">${Math.floor(pts/3)} wins</td>
+      <td class="td-mono">${matchWinsFor(name)} wins</td>
       <td><div class="td-actions">
         <button class="btn btn-o btn-xs" onclick="openModal('rankAdjust',null,'${name}')">Adjust</button>
         <button class="btn btn-r btn-xs" onclick="deleteRankEntry('${name}')">Remove</button>
@@ -1352,13 +1498,57 @@ const modalForms = {
       <div class="fg"><label class="fl">Override Total</label><input class="fi" id="mf-total" type="number" placeholder="Or set exact total"></div>
     </div>
     <div class="fg"><label class="fl">Reason</label><input class="fi" id="mf-reason" placeholder="e.g. Tournament bonus"></div>`,
+  match: (item, extra) => {
+    const linked = (!item && extra?.gameId) ? games.find(g=>g.id===extra.gameId) : null;
+    const date = item?.date || linked?.date || new Date().toISOString().split('T')[0];
+    const court = item?.court || linked?.court || '';
+    const format = item?.format || 'doubles';
+    const gameId = item?.gameId || extra?.gameId || '';
+    const t1 = item?.team1 || ['',''];
+    const t2 = item?.team2 || ['',''];
+    const playerOpts = (sel) => `<option value="">— select —</option>` +
+      players.map(p=>`<option value="${escHtml(p.name)}" ${p.name===sel?'selected':''}>${escHtml(p.name)}</option>`).join('');
+    return `
+    <input type="hidden" id="mf-gameId" value="${escHtml(gameId)}">
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Date</label><input class="fi" id="mf-date" type="date" value="${escHtml(date)}"></div>
+      <div class="fg"><label class="fl">Court</label><input class="fi" id="mf-court" value="${escHtml(court)}" placeholder="Court name"></div>
+    </div>
+    <div class="fg"><label class="fl">Format</label>
+      <select class="fi" id="mf-format" onchange="toggleMatchFormat()">
+        <option value="singles" ${format==='singles'?'selected':''}>Singles</option>
+        <option value="doubles" ${format==='doubles'?'selected':''}>Doubles</option>
+      </select>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Team 1 — Player A</label><select class="fi" id="mf-t1a">${playerOpts(t1[0])}</select></div>
+      <div class="fg" id="mf-t1b-wrap" style="display:${format==='doubles'?'block':'none'}"><label class="fl">Team 1 — Player B</label><select class="fi" id="mf-t1b">${playerOpts(t1[1])}</select></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Team 2 — Player A</label><select class="fi" id="mf-t2a">${playerOpts(t2[0])}</select></div>
+      <div class="fg" id="mf-t2b-wrap" style="display:${format==='doubles'?'block':'none'}"><label class="fl">Team 2 — Player B</label><select class="fi" id="mf-t2b">${playerOpts(t2[1])}</select></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Score — Team 1</label><input class="fi" id="mf-score1" type="number" min="0" value="${item?.score1??''}"></div>
+      <div class="fg"><label class="fl">Score — Team 2</label><input class="fi" id="mf-score2" type="number" min="0" value="${item?.score2??''}"></div>
+    </div>
+    <div class="fg"><label class="fl" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="mf-tournament" ${item?.tournament?'checked':''}> Tournament match (doubles win bonus)</label></div>
+    <div class="fg"><label class="fl">Notes</label><textarea class="fi" id="mf-notes" rows="2" placeholder="Optional">${escHtml(item?.notes||'')}</textarea></div>
+    <div style="font-size:11px;color:var(--tx3);margin-top:6px">Winner is determined from the higher score. Points: winner +${MATCH_WIN_PTS} (tournament +${MATCH_WIN_PTS*2}), loser +${MATCH_LOSS_PTS}.</div>`;
+  },
 };
 
-const modalTitles = {court:'Court',game:'Game',event:'Event',player:'Player',sponsor:'Sponsor',announcement:'Announcement',rankAdjust:'Ranking Adjustment'};
+function toggleMatchFormat() {
+  const v = document.getElementById('mf-format').value;
+  document.getElementById('mf-t1b-wrap').style.display = v==='doubles' ? 'block' : 'none';
+  document.getElementById('mf-t2b-wrap').style.display = v==='doubles' ? 'block' : 'none';
+}
+
+const modalTitles = {court:'Court',game:'Game',event:'Event',player:'Player',sponsor:'Sponsor',announcement:'Announcement',rankAdjust:'Ranking Adjustment',match:'Match Result'};
 
 function openModal(type, id, extra) {
   modalType = type; editId = id;
-  const collections = {court:courts,game:games,event:events,player:players,sponsor:sponsors,announcement:announcements};
+  const collections = {court:courts,game:games,event:events,player:players,sponsor:sponsors,announcement:announcements,match:matches};
   const item = id ? (collections[type]||[]).find(x=>x.id===id) : null;
   document.getElementById('modalTitle').textContent = id ? `Edit ${modalTitles[type]}` : `Add ${modalTitles[type]}`;
   document.getElementById('modalSub').textContent = id ? `Editing record #${id}` : 'Fill in the details below';
@@ -1414,6 +1604,48 @@ function saveModal() {
     saveData('pt_admin_ann',announcements);
     logActivity(editId?'Announcement Updated':'Announcement Added', data.title);
     buildAnnouncements();
+  } else if(modalType==='match') {
+    const fmt = g('mf-format') || 'doubles';
+    const team1 = fmt==='doubles' ? [g('mf-t1a'), g('mf-t1b')].filter(Boolean) : [g('mf-t1a')].filter(Boolean);
+    const team2 = fmt==='doubles' ? [g('mf-t2a'), g('mf-t2b')].filter(Boolean) : [g('mf-t2a')].filter(Boolean);
+    const score1 = parseInt(g('mf-score1'));
+    const score2 = parseInt(g('mf-score2'));
+    const expected = fmt==='doubles' ? 2 : 1;
+    if(team1.length !== expected || team2.length !== expected) { toast('⚠️ Pick all players for both teams'); return; }
+    if(isNaN(score1) || isNaN(score2)) { toast('⚠️ Enter both scores'); return; }
+    if(score1 === score2) { toast('⚠️ Scores cannot tie'); return; }
+    const dupes = [...team1, ...team2];
+    if(new Set(dupes).size !== dupes.length) { toast('⚠️ A player can\'t appear on both teams'); return; }
+    const winner = score1 > score2 ? 1 : 2;
+    const gameId = g('mf-gameId') || null;
+    const data = {
+      date: g('mf-date'),
+      court: g('mf-court'),
+      format: fmt,
+      team1, team2,
+      score1, score2,
+      winner,
+      gameId,
+      tournament: !!document.getElementById('mf-tournament')?.checked,
+      notes: g('mf-notes') || '',
+      recordedBy: (document.getElementById('sbName')?.textContent || 'Admin'),
+      recordedAt: Date.now(),
+    };
+    if(editId) {
+      const prev = matches.find(x=>x.id===editId);
+      if(prev) applyMatchPoints(prev, -1);
+      matches = matches.map(x=>x.id===editId?{...x,...data}:x);
+    } else {
+      data.id = 'm'+Date.now();
+      matches.push(data);
+    }
+    saveData('pt_admin_matches', matches);
+    applyMatchPoints(editId ? matches.find(x=>x.id===editId) : data, +1);
+    logActivity(editId?'Match Updated':'Match Recorded', `${data.team1.join('&')} ${data.score1}-${data.score2} ${data.team2.join('&')}`);
+    buildMatches();
+    buildRankings();
+    buildPlayers();
+    buildDashboard();
   } else if(modalType==='rankAdjust') {
     const pname = g('mf-player');
     const adj = parseInt(g('mf-adj'))||0;
@@ -1432,7 +1664,7 @@ function saveModal() {
 
 // ════════════════════════ DELETE ════════════════════════
 function deleteItem(type, id) {
-  const names = {court:'courts',game:'games',event:'events',player:'players',sponsor:'sponsors',announcement:'announcements'};
+  const names = {court:'courts',game:'games',event:'events',player:'players',sponsor:'sponsors',announcement:'announcements',match:'matches'};
   openConfirm(`Delete ${type}?`, `This will permanently delete this ${type}. This cannot be undone.`, '🗑️', ()=>{
     if(type==='court') { courts=courts.filter(x=>x.id!==id); saveData('pt_admin_courts',courts); buildCourts(); }
     else if(type==='game') { games=games.filter(x=>x.id!==id); saveData('pt_admin_games',games); buildGames(); }
@@ -1440,6 +1672,13 @@ function deleteItem(type, id) {
     else if(type==='player') { players=players.filter(x=>x.id!==id); saveData('pt_admin_players',players); buildPlayers(); }
     else if(type==='sponsor') { sponsors=sponsors.filter(x=>x.id!==id); saveData('pt_admin_sponsors',sponsors); buildSponsors(); }
     else if(type==='announcement') { announcements=announcements.filter(x=>x.id!==id); saveData('pt_admin_ann',announcements); buildAnnouncements(); }
+    else if(type==='match') {
+      const m = matches.find(x=>x.id===id);
+      if(m) applyMatchPoints(m, -1);
+      matches = matches.filter(x=>x.id!==id);
+      saveData('pt_admin_matches', matches);
+      buildMatches(); buildRankings(); buildPlayers(); buildDashboard();
+    }
     logActivity(type.charAt(0).toUpperCase()+type.slice(1)+' Deleted', `#${id} removed by admin`);
     toast(`✅ ${type.charAt(0).toUpperCase()+type.slice(1)} deleted`);
   });
@@ -1458,7 +1697,7 @@ document.getElementById('confirmOk').onclick = ()=>{ if(confirmCb) confirmCb(); 
 
 // ════════════════════════ DATA OPS ════════════════════════
 function exportData() {
-  const data = {courts,games,events,players,sponsors,announcements,checkins:loadData('pt6200ci',{}),rankings:loadData('pt6200ranks',{})};
+  const data = {courts,games,events,players,sponsors,announcements,matches,checkins:loadData('pt6200ci',{}),rankings:loadData('pt6200ranks',{})};
   const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='pickletown6200-backup.json'; a.click();
@@ -1470,9 +1709,10 @@ function resetCourts() { courts=[...defaultCourts]; saveData('pt_admin_courts',c
 function resetGames() { games=[...defaultGames]; saveData('pt_admin_games',games); buildGames(); toast('✅ Games reset to default'); }
 function confirmWipe() {
   openConfirm('FACTORY RESET','This will permanently delete ALL data including courts, games, players, rankings, and check-ins. There is no undo.','💥',()=>{
-    ['pt_admin_courts','pt_admin_games','pt_admin_events','pt_admin_players','pt_admin_sponsors','pt_admin_ann','pt_admin_chat','pt_admin_activity','pt6200ci','pt6200ranks','pt6200matches'].forEach(k=>localStorage.removeItem(k));
+    ['pt_admin_courts','pt_admin_games','pt_admin_events','pt_admin_players','pt_admin_sponsors','pt_admin_ann','pt_admin_chat','pt_admin_activity','pt_admin_matches','pt6200ci','pt6200ranks','pt6200matches'].forEach(k=>localStorage.removeItem(k));
     courts=[...defaultCourts]; games=[...defaultGames]; events=[...defaultEvents];
     players=[...defaultPlayers]; sponsors=[...defaultSponsors]; announcements=[...defaultAnnouncements];
+    matches=[];
     refreshAll(); toast('💥 Factory reset complete');
   });
 }
@@ -1695,6 +1935,11 @@ function initAdminFirebaseListeners() {
   db.ref('sponsors').on('value', snap => {
     const data = snap.val();
     if(data) { sponsors = Object.entries(data).map(([id,s])=>({...s,id})); buildSponsors(); }
+  });
+  db.ref('matches').on('value', snap => {
+    const data = snap.val();
+    matches = data ? Object.entries(data).map(([id,m])=>({...m,id})) : [];
+    buildMatches(); buildDashboard();
   });
 
   // Court submissions badge update
