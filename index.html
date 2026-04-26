@@ -35,14 +35,16 @@
 <style>
 /* ═══════════════ TOKENS ═══════════════ */
 :root{
-  --court:#0A3D2B;--court2:#0D4F38;--court3:#155C42;
-  --lime:#B8F53C;--lime2:rgba(184,245,60,.12);--lime3:rgba(184,245,60,.25);
-  --amber:#FFB800;--amberd:rgba(255,184,0,.12);
-  --sky:#00D4FF;--skyd:rgba(0,212,255,.1);
-  --rd:#FF4444;
-  --ink:#08150F;--ink2:#0E1F16;--ink3:#152B1E;--ink4:#1C3828;
-  --tx:#E8F5EE;--tx2:#8FAF9A;--tx3:#4A6B57;
-  --bd:rgba(184,245,60,.08);--bdh:rgba(184,245,60,.18);
+  /* Modern Pickleball palette: Court Blue, Teal, Ball Yellow, Cloud White, Charcoal */
+  --court:#2563EB;--court2:#1D4ED8;--court3:#1E40AF;
+  --lime:#2563EB;--lime2:rgba(37,99,235,.10);--lime3:rgba(37,99,235,.22);
+  --amber:#F59E0B;--amberd:rgba(245,158,11,.12);
+  --sky:#14B8A6;--skyd:rgba(20,184,166,.10);
+  --rd:#EF4444;
+  --ball:#E7F54A;--balld:rgba(231,245,74,.30);
+  --ink:#F8FAFC;--ink2:#FFFFFF;--ink3:#F1F5F9;--ink4:#E2E8F0;
+  --tx:#0F172A;--tx2:#475569;--tx3:#94A3B8;
+  --bd:#E2E8F0;--bdh:#CBD5E1;
   --r:8px;--rl:14px;
   --fh:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
 }
@@ -54,15 +56,15 @@ body{background:var(--ink);color:var(--tx);font-family:var(--fb);font-size:15px;
 body::before{
   content:'';position:fixed;inset:0;
   background-image:
-    linear-gradient(rgba(184,245,60,.015) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(184,245,60,.015) 1px,transparent 1px);
+    linear-gradient(rgba(37,99,235,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,235,.015) 1px,transparent 1px);
   background-size:60px 60px;pointer-events:none;z-index:0
 }
 
 /* ═══════════════ NAV ═══════════════ */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:600;height:60px;
-  background:rgba(8,21,15,.95);backdrop-filter:blur(24px);
+  background:rgba(248,250,252,.85);backdrop-filter:blur(24px);
   border-bottom:1px solid var(--bd);
 }
 .nav-inner{
@@ -78,12 +80,12 @@ nav{
   width:34px;height:34px;border-radius:50%;background:var(--lime);
   display:flex;align-items:center;justify-content:center;
   font-size:17px;position:relative;flex-shrink:0;
-  box-shadow:0 0 18px rgba(184,245,60,.3);
+  box-shadow:0 0 18px rgba(37,99,235,.3);
 }
 .logo-ball::after{
   content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);
-  width:26px;height:2px;background:rgba(8,21,15,.4);border-radius:1px;
-  box-shadow:0 5px 0 rgba(8,21,15,.4),0 10px 0 rgba(8,21,15,.4)
+  width:26px;height:2px;background:rgba(255,255,255,.85);border-radius:1px;
+  box-shadow:0 5px 0 rgba(255,255,255,.85),0 10px 0 rgba(255,255,255,.85)
 }
 .logo span{color:var(--lime)}
 .nav-links{display:flex;gap:1px;flex:1}
@@ -93,7 +95,7 @@ nav{
   padding:7px 13px;border-radius:7px;cursor:pointer;transition:all .15s;
   text-transform:uppercase;
 }
-.nl:hover{color:var(--tx);background:rgba(255,255,255,.05)}
+.nl:hover{color:var(--tx);background:rgba(15,23,42,.05)}
 .nl.on{color:var(--lime);background:var(--lime2)}
 .nav-r{margin-left:auto;display:flex;gap:9px;align-items:center}
 .nav-av{
@@ -107,9 +109,9 @@ nav{
   cursor:pointer;border:none;transition:all .17s;white-space:nowrap;
 }
 .btn-l{background:var(--lime);color:var(--ink);letter-spacing:-.1px}
-.btn-l:hover{background:#caff55;box-shadow:0 0 20px rgba(184,245,60,.35);transform:translateY(-1px)}
+.btn-l:hover{background:#1D4ED8;box-shadow:0 0 20px rgba(37,99,235,.35);transform:translateY(-1px)}
 .btn-o{background:none;color:var(--tx);border:1px solid var(--bdh)}
-.btn-o:hover{border-color:rgba(184,245,60,.35);color:var(--lime)}
+.btn-o:hover{border-color:rgba(37,99,235,.35);color:var(--lime)}
 .btn-sm{padding:6px 13px;font-size:12.5px;border-radius:7px}
 .btn-xs{padding:4px 9px;font-size:11.5px;border-radius:6px}
 
@@ -130,11 +132,12 @@ main{padding-top:60px;position:relative;z-index:1}
 .hero-court{
   position:absolute;inset:0;
   background:
-    linear-gradient(rgba(8,21,15,.55),rgba(8,21,15,.7)),
+    linear-gradient(135deg,rgba(37,99,235,.18) 0%,rgba(20,184,166,.10) 55%,rgba(231,245,74,.20) 100%),
+    linear-gradient(rgba(248,250,252,.72),rgba(248,250,252,.86)),
     url('https://images.pexels.com/photos/29439333/pexels-photo-29439333.jpeg?auto=compress&cs=tinysrgb&w=1400') center/cover;
 }
 .hero-lines{
-  position:absolute;inset:0;opacity:.12;
+  position:absolute;inset:0;opacity:.18;
   background-image:
     linear-gradient(90deg,transparent 49.5%,var(--lime) 49.5%,var(--lime) 50.5%,transparent 50.5%),
     linear-gradient(transparent 49.5%,var(--lime) 49.5%,var(--lime) 50.5%,transparent 50.5%);
@@ -142,7 +145,7 @@ main{padding-top:60px;position:relative;z-index:1}
 .hero-content{position:relative;z-index:1;max-width:640px}
 .hero-tag{
   display:inline-flex;align-items:center;gap:8px;
-  background:rgba(184,245,60,.1);border:1px solid rgba(184,245,60,.25);
+  background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);
   padding:5px 13px;border-radius:30px;margin-bottom:22px;
   font-family:var(--fm);font-size:11px;color:var(--lime);letter-spacing:.5px;
 }
@@ -174,7 +177,7 @@ main{padding-top:60px;position:relative;z-index:1}
   color:var(--tx2);text-transform:uppercase;transition:all .15s;border:none;background:none;
 }
 .tab:hover{color:var(--tx)}
-.tab.on{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.25)}
+.tab.on{background:var(--lime2);color:var(--lime);border:1px solid rgba(37,99,235,.25)}
 .tc{display:none}.tc.on{display:block;animation:fi .2s ease}
 
 /* ═══════════════ CARDS ═══════════════ */
@@ -183,7 +186,7 @@ main{padding-top:60px;position:relative;z-index:1}
   background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);
   overflow:hidden;cursor:pointer;transition:all .2s;
 }
-.card:hover{border-color:var(--bdh);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.card:hover{border-color:var(--bdh);transform:translateY(-3px);box-shadow:0 16px 40px rgba(15,23,42,.10)}
 .card-img{height:160px;background-size:cover;background-position:center;position:relative}
 .card-img::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(transparent,var(--ink2))}
 .card-body{padding:16px 18px}
@@ -195,11 +198,11 @@ main{padding-top:60px;position:relative;z-index:1}
   padding:3px 9px;border-radius:20px;
   font-family:var(--fm);font-size:10.5px;font-weight:500;
 }
-.bdg-l{background:var(--lime2);color:var(--lime);border:1px solid rgba(184,245,60,.2)}
-.bdg-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
-.bdg-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(0,212,255,.2)}
-.bdg-r{background:rgba(255,68,68,.1);color:var(--rd);border:1px solid rgba(255,68,68,.2)}
-.bdg-g{background:rgba(46,213,115,.1);color:#2ed573;border:1px solid rgba(46,213,115,.2)}
+.bdg-l{background:var(--lime2);color:var(--lime);border:1px solid rgba(37,99,235,.2)}
+.bdg-a{background:var(--amberd);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.bdg-s{background:var(--skyd);color:var(--sky);border:1px solid rgba(20,184,166,.2)}
+.bdg-r{background:rgba(239,68,68,.1);color:var(--rd);border:1px solid rgba(239,68,68,.2)}
+.bdg-g{background:rgba(34,197,94,.1);color:#22C55E;border:1px solid rgba(34,197,94,.2)}
 
 /* ═══════════════ FORMS ═══════════════ */
 .form-wrap{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);padding:28px;max-width:560px}
@@ -210,7 +213,7 @@ main{padding-top:60px;position:relative;z-index:1}
   border-radius:var(--r);color:var(--tx);font-family:var(--fb);font-size:14px;outline:none;
   transition:border-color .15s;
 }
-.fc:focus{border-color:rgba(184,245,60,.35)}
+.fc:focus{border-color:rgba(37,99,235,.35)}
 .fc::placeholder{color:var(--tx3)}
 select.fc{cursor:pointer}
 textarea.fc{resize:vertical;line-height:1.6}
@@ -223,10 +226,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 /* ═══════════════ CHAT ═══════════════ */
 .chat-box{background:var(--ink2);border:1px solid var(--bd);border-radius:var(--rl);display:flex;flex-direction:column;height:500px;overflow:hidden}
 .chat-hd{background:var(--ink3);padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:11px}
-.chat-av{width:36px;height:36px;border-radius:10px;background:var(--lime2);border:1px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.chat-av{width:36px;height:36px;border-radius:10px;background:var(--lime2);border:1px solid rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .chat-hd-info strong{display:block;font-family:var(--fh);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
 .chat-hd-info span{font-size:11.5px;color:var(--tx2)}
-.online{width:7px;height:7px;border-radius:50%;background:#2ed573;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px rgba(46,213,115,.6)}
+.online{width:7px;height:7px;border-radius:50%;background:#22C55E;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px rgba(34,197,94,.6)}
 .chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
 .chat-msgs::-webkit-scrollbar{width:3px}
 .chat-msgs::-webkit-scrollbar-thumb{background:var(--ink4);border-radius:2px}
@@ -236,10 +239,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 .msg.me .m-av{background:var(--lime2);color:var(--lime)}
 .m-bbl{padding:10px 13px;border-radius:11px;font-size:13px;line-height:1.6}
 .msg:not(.me) .m-bbl{background:var(--ink3);border:1px solid var(--bd);border-radius:11px 11px 11px 3px}
-.msg.me .m-bbl{background:var(--lime2);border:1px solid rgba(184,245,60,.2);border-radius:11px 11px 3px 11px;color:var(--tx)}
+.msg.me .m-bbl{background:var(--lime2);border:1px solid rgba(37,99,235,.2);border-radius:11px 11px 3px 11px;color:var(--tx)}
 .chat-inp-row{padding:12px;border-top:1px solid var(--bd);display:flex;gap:8px}
 .chat-inp-row input{flex:1;background:var(--ink3);border:1px solid var(--bd);border-radius:var(--r);padding:9px 13px;color:var(--tx);font-family:var(--fb);font-size:13px;outline:none;transition:border-color .15s}
-.chat-inp-row input:focus{border-color:rgba(184,245,60,.3)}
+.chat-inp-row input:focus{border-color:rgba(37,99,235,.3)}
 .chat-inp-row input::placeholder{color:var(--tx3)}
 
 /* ═══════════════ RANKINGS ═══════════════ */
@@ -252,7 +255,7 @@ textarea.fc{resize:vertical;line-height:1.6}
   font-family:var(--fh);font-size:28px;font-weight:900;color:var(--tx3);
   min-width:36px;letter-spacing:-1px;
 }
-.rank-num.g1{color:var(--lime);text-shadow:0 0 20px rgba(184,245,60,.4)}
+.rank-num.g1{color:var(--lime);text-shadow:0 0 20px rgba(37,99,235,.4)}
 .rank-num.g2{color:var(--amber)}
 .rank-num.g3{color:var(--sky)}
 .rank-avatar{width:44px;height:44px;border-radius:50%;background:var(--ink4);border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--tx2);flex-shrink:0}
@@ -269,7 +272,7 @@ textarea.fc{resize:vertical;line-height:1.6}
 .sponsor-card:hover{border-color:var(--bdh);transform:translateY(-2px)}
 .sp-ico{
   width:52px;height:52px;border-radius:12px;background:var(--lime2);
-  border:1px solid rgba(184,245,60,.2);display:flex;align-items:center;
+  border:1px solid rgba(37,99,235,.2);display:flex;align-items:center;
   justify-content:center;font-size:22px;margin-bottom:12px;
 }
 .sponsor-card h3{font-family:var(--fh);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;margin-bottom:5px}
@@ -292,20 +295,20 @@ textarea.fc{resize:vertical;line-height:1.6}
 /* ═══════════════ TOAST ═══════════════ */
 .toast{
   position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);
-  background:var(--ink3);border:1px solid rgba(184,245,60,.25);
+  background:var(--ink3);border:1px solid rgba(37,99,235,.25);
   border-radius:10px;padding:11px 20px;font-size:13.5px;color:var(--tx);z-index:900;
-  opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.6);
+  opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(15,23,42,.14);
   pointer-events:none;
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══════════════ QR POPUP ═══════════════ */
-.leaflet-popup-content-wrapper{background:var(--ink3)!important;border:1px solid var(--bdh)!important;border-radius:12px!important;color:var(--tx)!important;box-shadow:0 12px 36px rgba(0,0,0,.6)!important}
+.leaflet-popup-content-wrapper{background:var(--ink2)!important;border:1px solid var(--bdh)!important;border-radius:12px!important;color:var(--tx)!important;box-shadow:0 12px 36px rgba(15,23,42,.14)!important}
 .leaflet-popup-tip{background:var(--ink3)!important}
 .qr-wrap{text-align:center;margin-top:10px;padding:10px;background:var(--ink4);border-radius:8px}
 .qr-wrap p{font-size:10.5px;color:var(--tx2);margin-top:6px;font-family:var(--fm)}
 .popup-btn{background:var(--lime);color:var(--ink);border:none;padding:7px 14px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;width:100%;margin-top:8px;font-family:var(--fh);letter-spacing:.3px;text-transform:uppercase;transition:background .15s}
-.popup-btn:hover{background:#caff55}
+.popup-btn:hover{background:#1D4ED8}
 
 /* ═══════════════ MATCH SUBMIT ═══════════════ */
 .match-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
@@ -321,10 +324,10 @@ textarea.fc{resize:vertical;line-height:1.6}
 
 /* ═══════════════ MOBILE NAV ═══════════════ */
 .mob-nav-btn{display:none;background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;padding:4px}
-@media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(8,21,15,.98);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
+@media(max-width:860px){.mob-nav-btn{display:block}.nav-links{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(248,250,252,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:12px;flex-direction:column;gap:2px;z-index:599}.nav-links.mob-open{display:flex}}
 
 /* ═══════════════ AUTH MODAL ═══════════════ */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.on{display:flex}
 .auth-modal{background:var(--ink2);border:1px solid var(--bdh);border-radius:20px;padding:36px 32px;max-width:420px;width:100%;position:relative}
 .auth-modal h2{font-family:var(--fh);font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:-.5px;margin-bottom:6px}
@@ -341,8 +344,8 @@ textarea.fc{resize:vertical;line-height:1.6}
 .nav-user{display:none;align-items:center;gap:8px;cursor:pointer}
 .nav-user.on{display:flex}
 .nav-user-av{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--bdh)}
-.nav-user-av-txt{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:900;color:var(--lime)}
-.dupr-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);font-family:var(--fm);font-size:10px;color:var(--sky)}
+.nav-user-av-txt{width:32px;height:32px;border-radius:50%;background:var(--lime2);border:2px solid rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:12px;font-weight:900;color:var(--lime)}
+.dupr-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.25);font-family:var(--fm);font-size:10px;color:var(--sky)}
 .dupr-badge a{color:var(--sky);text-decoration:none}
 .dupr-badge a:hover{text-decoration:underline}
 </style>
@@ -631,7 +634,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div class="tc" id="my-profile">
       <div class="form-wrap">
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
-          <div style="width:64px;height:64px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.3);display:flex;align-items:center;justify-content:center;font-size:26px">🏓</div>
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--lime2);border:2px solid rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center;font-size:26px">🏓</div>
           <div>
             <div style="font-family:var(--fh);font-size:20px;font-weight:900;text-transform:uppercase">Your Profile</div>
             <div style="font-size:12px;color:var(--tx2)">Member · PickleTown 6200 · Dumaguete</div>
@@ -778,7 +781,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:36px;margin-bottom:36px">
       <div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px rgba(184,245,60,.3)">🏓</div>
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 12px rgba(37,99,235,.3)">🏓</div>
           <span style="font-family:var(--fh);font-size:17px;font-weight:900;letter-spacing:.4px">Pickle<span style="color:var(--lime)">Town</span> 6200</span>
         </div>
         <p style="font-size:12.5px;color:var(--tx3);line-height:1.7;max-width:240px">Connecting the Dumaguete City pickleball community since 2026. Serving the 6200 area code and Negros Oriental.</p>
@@ -821,8 +824,8 @@ textarea.fc{resize:vertical;line-height:1.6}
       <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
         <a href="#" onclick="toast('Privacy policy coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Privacy Policy</a>
         <a href="#" onclick="toast('Terms coming soon!');return false" style="font-size:12px;color:var(--tx3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--tx2)'" onmouseout="this.style.color='var(--tx3)'">Terms of Service</a>
-        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(0,212,255,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
-        <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(184,245,60,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
+        <a href="court-admin.html" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(20,184,166,.3)';this.style.color='var(--sky)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">🏸 Court Owner Portal</a>
+        <a id="adminFooterLink" href="admin.html" style="display:none;align-items:center;gap:6px;font-size:12px;font-family:var(--fm);color:var(--tx3);text-decoration:none;padding:5px 12px;border:1px solid var(--bd);border-radius:6px;transition:all .15s" onmouseover="this.style.borderColor='rgba(37,99,235,.3)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--tx3)'">⚙ Admin</a>
       </div>
     </div>
   </div>
@@ -845,7 +848,7 @@ textarea.fc{resize:vertical;line-height:1.6}
     <div id="authEmailSection">
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Email</label><input class="fc" type="email" id="authEmail" placeholder="your@email.com"></div>
       <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Password</label><input class="fc" type="password" id="authPassword" placeholder="••••••••"></div>
-      <div id="authError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <div id="authError" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-l" style="flex:1" onclick="signInEmail()">Sign In</button>
         <button class="btn btn-o" style="flex:1" onclick="registerEmail()">Register</button>
@@ -870,7 +873,7 @@ textarea.fc{resize:vertical;line-height:1.6}
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Address / Location *</label><input class="fc" type="text" id="coAddress" placeholder="e.g. Perdices St, Dumaguete City"></div>
       <div class="fg"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Contact Number *</label><input class="fc" type="tel" id="coPhone" placeholder="e.g. 09XX XXX XXXX"></div>
       <div class="fg" style="margin-bottom:16px"><label style="font-family:var(--fh);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--tx2);display:block;margin-bottom:7px">Additional Notes (optional)</label><textarea class="fc" id="coNotes" rows="3" placeholder="Number of courts, operating hours, pricing info, etc." style="resize:vertical;min-height:72px"></textarea></div>
-      <div id="coError" style="display:none;background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
+      <div id="coError" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rd);margin-bottom:14px"></div>
       <button class="btn btn-l" style="width:100%" onclick="submitCourtOwnerRequest()">Submit Application</button>
       <p style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:14px;margin-bottom:0">The admin typically reviews applications within 1–2 business days.</p>
     </div>
@@ -937,7 +940,7 @@ function initMap() {
 
   // Custom marker icon
   const coIcon = L.divIcon({
-    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#E7F54A;border:2px solid #0F172A;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 4px 12px rgba(15,23,42,.18)">📍</div>`,
     className:'',iconSize:[28,28],iconAnchor:[14,14]
   });
 
@@ -946,9 +949,9 @@ function initMap() {
     const qrId = 'qr-'+c.name.replace(/\s+/g,'');
     m.bindPopup(`
       <div style="font-family:'Barlow',sans-serif;min-width:200px">
-        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
-        <div style="font-size:11px;color:#8FAF9A;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div style="font-size:12px;color:#8FAF9A;margin-bottom:10px">⏰ ${c.open||c.hours||''}</div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#0F172A">${c.name}</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#475569;margin-bottom:10px">⏰ ${c.open||c.hours||''}</div>
         <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
         <div class="qr-wrap">
           <div id="${qrId}"></div>
@@ -969,7 +972,7 @@ function makeQR(id, courtName) {
   if(!el || el.children.length > 0) return;
   new QRCode(el,{
     text: location.href.split('?')[0]+'?checkin='+encodeURIComponent(courtName),
-    width:90,height:90,colorDark:'#0A3D2B',colorLight:'#ffffff'
+    width:90,height:90,colorDark:'#2563EB',colorLight:'#ffffff'
   });
 }
 
@@ -977,7 +980,7 @@ function renderGamePins(filtered) {
   gameMarkers.forEach(m=>leafMap.removeLayer(m));
   gameMarkers = [];
   const gIcon = L.divIcon({
-    html:`<div style="width:22px;height:22px;border-radius:50%;background:#0D4F38;border:2px solid #B8F53C;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 10px rgba(184,245,60,.4)">🎮</div>`,
+    html:`<div style="width:22px;height:22px;border-radius:50%;background:#14B8A6;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 4px 10px rgba(15,23,42,.22)">🎮</div>`,
     className:'',iconSize:[22,22],iconAnchor:[11,11]
   });
   filtered.forEach(g=>{
@@ -986,10 +989,10 @@ function renderGamePins(filtered) {
     const shifted = [court.coords[0]+0.001, court.coords[1]+0.001];
     const m = L.marker(shifted,{icon:gIcon}).addTo(leafMap).bindPopup(`
       <div style="font-family:'Barlow',sans-serif">
-        <div style="font-weight:800;font-size:14px;color:#E8F5EE;margin-bottom:6px">${g.court}</div>
-        <div style="font-size:12px;color:#8FAF9A">📅 ${g.date} · ⏰ ${g.time}</div>
-        <div style="font-size:12px;color:#8FAF9A">📊 ${g.level}</div>
-        <div style="font-size:12px;color:#B8F53C;margin:6px 0">${g.spots}/${g.max} spots open</div>
+        <div style="font-weight:800;font-size:14px;color:#0F172A;margin-bottom:6px">${g.court}</div>
+        <div style="font-size:12px;color:#475569">📅 ${g.date} · ⏰ ${g.time}</div>
+        <div style="font-size:12px;color:#475569">📊 ${g.level}</div>
+        <div style="font-size:12px;color:#2563EB;margin:6px 0">${g.spots}/${g.max} spots open</div>
         <button class="popup-btn" onclick="toast('Joining game at ${g.court}!')">Join Game</button>
       </div>
     `);
@@ -1207,7 +1210,7 @@ function buildPlayerCards() {
     <div class="card">
       <div class="card-body" style="padding-top:18px;display:flex;flex-direction:column;gap:0">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(184,245,60,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${initials}</div>
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--lime2);border:2px solid rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--lime);flex-shrink:0">${initials}</div>
           <div>
             <h3 style="margin-bottom:2px">${escHtml(p.name||'')}</h3>
             <div style="font-size:11.5px;color:var(--lime);font-family:var(--fm)">${escHtml(p.level||'')}</div>
@@ -1677,7 +1680,7 @@ function refreshMapMarkers() {
   });
   gameMarkers = [];
   const coIcon = L.divIcon({
-    html:`<div style="width:28px;height:28px;border-radius:50%;background:#B8F53C;border:2px solid #0A3D2B;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(184,245,60,.5)">📍</div>`,
+    html:`<div style="width:28px;height:28px;border-radius:50%;background:#E7F54A;border:2px solid #0F172A;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 4px 12px rgba(15,23,42,.18)">📍</div>`,
     className:'',iconSize:[28,28],iconAnchor:[14,14]
   });
   courts.forEach(c => {
@@ -1685,12 +1688,12 @@ function refreshMapMarkers() {
     const m = L.marker(c.coords, {icon:coIcon}).addTo(leafMap);
     const qrId = 'qr-'+c.name.replace(/\s+/g,'');
     const hours = c.availability ? Object.entries(c.availability).map(([d,h])=>`${d}: ${h}`).join(', ') : (c.open||'');
-    const pricing = c.pricing ? `<div style="font-size:11px;color:#B8F53C;margin-bottom:4px">₱${c.pricing.dropIn||''}/hr drop-in</div>` : '';
+    const pricing = c.pricing ? `<div style="font-size:11px;color:#2563EB;margin-bottom:4px">₱${c.pricing.dropIn||''}/hr drop-in</div>` : '';
     m.bindPopup(`
       <div style="font-family:'Barlow',sans-serif;min-width:200px">
-        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#E8F5EE">${c.name}</div>
-        <div style="font-size:11px;color:#8FAF9A;margin-bottom:4px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
-        <div style="font-size:12px;color:#8FAF9A;margin-bottom:4px">⏰ ${hours}</div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:4px;color:#0F172A">${c.name}</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:4px;font-family:'JetBrains Mono',monospace">${c.town} · ${c.courts} court${c.courts>1?'s':''} · ${c.type}</div>
+        <div style="font-size:12px;color:#475569;margin-bottom:4px">⏰ ${hours}</div>
         ${pricing}
         <button class="popup-btn" onclick="doCheckIn('${c.name}')">✅ Check In Here</button>
         <div class="qr-wrap"><div id="${qrId}"></div><p>Scan QR to check in</p></div>
